@@ -9,13 +9,11 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
 pandas = "^2.2.2"
-ydata-profiling = { version = "^4.8.3", optional = true }
 pyarrow = { version = "^16.1.0", optional = true }
 omf = "^1.0.1"
 
 [tool.poetry.extras]
 io = ["pyarrow"]
-profiling = ["ydata-profiling"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.1"

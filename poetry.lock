@@ -2271,9 +2271,8 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 
 [extras]
 io = ["pyarrow"]
-profiling = ["ydata-profiling"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "1c1f6d6016ebd31aba8c74ef8656f5a52a3628a608cba07e26a0545c581a4ce0"
+content-hash = "49a54ea38801cb68618fc1f56bec2531649ba35a04f064ba38e76b31bf6d2007"

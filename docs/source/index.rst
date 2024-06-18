@@ -7,12 +7,11 @@ Welcome to omfpandas's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+   :hidden:
+
+   auto_examples/index
+   api/modules
+   license/license
 
 
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

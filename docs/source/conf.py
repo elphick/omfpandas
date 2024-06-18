@@ -2,9 +2,10 @@
 #
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
+import os
+import sys
 from sphinx_gallery.sorting import FileNameSortKey
-# imports
-from sphinx_gallery.sorting import FileNameSortKey
+
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -12,6 +13,9 @@ from sphinx_gallery.sorting import FileNameSortKey
 project = 'omfpandas'
 copyright = '2024, Greg Elphick'
 author = 'Greg Elphick'
+
+sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../..'))
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -26,14 +30,15 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.autosummary',  # to document the
               'sphinx.ext.todo'
               ]
 
+autosummary_generate = True
 sphinx_gallery_conf = {
     'filename_pattern': r'\.py',
     'ignore_pattern': r'(__init__)\.py',
     'examples_dirs': '../../examples',
-    'gallery_dirs': 'autoexamples',
+    'gallery_dirs': 'auto_examples',
     'nested_sections': False,
     'download_all_examples': True,
-    'within_subsection_order': FileNameSortKey,
+    'within_subsection_order': 'FileNameSortKey',
 }
 
 templates_path = ['_templates']
