@@ -1,6 +1,6 @@
 """
-Block Model to DataFrame
-========================
+OMF Block Model to DataFrame
+============================
 
 An omf VolumeElement represents a `Block Model`, and can be converted to a Pandas DataFrame.
 
