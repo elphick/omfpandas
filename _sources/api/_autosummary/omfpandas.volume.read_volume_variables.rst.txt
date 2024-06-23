@@ -1,0 +1,6 @@
+omfpandas.volume.read\_volume\_variables
+========================================
+
+.. currentmodule:: omfpandas.volume
+
+.. autofunction:: read_volume_variables

@@ -1,0 +1,6 @@
+omfpandas.volume.geometry\_to\_index
+====================================
+
+.. currentmodule:: omfpandas.volume
+
+.. autofunction:: geometry_to_index

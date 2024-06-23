@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>omfpandas.volume &mdash; omfpandas  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=61a4c737" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=1a8b2067" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            omfpandas
+          </a>
+              <div class="version">
+                0.2.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../auto_examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license/license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">omfpandas</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">omfpandas.volume</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for omfpandas.volume</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">omf</span> <span class="kn">import</span> <span class="n">VolumeElement</span><span class="p">,</span> <span class="n">VolumeGridGeometry</span><span class="p">,</span> <span class="n">ScalarArray</span><span class="p">,</span> <span class="n">ScalarData</span>
+
+
+<div class="viewcode-block" id="volume_to_df">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.volume.volume_to_df.html#omfpandas.volume.volume_to_df">[docs]</a>
+<span class="k">def</span> <span class="nf">volume_to_df</span><span class="p">(</span><span class="n">volume</span><span class="p">:</span> <span class="n">VolumeElement</span><span class="p">,</span> <span class="n">variables</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">with_geometry_index</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert volume to a DataFrame.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        volume (VolumeElement): The VolumeElement to convert.</span>
+<span class="sd">        variables (Optional[list[str]]): The variables to include in the DataFrame. If None, all variables are included.</span>
+<span class="sd">        with_geometry_index (bool): If True, includes geometry index in the DataFrame. Default is True.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pd.DataFrame: The DataFrame representing the VolumeElement.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># read the data</span>
+    <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">read_volume_variables</span><span class="p">(</span><span class="n">volume</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">with_geometry_index</span><span class="p">:</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">geometry_to_index</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+
+<div class="viewcode-block" id="df_to_volume">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.volume.df_to_volume.html#omfpandas.volume.df_to_volume">[docs]</a>
+<span class="k">def</span> <span class="nf">df_to_volume</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VolumeElement</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Write a DataFrame to a VolumeElement.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df (pd.DataFrame): The DataFrame to convert to a VolumeElement.</span>
+<span class="sd">        volume_name (str): The name of the VolumeElement.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        VolumeElement: The VolumeElement representing the DataFrame.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get the original order</span>
+    <span class="n">original_order</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Sort the dataframe to align with the omf spec</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Create the volume and geometry</span>
+        <span class="n">volume</span> <span class="o">=</span> <span class="n">VolumeElement</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">volume_name</span><span class="p">)</span>
+        <span class="n">geometry</span><span class="p">:</span> <span class="n">VolumeGridGeometry</span> <span class="o">=</span> <span class="n">index_to_geometry</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">volume</span><span class="o">.</span><span class="n">geometry</span> <span class="o">=</span> <span class="n">geometry</span>
+
+        <span class="c1"># add the data</span>
+        <span class="n">scalars</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ScalarData</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">sd</span><span class="p">:</span> <span class="n">ScalarData</span> <span class="o">=</span> <span class="n">ScalarData</span><span class="p">()</span>
+            <span class="n">sd</span><span class="o">.</span><span class="n">array</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">sd</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">variable</span>
+            <span class="n">sd</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="s1">&#39;cells&#39;</span>
+            <span class="n">scalars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sd</span><span class="p">)</span>
+        <span class="n">volume</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">scalars</span>
+
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="c1"># Reset the index to the original order (to avoid side effects)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">original_order</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">volume</span></div>
+
+
+
+<div class="viewcode-block" id="volume_to_parquet">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.volume.volume_to_parquet.html#omfpandas.volume.volume_to_parquet">[docs]</a>
+<span class="k">def</span> <span class="nf">volume_to_parquet</span><span class="p">(</span><span class="n">volume</span><span class="p">:</span> <span class="n">VolumeElement</span><span class="p">,</span> <span class="n">out_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">variables</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">with_geometry_index</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">allow_overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert volume to a Parquet file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        volume (VolumeElement): The VolumeElement to convert.</span>
+<span class="sd">        out_path (Optional[Path]): The path to the Parquet file to write. If None, a file with the volume name is created.</span>
+<span class="sd">        variables (Optional[list[str]]): The variables to include in the DataFrame. If None, all variables are included.</span>
+<span class="sd">        with_geometry_index (bool): If True, includes geometry index in the DataFrame. Default is True.</span>
+<span class="sd">        allow_overwrite (bool): If True, overwrite the existing Parquet file. Default is False.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        FileExistsError: If the file already exists and allow_overwrite is False.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">out_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">out_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">volume</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.parquet&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">out_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">allow_overwrite</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">FileExistsError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File already exists: </span><span class="si">{</span><span class="n">out_path</span><span class="si">}</span><span class="s2">. If you want to overwrite, set allow_overwrite=True.&quot;</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">volume_to_df</span><span class="p">(</span><span class="n">volume</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span> <span class="n">with_geometry_index</span><span class="o">=</span><span class="n">with_geometry_index</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">out_path</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="read_volume_variables">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.volume.read_volume_variables.html#omfpandas.volume.read_volume_variables">[docs]</a>
+<span class="k">def</span> <span class="nf">read_volume_variables</span><span class="p">(</span><span class="n">volume</span><span class="p">:</span> <span class="n">VolumeElement</span><span class="p">,</span> <span class="n">variables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the variables from the VolumeElement.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        volume (VolumeElement): The VolumeElement to read from.</span>
+<span class="sd">        variables (list[str]): The variables to include in the DataFrame.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pd.DataFrame: The DataFrame representing the variables in the VolumeElement.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If the variable is not found in the VolumeElement.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># identify &#39;cell&#39; variables in the file</span>
+    <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">volume</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">location</span> <span class="o">==</span> <span class="s1">&#39;cells&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Loop over the variables</span>
+    <span class="n">chunks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+        <span class="c1"># Check if the variable exists in the VolumeElement</span>
+        <span class="k">if</span> <span class="n">variable</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Variable &#39;</span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">&#39; not found in the VolumeElement: </span><span class="si">{</span><span class="n">volume</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_get_variable_data_by_name</span><span class="p">(</span><span class="n">volume</span><span class="p">,</span> <span class="n">variable</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+
+    <span class="c1"># Concatenate all chunks into a single DataFrame</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">chunks</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">variables</span><span class="p">)</span><span class="o">.</span><span class="n">T</span></div>
+
+
+
+<div class="viewcode-block" id="geometry_to_index">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.volume.geometry_to_index.html#omfpandas.volume.geometry_to_index">[docs]</a>
+<span class="k">def</span> <span class="nf">geometry_to_index</span><span class="p">(</span><span class="n">volume</span><span class="p">:</span> <span class="n">VolumeElement</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a pd.MultiIndex for the volume element.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        volume (VolumeElement): The VolumeElement to get the index from.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pd.MultiIndex: The MultiIndex representing the volume element geometry.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">geometry</span><span class="p">:</span> <span class="n">VolumeGridGeometry</span> <span class="o">=</span> <span class="n">volume</span><span class="o">.</span><span class="n">geometry</span>
+    <span class="n">ox</span><span class="p">,</span> <span class="n">oy</span><span class="p">,</span> <span class="n">oz</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">origin</span>
+
+    <span class="c1"># Make coordinates (points) along each axis, i, j, k</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">ox</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">geometry</span><span class="o">.</span><span class="n">tensor_u</span><span class="p">)</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ox</span><span class="p">)</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">oy</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">geometry</span><span class="o">.</span><span class="n">tensor_v</span><span class="p">)</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">oy</span><span class="p">)</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">oz</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">geometry</span><span class="o">.</span><span class="n">tensor_w</span><span class="p">)</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">oz</span><span class="p">)</span>
+
+    <span class="c1"># convert to centroids</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">i</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">j</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">j</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">k</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">zz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Calculate dx, dy, dz</span>
+    <span class="n">dxx</span><span class="p">,</span> <span class="n">dyy</span><span class="p">,</span> <span class="n">dzz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">geometry</span><span class="o">.</span><span class="n">tensor_u</span><span class="p">,</span> <span class="n">geometry</span><span class="o">.</span><span class="n">tensor_v</span><span class="p">,</span> <span class="n">geometry</span><span class="o">.</span><span class="n">tensor_w</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">)</span>
+
+    <span class="c1"># TODO: consider rotation</span>
+
+    <span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">([</span><span class="n">xx</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">),</span> <span class="n">yy</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">),</span> <span class="n">zz</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">),</span>
+                                       <span class="n">dxx</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">),</span> <span class="n">dyy</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">),</span> <span class="n">dzz</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">)],</span>
+                                      <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="s1">&#39;dx&#39;</span><span class="p">,</span> <span class="s1">&#39;dy&#39;</span><span class="p">,</span> <span class="s1">&#39;dz&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">index</span></div>
+
+
+
+<div class="viewcode-block" id="index_to_geometry">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.volume.index_to_geometry.html#omfpandas.volume.index_to_geometry">[docs]</a>
+<span class="k">def</span> <span class="nf">index_to_geometry</span><span class="p">(</span><span class="n">index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VolumeGridGeometry</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a MultiIndex to a VolumeGridGeometry.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        index (pd.MultiIndex): The MultiIndex to convert to a VolumeGridGeometry.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        VolumeGridGeometry: The VolumeGridGeometry representing the MultiIndex.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># check that the index contains the expected levels</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="s1">&#39;dx&#39;</span><span class="p">,</span> <span class="s1">&#39;dy&#39;</span><span class="p">,</span> <span class="s1">&#39;dz&#39;</span><span class="p">}</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">names</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Index must contain the levels &#39;x&#39;, &#39;y&#39;, &#39;z&#39;, &#39;dx&#39;, &#39;dy&#39;, &#39;dz&#39;.&quot;</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;z&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+
+    <span class="c1"># Get the shape of the original 3D arrays</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+
+    <span class="c1"># Reshape the ravelled index back into the original shapes</span>
+    <span class="n">tensor_u</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;dx&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">tensor_v</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;dy&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">tensor_w</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;dz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
+
+    <span class="n">origin_x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">-</span> <span class="n">tensor_u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">origin_y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">-</span> <span class="n">tensor_v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">origin_z</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">-</span> <span class="n">tensor_w</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="c1"># Create the volume</span>
+    <span class="n">geometry</span><span class="p">:</span> <span class="n">VolumeGridGeometry</span> <span class="o">=</span> <span class="n">VolumeGridGeometry</span><span class="p">()</span>
+    <span class="n">geometry</span><span class="o">.</span><span class="n">origin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">origin_x</span><span class="p">,</span> <span class="n">origin_y</span><span class="p">,</span> <span class="n">origin_z</span><span class="p">])</span>
+    <span class="n">geometry</span><span class="o">.</span><span class="n">axis_u</span><span class="p">,</span> <span class="n">geometry</span><span class="o">.</span><span class="n">axis_v</span><span class="p">,</span> <span class="n">geometry</span><span class="o">.</span><span class="n">axis_w</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">geometry</span><span class="o">.</span><span class="n">tensor_u</span> <span class="o">=</span> <span class="n">tensor_u</span>
+    <span class="n">geometry</span><span class="o">.</span><span class="n">tensor_v</span> <span class="o">=</span> <span class="n">tensor_v</span>
+    <span class="n">geometry</span><span class="o">.</span><span class="n">tensor_w</span> <span class="o">=</span> <span class="n">tensor_w</span>
+
+    <span class="k">return</span> <span class="n">geometry</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_get_variable_data_by_name</span><span class="p">(</span><span class="n">volume</span><span class="p">:</span> <span class="n">VolumeElement</span><span class="p">,</span> <span class="n">variable_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the variable data by its name from a VolumeElement.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        volume (VolumeElement): The VolumeElement to get the data from.</span>
+<span class="sd">        variable_name (str): The name of the variable to retrieve.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: The data of the variable in the VolumeElement.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If the variable is not found as cell data in the VolumeElement or if multiple variables with the same name are found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">scalar_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">sd</span> <span class="k">for</span> <span class="n">sd</span> <span class="ow">in</span> <span class="n">volume</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="n">sd</span><span class="o">.</span><span class="n">location</span> <span class="o">==</span> <span class="s1">&#39;cells&#39;</span> <span class="ow">and</span> <span class="n">sd</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">variable_name</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">scalar_data</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Variable &#39;</span><span class="si">{</span><span class="n">variable_name</span><span class="si">}</span><span class="s2">&#39; not found as cell data in the VolumeElement: </span><span class="si">{</span><span class="n">volume</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">scalar_data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Multiple variables with the name &#39;</span><span class="si">{</span><span class="n">variable_name</span><span class="si">}</span><span class="s2">&#39; found in the VolumeElement: </span><span class="si">{</span><span class="n">volume</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">scalar_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">array</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Greg Elphick.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
