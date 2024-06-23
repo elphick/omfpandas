@@ -6,9 +6,10 @@ An omf VolumeElement represents a `Block Model`, and can be converted to a Panda
 
 """
 from pathlib import Path
+
 import pandas as pd
 
-from omfpandas import OMFPandasReader, OMFPandasWriter
+from omfpandas import OMFPandasReader
 
 # %%
 # Instantiate
