@@ -4,8 +4,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 import os
 import sys
-from sphinx_gallery.sorting import FileNameSortKey
 
+import omfpandas
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -13,6 +13,7 @@ from sphinx_gallery.sorting import FileNameSortKey
 project = 'omfpandas'
 copyright = '2024, Greg Elphick'
 author = 'Greg Elphick'
+version = omfpandas.__version__
 
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(0, os.path.abspath('../..'))
