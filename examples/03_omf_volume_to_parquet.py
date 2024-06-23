@@ -11,6 +11,7 @@ An omf VolumeElement represents a `Block Model`, and can be converted to a Parqu
 
 """
 from pathlib import Path
+
 import pandas as pd
 
 from omfpandas import OMFDataConverter, OMFPandasReader

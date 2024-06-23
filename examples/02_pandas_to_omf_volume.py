@@ -10,7 +10,6 @@ and write it back to a new OMF file.
 from pathlib import Path
 
 import numpy as np
-import omfvista
 import pandas as pd
 from omf import OMFReader, Project, VolumeElement
 
