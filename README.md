@@ -1,5 +1,6 @@
 # omfpandas
 
+[![PyPI](https://img.shields.io/pypi/v/omfpandas.svg?logo=python&logoColor=white)](https://pypi.org/project/omfpandas/)
 [![Run Tests](https://github.com/Elphick/omfpandas/actions/workflows/poetry_build_and_test.yml/badge.svg?branch=main)](https://github.com/Elphick/omfpandas/actions/workflows/poetry_build_and_test.yml)
 [![Publish Docs](https://github.com/Elphick/omfpandas/actions/workflows/poetry_sphinx_docs_to_gh_pages.yml/badge.svg?branch=main)](https://github.com/Elphick/omfpandas/actions/workflows/poetry_sphinx_docs_to_gh_pages.yml)
 
@@ -28,6 +29,6 @@ pip install omfpandas[io]
 
 - [x] 0.2.0 - Add support for reading a VolumeElement (Block Model) from an OMF file as a pandas DataFrame. 
   Export a VolumeElement as a parquet file.
-- [ ] 0.3.0 - Add support for writing a DataFrame to an OMF VolumeElement
+- [x] 0.3.0 - Add support for writing a DataFrame to an OMF VolumeElement
 - [ ] 0.4.0 - Add support for low-memory/out-of-core writing an omf element to parquet
 - [ ] ...
