@@ -34,7 +34,7 @@ jobs:
         run: |
           poetry install --all-extras --no-interaction --no-root
 
-      - name: Install geometallurgy
+      - name: Install omfpandas
         run: |
           poetry install
 
