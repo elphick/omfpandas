@@ -3,7 +3,8 @@ from abc import ABC
 from pathlib import Path
 from typing import Optional
 
-from omf import OMFReader, Project
+import omf
+from omf import Project
 
 
 class OMFPandasBase(ABC):
@@ -24,9 +25,9 @@ class OMFPandasBase(ABC):
         self.filepath: Path = filepath
         self.project: Optional[Project] = None
         if filepath.exists():
-            self.project = OMFReader(str(filepath)).get_project()
+            self.project = omf.load(str(filepath))
         self._elements = self.project.elements if self.project else []
-        self.elements: dict[str, str] = {e.name: e.subtype for e in self._elements}
+        self.elements: dict[str, str] = {e.name: e.__class__.__name__ for e in self._elements}
 
     def get_element_by_name(self, element_name: str):
         """Get an element by its name.
@@ -36,9 +37,9 @@ class OMFPandasBase(ABC):
         """
         element = [e for e in self._elements if e.name == element_name]
         if not element:
-            raise ValueError(f"Element '{element_name}' not found in the OMF file: {self.omf_filepath.name}. "
+            raise ValueError(f"Element '{element_name}' not found in the OMF file: {self.filepath.name}. "
                              f"Available elements are: {list(self.elements.keys())}")
         elif len(element) > 1:
             raise ValueError(f"Multiple elements with the name '{element_name}' found in the OMF file: "
-                             f"{self.omf_filepath.name}")
+                             f"{self.filepath.name}")
         return element[0]

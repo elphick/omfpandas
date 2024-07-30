@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from omfpandas.base import OMFPandasBase
-from omfpandas.volume import volume_to_parquet
+from omfpandas.blockmodel import blockmodel_to_parquet
 
 
 class OMFDataConverter(OMFPandasBase):
@@ -17,12 +17,12 @@ class OMFDataConverter(OMFPandasBase):
             raise FileNotFoundError(f'File does not exist: {filepath}')
         super().__init__(filepath)
 
-    def volume_to_parquet(self, volume_name: str, parquet_filepath: Path,
-                          with_geometry_index: bool = True, allow_overwrite: bool = False):
+    def blockmodel_to_parquet(self, blockmodel_name: str, parquet_filepath: Path,
+                              with_geometry_index: bool = True, allow_overwrite: bool = False):
         """Write a VolumeElement to a Parquet file.
 
         Args:
-            volume_name (str): The name of the VolumeElement to convert.
+            blockmodel_name (str): The name of the VolumeElement to convert.
             parquet_filepath (Path): The path to the Parquet file to write.
             with_geometry_index (bool): If True, includes geometry index in the DataFrame. Default is True.
             allow_overwrite (bool): If True, overwrite the existing Parquet file. Default is False.
@@ -30,9 +30,9 @@ class OMFDataConverter(OMFPandasBase):
         Raises:
             ValueError: If the element retrieved is not a VolumeElement.
         """
-        volume = self.get_element_by_name(volume_name)
-        if volume.__class__.__name__ != 'VolumeElement':
-            raise ValueError(f"Element '{volume}' is not a VolumeElement in the OMF file: {self.filepath}")
+        bm = self.get_element_by_name(blockmodel_name)
+        if bm.__class__.__name__ not in ['RegularBlockModel', 'TensorGridBlockModel']:
+            raise ValueError(f"Element '{blockmodel_name}' is not a supported BlockModel in the OMF file: {self.filepath}")
 
-        volume_to_parquet(volume=volume, out_path=parquet_filepath,
-                          with_geometry_index=with_geometry_index, allow_overwrite=allow_overwrite)
+        blockmodel_to_parquet(blockmodel=bm, out_path=parquet_filepath,
+                              with_geometry_index=with_geometry_index, allow_overwrite=allow_overwrite)

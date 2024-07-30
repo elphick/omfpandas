@@ -2,10 +2,9 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
-from omf import OMFReader
 
 from omfpandas.base import OMFPandasBase
-from omfpandas.volume import volume_to_df, volume_to_parquet
+from omfpandas.blockmodel import blockmodel_to_df
 
 
 class OMFPandasReader(OMFPandasBase):
@@ -25,24 +24,25 @@ class OMFPandasReader(OMFPandasBase):
             raise FileNotFoundError(f'File does not exist: {filepath}')
         super().__init__(filepath)
 
-    def read_volume(self, volume_name: str, variables: Optional[list[str]] = None,
-                    with_geometry_index: bool = True) -> pd.DataFrame:
-        """Return a DataFrame from a VolumeElement.
+    def read_blockmodel(self, blockmodel_name: str, variables: Optional[list[str]] = None,
+                        with_geometry_index: bool = True) -> pd.DataFrame:
+        """Return a DataFrame from a BlockModel.
 
         Only variables assigned to the `cell` (as distinct from the grid `points`) are loaded.
 
         Args:
-            volume_name (str): The name of the VolumeElement to convert.
-            variables (Optional[list[str]]): The variables to include in the DataFrame. If None, all variables are included.
+            blockmodel_name (str): The name of the BlockModel to convert.
+            variables (Optional[list[str]]): The variables to include in the DataFrame. If None, all variables are
+            included.
             with_geometry_index (bool): If True, includes geometry index in the DataFrame. Default is True.
 
         Returns:
-            pd.DataFrame: The DataFrame representing the VolumeElement.
+            pd.DataFrame: The DataFrame representing the BlockModel.
         """
-        volume = self.get_element_by_name(volume_name)
+        bm = self.get_element_by_name(blockmodel_name)
         # check the element retrieved is the expected type
-        if volume.__class__.__name__ != 'VolumeElement':
-            raise ValueError(f"Element '{volume}' is not a VolumeElement in the OMF file: {self.omf_filepath}")
+        if bm.__class__.__name__ not in ['RegularBlockModel', 'TensorGridBlockModel']:
+            raise ValueError(f"Element '{bm}' is not a supported BlockModel in the OMF file: {self.filepath}")
 
-        return volume_to_df(volume, variables=variables, with_geometry_index=with_geometry_index)
+        return blockmodel_to_df(bm, variables=variables, with_geometry_index=with_geometry_index)
 
