@@ -2,7 +2,8 @@
 OMF Block Model to Parquet
 ==========================
 
-An omf VolumeElement represents a `Block Model`, and can be converted to a Parquet file.
+A parquet file is a columnar storage format, enabling column by column reading and writing.  This can be used
+to reduce memory consumption.  This example demonstrates how to convert an OMF block model to a Parquet file.
 
 .. note::
    Presently there is no low-memory option for this method, so it is not suitable for very large files.
@@ -20,23 +21,24 @@ from omfpandas import OMFDataConverter, OMFPandasReader
 # Instantiate
 # -----------
 # Create the object OMFPandas with the path to the OMF file.
-test_omf_path: Path = Path('./../assets/test_file.omf')
+test_omf_path: Path = Path('./../assets/v2/test_file.omf')
 omf_converter: OMFDataConverter = OMFDataConverter(filepath=test_omf_path)
 
 # Display the head of the original block model
-blocks: pd.DataFrame = OMFPandasReader(filepath=test_omf_path).read_volume(volume_name='Block Model')
+blocks: pd.DataFrame = OMFPandasReader(filepath=test_omf_path).read_blockmodel(blockmodel_name='vol')
 print("Original DataFrame:")
 print(blocks.head())
 
 # %%
 # Convert
 # -------
-# View the elements in the OMF file.
+# View the elements in the OMF file first.
 print(omf_converter.elements)
 
+# %%
 # Convert 'Block Model' to a Parquet file.
-omf_converter.volume_to_parquet(volume_name='Block Model', parquet_filepath=Path('blocks.parquet'),
-                                allow_overwrite=True)
+omf_converter.blockmodel_to_parquet(blockmodel_name='vol', parquet_filepath=Path('blocks.parquet'),
+                                    allow_overwrite=True)
 
 # %%
 # Load the Parquet

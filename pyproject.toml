@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "omfpandas"
 packages = [{ include = "omfpandas" }]
-version = "0.2.1"
+version = "0.3.0"
 description = ""
 authors = ["Greg <11791585+elphick@users.noreply.github.com>"]
 repository = "https://github.com/elphick/omfpandas"
@@ -15,9 +15,9 @@ priority = "primary"
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
 pandas = "^2.2.2"
-omf = "^1.0.1"
+omf = { version = ">=2.0.0a0", allow-prereleases = true }
 pyarrow = { version = "^16.1.0", optional = true }
-omfvista = { version = "^0.3.0", optional = true }
+omfvista = { version = "^0.3.0", optional = true}
 
 [tool.poetry.extras]
 io = ["pyarrow"]
