@@ -1,16 +1,21 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, TypeVar
+from typing import Optional, TypeVar, Union
 
 import numpy as np
 import pandas as pd
-from omf import NumericAttribute
-# from omf import TensorGridBlockModel, RegularBlockModel
+from omf import NumericAttribute, CategoryAttribute, CategoryColormap, Array
+from omf.base import ProjectElementAttribute
 
 from omf.blockmodel import BaseBlockModel, RegularBlockModel, TensorGridBlockModel
+from pandas.core.dtypes.common import is_integer_dtype
+
+from omfpandas.utils.pandas import is_nullable_integer_dtype, to_nullable_integer_dtype, to_numpy_integer_dtype
 
 # generic type variable, used for type hinting, to indicate that the type is a subclass of BaseBlockModel
 BM = TypeVar('BM', bound=BaseBlockModel)
+
+SENTINEL_VALUE = -9  # TODO: possibly move to config file
 
 
 @dataclass
@@ -94,9 +99,29 @@ def df_to_blockmodel(df: pd.DataFrame, blockmodel_name: str, is_tensor: bool = T
             blockmodel.block_size = np.ndarray([geometry.tensor_u[0], geometry.tensor_v[0], geometry.tensor_w[0]])
 
         # add the data
-        attrs: list[NumericAttribute] = []
+        attrs: list[Union[NumericAttribute, CategoryAttribute]] = []
         for variable in df.columns:
-            attrs.append(NumericAttribute(name=variable, location="cells", array=df[variable].values))
+            if isinstance(df[variable].dtype, pd.CategoricalDtype):
+                cat_map = {i: c for i, c in enumerate(df[variable].cat.categories)}
+                cat_col_map = CategoryColormap(indices=list(cat_map.keys()), values=list(cat_map.values()))
+                attribute = CategoryAttribute(name=variable, location="cells", array=np.array(df[variable].cat.codes),
+                                              categories=cat_col_map)
+            else:
+                # manage the sentinel / null placeholders
+                # REF: https://github.com/gmggroup/omf-python/issues/59
+                if is_nullable_integer_dtype(df[variable]):
+                    # set null_values and assign metadata
+                    data: pd.Series = df[variable].fillna(SENTINEL_VALUE).pipe(to_numpy_integer_dtype)
+                    attribute = NumericAttribute(name=variable, location="cells", array=data.values)
+                    attribute.metadata['null_value'] = SENTINEL_VALUE
+                elif is_integer_dtype(df[variable]):
+                    attribute = NumericAttribute(name=variable, location="cells", array=df[variable].values)
+                    attribute.metadata['null_value'] = SENTINEL_VALUE
+                else:
+                    attribute = NumericAttribute(name=variable, location="cells", array=df[variable].values)
+                    attribute.metadata['null_value'] = 'np.nan'
+
+            attrs.append(attribute)
         blockmodel.attributes = attrs
 
     finally:
@@ -130,7 +155,7 @@ def blockmodel_to_parquet(blockmodel: BM, out_path: Optional[Path] = None,
     df.to_parquet(out_path)
 
 
-def read_blockmodel_variables(blockmodel: BM, variables: list[str]) -> pd.DataFrame:
+def read_blockmodel_variables(blockmodel: BM, variables: Optional[list[str]] = None) -> pd.DataFrame:
     """Read the variables from the BlockModel.
 
     Args:
@@ -143,19 +168,35 @@ def read_blockmodel_variables(blockmodel: BM, variables: list[str]) -> pd.DataFr
     Raises:
         ValueError: If the variable is not found in the BlockModel.
     """
+
     # identify 'cell' variables in the file
-    variables = [v.name for v in blockmodel.attributes if v.location == 'cells']
+    variables_available = [v.name for v in blockmodel.attributes if v.location == 'cells']
+
+    variables = variables or variables_available
+
+    # check if the variables are available
+    if not set(variables).issubset(variables_available):
+        raise ValueError(f"Variables {set(variables).difference(variables_available)} not found in the BlockModel.")
 
     # Loop over the variables
-    chunks: list[np.ndarray] = []
+    chunks: list = []
     for variable in variables:
-        # Check if the variable exists in the BlockModel
-        if variable not in variables:
-            raise ValueError(f"Variable '{variable}' not found in the BlockModel: {blockmodel.name}")
-        chunks.append(_get_variable_data_by_name(blockmodel, variable).ravel())
+        attr: ProjectElementAttribute = _get_attribute_by_name(blockmodel, variable)
+        if isinstance(attr, CategoryAttribute):
+            attr_series: pd.Series = pd.Series(pd.Categorical.from_codes(codes=attr.array.array.ravel(),
+                                                                         categories=attr.categories.values,
+                                                                         ordered=False), name=variable)
+        else:
+            attr_series: pd.Series = pd.Series(attr.array.array.ravel(), name=variable, dtype=attr.array.array.dtype)
+            # if an int with null_value in metadata then convert to a nullable int
+            if attr.metadata.get("null_value") and is_integer_dtype(attr_series):
+                attr_series = attr_series.pipe(to_nullable_integer_dtype).replace(SENTINEL_VALUE, pd.NA).astype(
+                    str(attr_series.dtype).replace("i", "I"))
 
-    # Concatenate all chunks into a single DataFrame
-    return pd.DataFrame(np.vstack(chunks), index=variables).T
+        chunks.append(attr_series)
+
+    res = pd.concat(chunks, axis=1)
+    return res if isinstance(res, pd.DataFrame) else res.to_frame()
 
 
 def create_index(blockmodel: BM) -> pd.MultiIndex:
@@ -233,22 +274,23 @@ def index_to_geometry(index: pd.MultiIndex) -> TensorGeometry:
     return geometry
 
 
-def _get_variable_data_by_name(blockmodel: BM, variable_name: str) -> np.ndarray:
-    """Get the variable data by its name from a BlockModel.
+def _get_attribute_by_name(blockmodel: BM, attr_name: str) -> ProjectElementAttribute:
+    """Get the variable/attribute by its name from a BlockModel.
 
     Args:
         blockmodel (BlockModel): The BlockModel to get the data from.
-        variable_name (str): The name of the variable to retrieve.
+        attr_name (str): The name of the attribute to retrieve.
 
     Returns:
-        np.ndarray: The data of the variable in the BlockModel.
+        ProjectElementAttribute: The attribute with the given name.
 
     Raises:
-        ValueError: If the variable is not found as cell data in the BlockModel or if multiple variables with the same name are found.
+        ValueError: If the variable is not found as cell data in the BlockModel or if multiple variables with the
+        same name are found.
     """
-    scalar_data = [sd for sd in blockmodel.attributes if sd.location == 'cells' and sd.name == variable_name]
-    if not scalar_data:
-        raise ValueError(f"Variable '{variable_name}' not found as cell data in the BlockModel: {blockmodel}")
-    elif len(scalar_data) > 1:
-        raise ValueError(f"Multiple variables with the name '{variable_name}' found in the BlockModel: {blockmodel}")
-    return scalar_data[0].array.array
+    attrs = [sd for sd in blockmodel.attributes if sd.location == 'cells' and sd.name == attr_name]
+    if not attrs:
+        raise ValueError(f"Variable '{attr_name}' not found as cell data in the BlockModel: {blockmodel}")
+    elif len(attrs) > 1:
+        raise ValueError(f"Multiple variables with the name '{attr_name}' found in the BlockModel: {blockmodel}")
+    return attrs[0]

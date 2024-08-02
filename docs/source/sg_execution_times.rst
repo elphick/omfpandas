@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:00.375** total execution time for 3 files **from all galleries**:
+**00:00.300** total execution time for 3 files **from all galleries**:
 
 .. container::
 
@@ -32,12 +32,12 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_03_omf_blockmodel_to_parquet.py` (``..\..\examples\03_omf_blockmodel_to_parquet.py``)
-     - 00:00.375
+   * - :ref:`sphx_glr_auto_examples_02_pandas_to_omf_blockmodel.py` (``..\..\examples\02_pandas_to_omf_blockmodel.py``)
+     - 00:00.300
      - 0.0
    * - :ref:`sphx_glr_auto_examples_01_omf_blockmodel_to_pandas.py` (``..\..\examples\01_omf_blockmodel_to_pandas.py``)
      - 00:00.000
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_02_pandas_to_omf_blockmodel.py` (``..\..\examples\02_pandas_to_omf_blockmodel.py``)
+   * - :ref:`sphx_glr_auto_examples_03_omf_blockmodel_to_parquet.py` (``..\..\examples\03_omf_blockmodel_to_parquet.py``)
      - 00:00.000
      - 0.0
