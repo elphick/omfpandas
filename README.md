@@ -30,5 +30,8 @@ pip install omfpandas[io]
 - [x] 0.2.0 - Add support for reading a VolumeElement (Block Model) from an OMF file as a pandas DataFrame. 
   Export a VolumeElement as a parquet file.
 - [x] 0.3.0 - Add support for writing a DataFrame to an OMF BlockModel.  Version 2.0 of the OMF spec is supported.
-- [ ] 0.4.0 - Add support for low-memory/out-of-core writing an omf element to parquet
+- [x] 0.4.0 - Convert to omf 2.0 support.
+- [ ] 0.5.0 - Block model validation.
+- [ ] 0.6.0 - Block model profiling.
+- [ ] 0.7.0 - Add support for low-memory/out-of-core writing an omf element to parquet
 - [ ] ...
