@@ -31,8 +31,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          poetry install --all-extras --no-interaction --no-root
-          pip install pandera[io]
+          poetry install --all-extras --no-interaction
 
       - name: Sphinx build
         run: |
