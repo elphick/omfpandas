@@ -166,3 +166,4 @@ cython_debug/
 /tests/data/
 /docs/source/autoexamples/
 *.parquet
+/scratch/
