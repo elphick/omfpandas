@@ -4,12 +4,11 @@ from typing import Optional
 
 import omf
 import pandas as pd
-import pandera.io
 
-import omfpandas
 from omfpandas import OMFPandasReader
 from omfpandas.base import OMFPandasBase
 from omfpandas.blockmodel import df_to_blockmodel, series_to_attribute
+from omfpandas.optional import _import_pandera_from_yaml, _import_profilereport
 
 
 class OMFPandasWriter(OMFPandasBase):
@@ -56,8 +55,10 @@ class OMFPandasWriter(OMFPandasBase):
         """
 
         if pd_schema_filepath:
+            from_yaml = _import_pandera_from_yaml()
+
             # validate the dataframe, which may modify it via coercion
-            schema = pandera.io.from_yaml(pd_schema_filepath)
+            schema = from_yaml(pd_schema_filepath)
             blocks = schema.validate(blocks)
 
         bm = df_to_blockmodel(blocks, blockmodel_name)
@@ -92,7 +93,8 @@ class OMFPandasWriter(OMFPandasBase):
         bm = self.get_element_by_name(blockmodel_name)
         if bm.metadata.get('pd_schema'):
             # validate the data
-            schema = pandera.io.from_yaml(bm.metadata['pd_schema'])
+            from_yaml = _import_pandera_from_yaml()
+            schema = from_yaml(bm.metadata['pd_schema'])
             series = schema.validate(series.to_frame())
             series = series.iloc[:, 0]  # back to series
 
@@ -146,18 +148,14 @@ class OMFPandasWriter(OMFPandasBase):
         Returns:
             pd.DataFrame: The profiled data.
         """
-        try:
-            from ydata_profiling import ProfileReport
-        except ImportError:
-            raise ImportError("ydata_profiling is required to run this method.  "
-                              "Please install it by running 'poetry install omfpandas --extras profile' "
-                              "or 'pip install ydata_profiling'")
+
         df: pd.DataFrame = OMFPandasReader(self.filepath).read_blockmodel(blockmodel_name, query=query)
         el = self.get_element_by_name(blockmodel_name)
         bm_type = str(type(el)).split('.')[-1].rstrip("'>")
         dataset: dict = {"description": f"{el.description} Filter: {query if query else 'no_filter'}",
                          "creator": self.user_id}
 
+        ProfileReport = _import_profilereport()
         profile = ProfileReport(df, title=f"{el.name} {bm_type}", dataset=dataset)
 
         # persist the profile report as json and html to the omf file

@@ -16,7 +16,6 @@ permissions:
     contents: write
 jobs:
   docs:
-    if: github.ref_protected == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,19 +31,15 @@ jobs:
 
       - name: Install dependencies
         run: |
-          poetry install --all-extras --no-interaction --no-root
-
-      - name: Install omfpandas
-        run: |
-          poetry install
+          poetry install --all-extras --no-interaction
 
       - name: Sphinx build
         run: |
           poetry run sphinx-build docs/source _build
 
       - name: Deploy
+        if: github.ref_protected == true && github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.ref == 'refs/heads/main' }}
         with:
           publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
