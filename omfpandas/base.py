@@ -1,4 +1,8 @@
+import io
+import json
 import logging
+import tempfile
+import webbrowser
 from abc import ABC
 from pathlib import Path
 from typing import Optional
@@ -43,3 +47,38 @@ class OMFPandasBase(ABC):
             raise ValueError(f"Multiple elements with the name '{element_name}' found in the OMF file: "
                              f"{self.filepath.name}")
         return element[0]
+
+    def get_element_attribute_names(self, element_name: str) -> list[str]:
+        """Get the attribute names of an element.
+
+        :param element_name: The name of the element to retrieve.
+        :return:
+        """
+        element = self.get_element_by_name(element_name)
+        return [attr.name for attr in element.attributes]
+
+    def view_block_model_profile(self, blockmodel_name: str, query: Optional[str] = None):
+        """View the profile of a BlockModel in the default web browser.
+
+        Args:
+            blockmodel_name (str): The name of the BlockModel to profile.
+            query (str): A query defining the subset of the BlockModel.
+        """
+
+        el = self.get_element_by_name(blockmodel_name)
+        filter_key: str = query if query else 'no_filter'
+
+        if el.metadata.get('profile') is None:
+            raise ValueError(f"BlockModel '{blockmodel_name}' has not been profiled.  "
+                             f"Please run 'profile_blockmodel' first.")
+
+        # JSON string containing the profile report
+        profile_html = el.metadata['profile'][filter_key]['html']
+
+        # Create a temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as temp_file:
+            temp_file.write(profile_html.encode('utf-8'))
+            temp_file_path = temp_file.name
+
+        # Open the temporary file in the default web browser
+        webbrowser.open(f"file://{temp_file_path}")

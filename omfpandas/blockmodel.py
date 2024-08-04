@@ -1,16 +1,18 @@
+import ast
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, TypeVar, Union
 
 import numpy as np
 import pandas as pd
-from omf import NumericAttribute, CategoryAttribute, CategoryColormap, Array
-from omf.base import ProjectElementAttribute
+from omf import NumericAttribute, CategoryAttribute, CategoryColormap
 
 from omf.blockmodel import BaseBlockModel, RegularBlockModel, TensorGridBlockModel
 from pandas.core.dtypes.common import is_integer_dtype
 
-from omfpandas.utils.pandas import is_nullable_integer_dtype, to_nullable_integer_dtype, to_numpy_integer_dtype
+from omfpandas.utils.pandas import is_nullable_integer_dtype, to_nullable_integer_dtype, to_numpy_integer_dtype, \
+    parse_vars_from_expr
 
 # generic type variable, used for type hinting, to indicate that the type is a subclass of BaseBlockModel
 BM = TypeVar('BM', bound=BaseBlockModel)
@@ -36,21 +38,19 @@ class TensorGeometry:
 
 
 def blockmodel_to_df(blockmodel: BM, variables: Optional[list[str]] = None,
-                     with_geometry_index: bool = True) -> pd.DataFrame:
+                     query: Optional[str] = None) -> pd.DataFrame:
     """Convert block model to a DataFrame.
 
     Args:
         blockmodel (BlockModel): The BlockModel to convert.
         variables (Optional[list[str]]): The variables to include in the DataFrame. If None, all variables are included.
-        with_geometry_index (bool): If True, includes geometry index in the DataFrame. Default is True.
+        query (Optional[str]): The query to filter the DataFrame.
 
     Returns:
         pd.DataFrame: The DataFrame representing the BlockModel.
     """
     # read the data
-    df: pd.DataFrame = read_blockmodel_variables(blockmodel, variables=variables)
-    if with_geometry_index:
-        df.index = create_index(blockmodel)
+    df: pd.DataFrame = read_blockmodel_attributes(blockmodel, attributes=variables, query=query)
     return df
 
 
@@ -101,25 +101,7 @@ def df_to_blockmodel(df: pd.DataFrame, blockmodel_name: str, is_tensor: bool = T
         # add the data
         attrs: list[Union[NumericAttribute, CategoryAttribute]] = []
         for variable in df.columns:
-            if isinstance(df[variable].dtype, pd.CategoricalDtype):
-                cat_map = {i: c for i, c in enumerate(df[variable].cat.categories)}
-                cat_col_map = CategoryColormap(indices=list(cat_map.keys()), values=list(cat_map.values()))
-                attribute = CategoryAttribute(name=variable, location="cells", array=np.array(df[variable].cat.codes),
-                                              categories=cat_col_map)
-            else:
-                # manage the sentinel / null placeholders
-                # REF: https://github.com/gmggroup/omf-python/issues/59
-                if is_nullable_integer_dtype(df[variable]):
-                    # set null_values and assign metadata
-                    data: pd.Series = df[variable].fillna(SENTINEL_VALUE).pipe(to_numpy_integer_dtype)
-                    attribute = NumericAttribute(name=variable, location="cells", array=data.values)
-                    attribute.metadata['null_value'] = SENTINEL_VALUE
-                elif is_integer_dtype(df[variable]):
-                    attribute = NumericAttribute(name=variable, location="cells", array=df[variable].values)
-                    attribute.metadata['null_value'] = SENTINEL_VALUE
-                else:
-                    attribute = NumericAttribute(name=variable, location="cells", array=df[variable].values)
-                    attribute.metadata['null_value'] = 'np.nan'
+            attribute = series_to_attribute(df[variable])
 
             attrs.append(attribute)
         blockmodel.attributes = attrs
@@ -131,9 +113,46 @@ def df_to_blockmodel(df: pd.DataFrame, blockmodel_name: str, is_tensor: bool = T
     return blockmodel
 
 
+def series_to_attribute(series: pd.Series) -> Union[CategoryAttribute, NumericAttribute]:
+    if isinstance(series.dtype, pd.CategoricalDtype):
+        cat_map = {i: c for i, c in enumerate(series.cat.categories)}
+        cat_col_map = CategoryColormap(indices=list(cat_map.keys()), values=list(cat_map.values()))
+        attribute = CategoryAttribute(name=series.name, location="cells", array=np.array(series.cat.codes),
+                                      categories=cat_col_map)
+    else:
+        # manage the sentinel / null placeholders
+        # REF: https://github.com/gmggroup/omf-python/issues/59
+        if is_nullable_integer_dtype(series):
+            # set null_values and assign metadata
+            data: pd.Series = series.fillna(SENTINEL_VALUE).pipe(to_numpy_integer_dtype)
+            attribute = NumericAttribute(name=series.name, location="cells", array=data.values)
+            attribute.metadata['null_value'] = SENTINEL_VALUE
+        elif is_integer_dtype(series):
+            attribute = NumericAttribute(name=series.name, location="cells", array=series.values)
+            attribute.metadata['null_value'] = SENTINEL_VALUE
+        else:
+            attribute = NumericAttribute(name=series.name, location="cells", array=series.values)
+            attribute.metadata['null_value'] = 'np.nan'
+    return attribute
+
+
+def attribute_to_series(attribute: Union[CategoryAttribute, NumericAttribute]) -> pd.Series:
+    if isinstance(attribute, CategoryAttribute):
+        return pd.Series(pd.Categorical.from_codes(codes=attribute.array.array.ravel(),
+                                                   categories=attribute.categories.values,
+                                                   ordered=False), name=attribute.name)
+    else:
+        # if an int with null_value in metadata then convert to a nullable int
+        if attribute.metadata.get("null_value") and is_integer_dtype(attribute.array.array):
+            return pd.Series(attribute.array.array.ravel(), name=attribute.name).pipe(
+                to_nullable_integer_dtype).replace(
+                SENTINEL_VALUE, pd.NA)
+        return pd.Series(attribute.array.array.ravel(), name=attribute.name, dtype=attribute.array.array.dtype)
+
+
 def blockmodel_to_parquet(blockmodel: BM, out_path: Optional[Path] = None,
                           variables: Optional[list[str]] = None,
-                          with_geometry_index: bool = True, allow_overwrite: bool = False):
+                          allow_overwrite: bool = False):
     """Convert blockmodel to a Parquet file.
 
     Args:
@@ -141,7 +160,6 @@ def blockmodel_to_parquet(blockmodel: BM, out_path: Optional[Path] = None,
         out_path (Optional[Path]): The path to the Parquet file to write. If None, a file with the blockmodel name is
         created.
         variables (Optional[list[str]]): The variables to include in the DataFrame. If None, all variables are included.
-        with_geometry_index (bool): If True, includes geometry index in the DataFrame. Default is True.
         allow_overwrite (bool): If True, overwrite the existing Parquet file. Default is False.
 
     Raises:
@@ -151,51 +169,63 @@ def blockmodel_to_parquet(blockmodel: BM, out_path: Optional[Path] = None,
         out_path = Path(f"{blockmodel.name}.parquet")
     if out_path.exists() and not allow_overwrite:
         raise FileExistsError(f"File already exists: {out_path}. If you want to overwrite, set allow_overwrite=True.")
-    df: pd.DataFrame = blockmodel_to_df(blockmodel, variables=variables, with_geometry_index=with_geometry_index)
+    df: pd.DataFrame = blockmodel_to_df(blockmodel, variables=variables)
     df.to_parquet(out_path)
 
 
-def read_blockmodel_variables(blockmodel: BM, variables: Optional[list[str]] = None) -> pd.DataFrame:
-    """Read the variables from the BlockModel.
+def read_blockmodel_attributes(blockmodel: BM, attributes: Optional[list[str]] = None,
+                               query: Optional[str] = None) -> pd.DataFrame:
+    """Read the attributes/variables from the BlockModel.
 
     Args:
         blockmodel (BlockModel): The BlockModel to read from.
-        variables (list[str]): The variables to include in the DataFrame.
+        attributes (list[str]): The attributes to include in the DataFrame.
+        query (str): The query to filter the DataFrame.
 
     Returns:
-        pd.DataFrame: The DataFrame representing the variables in the BlockModel.
+        pd.DataFrame: The DataFrame representing the attributes in the BlockModel.
 
     Raises:
-        ValueError: If the variable is not found in the BlockModel.
+        ValueError: If the attribute is not found in the BlockModel.
     """
 
     # identify 'cell' variables in the file
-    variables_available = [v.name for v in blockmodel.attributes if v.location == 'cells']
+    attributes_available = [v.name for v in blockmodel.attributes if v.location == 'cells']
 
-    variables = variables or variables_available
+    attributes = attributes or attributes_available
 
     # check if the variables are available
-    if not set(variables).issubset(variables_available):
-        raise ValueError(f"Variables {set(variables).difference(variables_available)} not found in the BlockModel.")
+    if not set(attributes).issubset(attributes_available):
+        raise ValueError(f"Variables {set(attributes).difference(attributes_available)} not found in the BlockModel.")
+
+    int_index: np.ndarray = np.arange(blockmodel.num_cells)
+    if query:
+        # parse out the attributes from the query using a package
+        query_attrs = parse_vars_from_expr(query)
+        # check if the attributes in the query are available
+        if not set(query_attrs).issubset(attributes_available):
+            raise ValueError(
+                f"Variables {set(query_attrs).difference(attributes_available)} not found in the BlockModel.")
+        query_series: list = []
+        for attr_name in query_attrs:
+            query_series.append(attribute_to_series(_get_attribute_by_name(blockmodel, attr_name)))
+        df_to_query: pd.DataFrame = pd.concat(query_series, axis=1)
+        int_index = np.array(df_to_query.query(query).index)
 
     # Loop over the variables
     chunks: list = []
-    for variable in variables:
-        attr: ProjectElementAttribute = _get_attribute_by_name(blockmodel, variable)
-        if isinstance(attr, CategoryAttribute):
-            attr_series: pd.Series = pd.Series(pd.Categorical.from_codes(codes=attr.array.array.ravel(),
-                                                                         categories=attr.categories.values,
-                                                                         ordered=False), name=variable)
-        else:
-            attr_series: pd.Series = pd.Series(attr.array.array.ravel(), name=variable, dtype=attr.array.array.dtype)
-            # if an int with null_value in metadata then convert to a nullable int
-            if attr.metadata.get("null_value") and is_integer_dtype(attr_series):
-                attr_series = attr_series.pipe(to_nullable_integer_dtype).replace(SENTINEL_VALUE, pd.NA).astype(
-                    str(attr_series.dtype).replace("i", "I"))
+    for attr in attributes:
+        attr: Union[CategoryAttribute, NumericAttribute] = _get_attribute_by_name(blockmodel, attr)
+        chunks.append(attribute_to_series(attr).iloc[int_index])
 
-        chunks.append(attr_series)
+    # create the geometry index
+    geometry_index = create_index(blockmodel)
+    if query:
+        # filter the index to match the int_index positional index
+        geometry_index = geometry_index.take(int_index)
 
     res = pd.concat(chunks, axis=1)
+    res.index = geometry_index
     return res if isinstance(res, pd.DataFrame) else res.to_frame()
 
 
@@ -274,7 +304,7 @@ def index_to_geometry(index: pd.MultiIndex) -> TensorGeometry:
     return geometry
 
 
-def _get_attribute_by_name(blockmodel: BM, attr_name: str) -> ProjectElementAttribute:
+def _get_attribute_by_name(blockmodel: BM, attr_name: str) -> Union[CategoryAttribute, NumericAttribute]:
     """Get the variable/attribute by its name from a BlockModel.
 
     Args:
@@ -282,7 +312,7 @@ def _get_attribute_by_name(blockmodel: BM, attr_name: str) -> ProjectElementAttr
         attr_name (str): The name of the attribute to retrieve.
 
     Returns:
-        ProjectElementAttribute: The attribute with the given name.
+        Union[CategoryAttribute, NumericAttribute]: The attribute with the given name.
 
     Raises:
         ValueError: If the variable is not found as cell data in the BlockModel or if multiple variables with the

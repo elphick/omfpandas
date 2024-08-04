@@ -18,13 +18,12 @@ class OMFDataConverter(OMFPandasBase):
         super().__init__(filepath)
 
     def blockmodel_to_parquet(self, blockmodel_name: str, parquet_filepath: Path,
-                              with_geometry_index: bool = True, allow_overwrite: bool = False):
+                              allow_overwrite: bool = False):
         """Write a VolumeElement to a Parquet file.
 
         Args:
             blockmodel_name (str): The name of the VolumeElement to convert.
             parquet_filepath (Path): The path to the Parquet file to write.
-            with_geometry_index (bool): If True, includes geometry index in the DataFrame. Default is True.
             allow_overwrite (bool): If True, overwrite the existing Parquet file. Default is False.
 
         Raises:
@@ -35,4 +34,4 @@ class OMFDataConverter(OMFPandasBase):
             raise ValueError(f"Element '{blockmodel_name}' is not a supported BlockModel in the OMF file: {self.filepath}")
 
         blockmodel_to_parquet(blockmodel=bm, out_path=parquet_filepath,
-                              with_geometry_index=with_geometry_index, allow_overwrite=allow_overwrite)
+                              allow_overwrite=allow_overwrite)

@@ -13,6 +13,9 @@ The parquet format is a nice, compact, efficient format to persist pandas DataFr
 This package also provides a simple interface to convert an omf element to a parquet file.
 When datasets do not fit into memory, parquet files can be read in chunks or by column.
 
+> **Note:**
+> This package *only* supports omf 2.0, which is currently only a pre-release.
+
 ## Installation
 
 ```bash
@@ -31,7 +34,7 @@ pip install omfpandas[io]
   Export a VolumeElement as a parquet file.
 - [x] 0.3.0 - Add support for writing a DataFrame to an OMF BlockModel.  Version 2.0 of the OMF spec is supported.
 - [x] 0.4.0 - Convert to omf 2.0 support.
-- [ ] 0.5.0 - Block model validation.
-- [ ] 0.6.0 - Block model profiling.
+- [x] 0.5.0 - Block model profiling, with reports persisted in the omf file.
+- [ ] 0.6.0 - Optional block model validation using pandera json schemas.
 - [ ] 0.7.0 - Add support for low-memory/out-of-core writing an omf element to parquet
 - [ ] ...
