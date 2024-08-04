@@ -35,6 +35,6 @@ pip install omfpandas[io]
 - [x] 0.3.0 - Add support for writing a DataFrame to an OMF BlockModel.  Version 2.0 of the OMF spec is supported.
 - [x] 0.4.0 - Convert to omf 2.0 support.
 - [x] 0.5.0 - Block model profiling, with reports persisted in the omf file.
-- [ ] 0.6.0 - Optional block model validation using pandera json schemas.
+- [x] 0.6.0 - Optional block model validation using pandera json schemas.
 - [ ] 0.7.0 - Add support for low-memory/out-of-core writing an omf element to parquet
 - [ ] ...

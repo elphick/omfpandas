@@ -1,0 +1,27 @@
+schema_type: dataframe
+version: 0.20.3
+columns:
+  random attr:
+    title: Random Attribute
+    description: A random attribute for testing
+    dtype: float64
+    nullable: false
+    checks:
+      greater_than_or_equal_to: 0.0
+      less_than_or_equal_to: 1.0
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+checks: null
+dtype: null
+coerce: true
+strict: false
+name: null
+ordered: false
+unique: null
+report_duplicates: all
+unique_column_names: false
+add_missing_columns: false
+title: null
+description: null
