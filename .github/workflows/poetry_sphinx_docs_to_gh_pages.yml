@@ -32,6 +32,7 @@ jobs:
       - name: Install dependencies
         run: |
           poetry install --all-extras --no-interaction --no-root
+          pip install pandera[io]
 
       - name: Install omfpandas
         run: |
