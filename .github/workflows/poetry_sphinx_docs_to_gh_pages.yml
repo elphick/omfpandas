@@ -34,10 +34,6 @@ jobs:
           poetry install --all-extras --no-interaction --no-root
           pip install pandera[io]
 
-      - name: Install omfpandas
-        run: |
-          poetry install
-
       - name: Sphinx build
         run: |
           poetry run sphinx-build docs/source _build
