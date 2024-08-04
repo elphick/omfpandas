@@ -4,6 +4,7 @@ from typing import Optional
 
 import omf
 import pandas as pd
+import pandera.io
 
 import omfpandas
 from omfpandas import OMFPandasReader
@@ -37,7 +38,8 @@ class OMFPandasWriter(OMFPandasBase):
 
         super().__init__(filepath)
 
-    def write_blockmodel(self, blocks: pd.DataFrame, blockmodel_name: str, allow_overwrite: bool = False):
+    def write_blockmodel(self, blocks: pd.DataFrame, blockmodel_name: str, pd_schema_filepath: Optional[Path] = None,
+                         allow_overwrite: bool = False):
         """Write a dataframe to a BlockModel.
 
         Only dataframes with centroid (x, y, z) and block dims (dx, dy, dz) indexes are supported.
@@ -45,11 +47,18 @@ class OMFPandasWriter(OMFPandasBase):
         Args:
             blocks (pd.DataFrame): The dataframe to write to the BlockModel.
             blockmodel_name (str): The name of the BlockModel to write to.
+            pd_schema_filepath (Optional[Path]): The path to the Pandera schema file. Default is None.  If provided, the schema
+                will be used to validate the dataframe before writing.
             allow_overwrite (bool): If True, overwrite the existing BlockModel. Default is False.
 
         Raises:
             ValueError: If the element retrieved is not a BlockModel.
         """
+
+        if pd_schema_filepath:
+            # validate the dataframe, which may modify it via coercion
+            schema = pandera.io.from_yaml(pd_schema_filepath)
+            blocks = schema.validate(blocks)
 
         bm = df_to_blockmodel(blocks, blockmodel_name)
         if bm.name in [element.name for element in self.project.elements]:
@@ -62,31 +71,46 @@ class OMFPandasWriter(OMFPandasBase):
                 self.project.elements.remove(volume_to_remove)
 
         self.project.elements.append(bm)
+
+        if pd_schema_filepath:
+            # persist the schema inside the omf file
+            bm.metadata['pd_schema'] = pd_schema_filepath.read_text()
+
         # write the file
         omf.save(project=self.project, filename=str(self.filepath), mode='w')
 
-    def write_blockmodel_attribute(self, blockmodel_name: str, attribute_name: str, data: pd.Series,
+    def write_blockmodel_attribute(self, blockmodel_name: str, series: pd.Series,
                                    allow_overwrite: bool = False):
         """Write data to a specific attribute of a BlockModel.
 
         Args:
             blockmodel_name (str): The name of the BlockModel.
-            attribute_name (str): The name of the attribute.
-            data (pd.Series): The data to write to the attribute.
+            series (pd.Series): The data to write to the attribute.
             allow_overwrite (bool): If True, overwrite the existing attribute. Default is False.
         """
+
         bm = self.get_element_by_name(blockmodel_name)
-        attrs: list[str] = self.get_element_attribute_names(bm)
-        if attribute_name in attrs:
+        if bm.metadata.get('pd_schema'):
+            # validate the data
+            schema = pandera.io.from_yaml(bm.metadata['pd_schema'])
+            series = schema.validate(series.to_frame())
+            series = series.iloc[:, 0]  # back to series
+
+        attrs: list[str] = self.get_element_attribute_names(blockmodel_name)
+        if series.name in attrs:
             if allow_overwrite:
-                bm.attributes[attribute_name] = series_to_attribute(data)
+                # get the index in the list
+                attr_pos = attrs.index(str(series.name))
+                bm.attributes[attr_pos] = series_to_attribute(series)
             else:
-                raise ValueError(f"Attribute '{attribute_name}' already exists in BlockModel '{blockmodel_name}'.  "
+                raise ValueError(f"Attribute '{series.name}' already exists in BlockModel '{blockmodel_name}'.  "
                                  f"If you want to overwrite, set allow_overwrite=True.")
         else:
-            bm.attributes[attribute_name] = series_to_attribute(data)
+            bm.attributes.append(series_to_attribute(series))
 
         self._delete_profile_report(blockmodel_name)
+
+        # todo: re-profile...
 
         # Save the changes
         omf.save(project=self.project, filename=str(self.filepath), mode='w')
