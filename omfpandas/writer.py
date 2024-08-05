@@ -1,4 +1,5 @@
 import getpass
+import json
 from pathlib import Path
 from typing import Optional
 
@@ -8,7 +9,8 @@ import pandas as pd
 from omfpandas import OMFPandasReader
 from omfpandas.base import OMFPandasBase
 from omfpandas.blockmodel import df_to_blockmodel, series_to_attribute
-from omfpandas.optional import _import_pandera_from_yaml, _import_profilereport
+
+from omfpandas.extras import _import_ydata_profiling, _import_pandera
 
 
 class OMFPandasWriter(OMFPandasBase):
@@ -46,8 +48,8 @@ class OMFPandasWriter(OMFPandasBase):
         Args:
             blocks (pd.DataFrame): The dataframe to write to the BlockModel.
             blockmodel_name (str): The name of the BlockModel to write to.
-            pd_schema_filepath (Optional[Path]): The path to the Pandera schema file. Default is None.  If provided, the schema
-                will be used to validate the dataframe before writing.
+            pd_schema_filepath (Optional[Path]): The path to the Pandera schema file. Default is None.  If provided,
+            the schema will be used to validate the dataframe before writing.
             allow_overwrite (bool): If True, overwrite the existing BlockModel. Default is False.
 
         Raises:
@@ -55,13 +57,16 @@ class OMFPandasWriter(OMFPandasBase):
         """
 
         if pd_schema_filepath:
-            from_yaml = _import_pandera_from_yaml()
-
+            pa = _import_pandera()
             # validate the dataframe, which may modify it via coercion
-            schema = from_yaml(pd_schema_filepath)
-            blocks = schema.validate(blocks)
+            pd_schema = pa.DataFrameSchema.from_yaml(pd_schema_filepath)
+            blocks = pd_schema.validate(blocks)
+            bm = df_to_blockmodel(blocks, blockmodel_name)
+            # persist the schema inside the omf file
+            bm.metadata['pd_schema'] = pd_schema.to_json()
+        else:
+            bm = df_to_blockmodel(blocks, blockmodel_name)
 
-        bm = df_to_blockmodel(blocks, blockmodel_name)
         if bm.name in [element.name for element in self.project.elements]:
             if not allow_overwrite:
                 raise ValueError(f"BlockModel '{blockmodel_name}' already exists in the OMF file: {self.filepath}.  "
@@ -72,10 +77,6 @@ class OMFPandasWriter(OMFPandasBase):
                 self.project.elements.remove(volume_to_remove)
 
         self.project.elements.append(bm)
-
-        if pd_schema_filepath:
-            # persist the schema inside the omf file
-            bm.metadata['pd_schema'] = pd_schema_filepath.read_text()
 
         # write the file
         omf.save(project=self.project, filename=str(self.filepath), mode='w')
@@ -92,9 +93,9 @@ class OMFPandasWriter(OMFPandasBase):
 
         bm = self.get_element_by_name(blockmodel_name)
         if bm.metadata.get('pd_schema'):
+            pa = _import_pandera()
             # validate the data
-            from_yaml = _import_pandera_from_yaml()
-            schema = from_yaml(bm.metadata['pd_schema'])
+            schema = pa.io.from_json(bm.metadata['pd_schema'])
             series = schema.validate(series.to_frame())
             series = series.iloc[:, 0]  # back to series
 
@@ -136,7 +137,7 @@ class OMFPandasWriter(OMFPandasBase):
         # Save the changes
         omf.save(project=self.project, filename=str(self.filepath), mode='w')
 
-    def profile_blockmodel(self, blockmodel_name: str, query: Optional[str] = None) -> 'ProfileReport':
+    def profile_blockmodel(self, blockmodel_name: str, query: Optional[str] = None):
         """Profile a BlockModel.
 
         Profiling will be skipped if the data has not changed.
@@ -149,14 +150,20 @@ class OMFPandasWriter(OMFPandasBase):
             pd.DataFrame: The profiled data.
         """
 
+        _import_ydata_profiling()
+
         df: pd.DataFrame = OMFPandasReader(self.filepath).read_blockmodel(blockmodel_name, query=query)
         el = self.get_element_by_name(blockmodel_name)
         bm_type = str(type(el)).split('.')[-1].rstrip("'>")
         dataset: dict = {"description": f"{el.description} Filter: {query if query else 'no_filter'}",
-                         "creator": self.user_id}
+                         "creator": self.user_id, "url": self.filepath.as_uri()}
+        column_descriptions: dict = {}
+        if el.metadata.get('pd_schema'):
+            column_defs: dict = json.loads(el.metadata['pd_schema'])['columns']
+            column_descriptions = {k: f"{v['title']}: {v['description']}" for k, v in column_defs.items()}
 
-        ProfileReport = _import_profilereport()
-        profile = ProfileReport(df, title=f"{el.name} {bm_type}", dataset=dataset)
+        profile = df.profile_report(title=f"{el.name} {bm_type}", dataset=dataset,
+                                    variables={"descriptions": column_descriptions})
 
         # persist the profile report as json and html to the omf file
         d_profile: dict = {query if query else 'no_filter': {'json': profile.to_json(), 'html': profile.to_html()}}
@@ -168,6 +175,25 @@ class OMFPandasWriter(OMFPandasBase):
         omf.save(project=self.project, filename=str(self.filepath), mode='w')
 
         return profile
+
+    def write_block_model_schema(self, blockmodel_name: str, pd_schema_filepath: Path):
+        """Write a Pandera schema to the OMF file.
+
+        Args:
+            blockmodel_name (str): The name of the BlockModel.
+            pd_schema_filepath (Path): The path to the Pandera schema yaml file.
+        """
+        pa = _import_pandera()
+        bm = self.get_element_by_name(blockmodel_name)
+        pd_schema = pa.DataFrameSchema.from_yaml(pd_schema_filepath)
+        bm.metadata['pd_schema'] = pd_schema.to_json()
+
+        el = self.get_element_by_name(blockmodel_name)
+        schema_title = pd_schema.title if pd_schema.title else ''
+        schema_description = pd_schema.description if pd_schema.description else ''
+        el.description = f"{schema_title}: {schema_description}"
+
+        omf.save(project=self.project, filename=str(self.filepath), mode='w')
 
     def _delete_profile_report(self, blockmodel_name: str):
         """Delete the profile report from the OMF file when data has changed."""

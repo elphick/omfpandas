@@ -8,12 +8,11 @@ The profile report is persisted inside the omf file.
 """
 import shutil
 import tempfile
-import webbrowser
 from pathlib import Path
 
 import pandas as pd
 
-from omfpandas import OMFDataConverter, OMFPandasReader, OMFPandasWriter
+from omfpandas import OMFPandasReader, OMFPandasWriter
 
 # %%
 # Instantiate
@@ -36,6 +35,7 @@ blocks.head()
 
 omfpw: OMFPandasWriter = OMFPandasWriter(filepath=temp_omf_path)
 
+omfpw.write_block_model_schema(blockmodel_name='vol', pd_schema_filepath=test_omf_path.with_suffix('.schema.yaml'))
 omfpw.profile_blockmodel(blockmodel_name='vol')
 omfpw.view_block_model_profile(blockmodel_name='vol')
 
@@ -44,4 +44,3 @@ omfpw.view_block_model_profile(blockmodel_name='vol')
 
 omfpw.profile_blockmodel(blockmodel_name='vol', query='`random attr`>0.5')
 omfpw.view_block_model_profile(blockmodel_name='vol', query='`random attr`>0.5')
-
