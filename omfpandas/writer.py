@@ -5,12 +5,14 @@ from typing import Optional
 
 import omf
 import pandas as pd
+import ydata_profiling
 
 from omfpandas import OMFPandasReader
 from omfpandas.base import OMFPandasBase
 from omfpandas.blockmodel import df_to_blockmodel, series_to_attribute
 
 from omfpandas.extras import _import_ydata_profiling, _import_pandera
+from omfpandas.utils.timer import log_timer
 
 
 class OMFPandasWriter(OMFPandasBase):
@@ -39,6 +41,7 @@ class OMFPandasWriter(OMFPandasBase):
 
         super().__init__(filepath)
 
+    @log_timer()
     def write_blockmodel(self, blocks: pd.DataFrame, blockmodel_name: str, pd_schema_filepath: Optional[Path] = None,
                          allow_overwrite: bool = False):
         """Write a dataframe to a BlockModel.
@@ -60,11 +63,14 @@ class OMFPandasWriter(OMFPandasBase):
             pa = _import_pandera()
             # validate the dataframe, which may modify it via coercion
             pd_schema = pa.DataFrameSchema.from_yaml(pd_schema_filepath)
+            self._logger.info(f"Validating dataframe with schema: {pd_schema_filepath}")
             blocks = pd_schema.validate(blocks)
+            self._logger.info(f"Writing dataframe to BlockModel: {blockmodel_name}")
             bm = df_to_blockmodel(blocks, blockmodel_name)
             # persist the schema inside the omf file
             bm.metadata['pd_schema'] = pd_schema.to_json()
         else:
+            self._logger.info(f"Writing dataframe to BlockModel: {blockmodel_name}")
             bm = df_to_blockmodel(blocks, blockmodel_name)
 
         if bm.name in [element.name for element in self.project.elements]:
@@ -137,6 +143,7 @@ class OMFPandasWriter(OMFPandasBase):
         # Save the changes
         omf.save(project=self.project, filename=str(self.filepath), mode='w')
 
+    @log_timer()
     def profile_blockmodel(self, blockmodel_name: str, query: Optional[str] = None):
         """Profile a BlockModel.
 
@@ -162,11 +169,13 @@ class OMFPandasWriter(OMFPandasBase):
             column_defs: dict = json.loads(el.metadata['pd_schema'])['columns']
             column_descriptions = {k: f"{v['title']}: {v['description']}" for k, v in column_defs.items()}
 
-        profile = df.profile_report(title=f"{el.name} {bm_type}", dataset=dataset,
-                                    variables={"descriptions": column_descriptions})
+        profile: ydata_profiling.ProfileReport = df.profile_report(title=f"{el.name} {bm_type}", dataset=dataset,
+                                                                   variables={"descriptions": column_descriptions})
 
-        # persist the profile report as json and html to the omf file
-        d_profile: dict = {query if query else 'no_filter': {'json': profile.to_json(), 'html': profile.to_html()}}
+        # persist the profile report as html to the omf file, larger but cannot serialise the ProfileReport object,
+        # nor recreate the report from json.
+        d_profile: dict = {query if query else 'no_filter': profile.to_html()}
+
         if el.metadata.get('profile'):
             el.metadata['profile'] = {**el.metadata['profile'], **d_profile}
         else:

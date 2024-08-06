@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:15.382** total execution time for 5 files **from all galleries**:
+**00:10.427** total execution time for 5 files **from all galleries**:
 
 .. container::
 
@@ -33,17 +33,17 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_auto_examples_04_omf_profile_blockmodel.py` (``..\..\examples\04_omf_profile_blockmodel.py``)
-     - 00:15.382
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_01_omf_blockmodel_to_pandas.py` (``..\..\examples\01_omf_blockmodel_to_pandas.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_02_pandas_to_omf_blockmodel.py` (``..\..\examples\02_pandas_to_omf_blockmodel.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_03_omf_blockmodel_to_parquet.py` (``..\..\examples\03_omf_blockmodel_to_parquet.py``)
-     - 00:00.000
+     - 00:09.307
      - 0.0
    * - :ref:`sphx_glr_auto_examples_05_validate_blockmodel.py` (``..\..\examples\05_validate_blockmodel.py``)
-     - 00:00.000
+     - 00:00.558
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_02_pandas_to_omf_blockmodel.py` (``..\..\examples\02_pandas_to_omf_blockmodel.py``)
+     - 00:00.256
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_03_omf_blockmodel_to_parquet.py` (``..\..\examples\03_omf_blockmodel_to_parquet.py``)
+     - 00:00.216
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_01_omf_blockmodel_to_pandas.py` (``..\..\examples\01_omf_blockmodel_to_pandas.py``)
+     - 00:00.088
      - 0.0

@@ -6,6 +6,7 @@ Profiling a dataset is a common task in data analysis.  This example demonstrate
 The profile report is persisted inside the omf file.
 
 """
+import logging
 import shutil
 import tempfile
 from pathlib import Path
@@ -18,6 +19,10 @@ from omfpandas import OMFPandasReader, OMFPandasWriter
 # Instantiate
 # -----------
 # Create the object OMFPandas with the path to the OMF file.
+
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s',
+                    datefmt='%Y-%m-%dT%H:%M:%S%z')
 test_omf_path: Path = Path('./../assets/v2/test_file.omf')
 
 # create a temporary copy to preserve the original file

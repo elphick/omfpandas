@@ -8,6 +8,7 @@ and write it back to a new OMF file.
 """
 
 from pathlib import Path
+import logging
 
 import numpy as np
 import pandas as pd
@@ -18,12 +19,20 @@ from omfpandas import OMFPandasReader, OMFPandasWriter
 from omfpandas.blockmodel import df_to_blockmodel
 
 # %%
+# Instantiate
+# -----------
+
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s',
+                    datefmt='%Y-%m-%dT%H:%M:%S%z')
+test_omf_filepath: Path = Path('../assets/v2/test_file.omf')
+
+# %%
 # Read the block model
 # --------------------
 #
 # Read the original block model from the OMF file.
 
-test_omf_filepath: Path = Path('../assets/v2/test_file.omf')
 blocks: pd.DataFrame = OMFPandasReader(filepath=test_omf_filepath).read_blockmodel(blockmodel_name='vol')
 blocks.head()
 
