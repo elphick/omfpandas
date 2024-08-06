@@ -63,11 +63,14 @@ class OMFPandasWriter(OMFPandasBase):
             pa = _import_pandera()
             # validate the dataframe, which may modify it via coercion
             pd_schema = pa.DataFrameSchema.from_yaml(pd_schema_filepath)
+            self._logger.info(f"Validating dataframe with schema: {pd_schema_filepath}")
             blocks = pd_schema.validate(blocks)
+            self._logger.info(f"Writing dataframe to BlockModel: {blockmodel_name}")
             bm = df_to_blockmodel(blocks, blockmodel_name)
             # persist the schema inside the omf file
             bm.metadata['pd_schema'] = pd_schema.to_json()
         else:
+            self._logger.info(f"Writing dataframe to BlockModel: {blockmodel_name}")
             bm = df_to_blockmodel(blocks, blockmodel_name)
 
         if bm.name in [element.name for element in self.project.elements]:
