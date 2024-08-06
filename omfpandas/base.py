@@ -73,7 +73,7 @@ class OMFPandasBase(ABC):
                              f"Please run 'profile_blockmodel' first.")
 
         # JSON string containing the profile report
-        profile_html = el.metadata['profile'][filter_key]['html']
+        profile_html: str = el.metadata['profile'][filter_key]
 
         # Create a temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as temp_file:
