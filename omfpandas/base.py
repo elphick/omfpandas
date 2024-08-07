@@ -32,6 +32,13 @@ class OMFPandasBase(ABC):
             self.project = omf.load(str(filepath))
         self._elements = self.project.elements if self.project else []
         self.elements: dict[str, str] = {e.name: e.__class__.__name__ for e in self._elements}
+        self.element_attributes: dict[str, list[str]] = {e.name: [a.name for a in e.attributes] for e in self._elements}
+
+    def __repr__(self):
+        return f"OMFPandasBase({self.filepath})"
+
+    def __str__(self):
+        return f"OMFPandasBase object for OMF file: {self.filepath}"
 
     def get_element_by_name(self, element_name: str):
         """Get an element by its name.
