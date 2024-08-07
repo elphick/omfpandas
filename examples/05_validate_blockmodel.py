@@ -40,6 +40,8 @@ blocks.head()
 # the Pandera library.  The schema is used to validate the dataframe before writing it to the OMF file.
 
 omfpw: OMFPandasWriter = OMFPandasWriter(filepath=temp_omf_path)
+
+# %%
 omfpw.write_blockmodel(blocks=blocks, blockmodel_name='vol',
                        pd_schema_filepath=test_omf_path.with_suffix('.schema.yaml'),
                        allow_overwrite=True)

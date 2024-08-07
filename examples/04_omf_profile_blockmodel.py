@@ -42,10 +42,14 @@ omfpw: OMFPandasWriter = OMFPandasWriter(filepath=temp_omf_path)
 
 omfpw.write_block_model_schema(blockmodel_name='vol', pd_schema_filepath=test_omf_path.with_suffix('.schema.yaml'))
 omfpw.profile_blockmodel(blockmodel_name='vol')
+
+# %%
 omfpw.view_block_model_profile(blockmodel_name='vol')
 
 # %%
 # Profile a subset with a query filter string
 
 omfpw.profile_blockmodel(blockmodel_name='vol', query='`random attr`>0.5')
+
+# %%
 omfpw.view_block_model_profile(blockmodel_name='vol', query='`random attr`>0.5')
