@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Optional
 
 import omf
+import pandas as pd
 from omf import Project
 
 
@@ -39,6 +40,13 @@ class OMFPandasBase(ABC):
 
     def __str__(self):
         return f"OMFPandasBase object for OMF file: {self.filepath}"
+
+    @property
+    def changelog(self) -> Optional[pd.DataFrame]:
+        """Return the change log as a DataFrame."""
+        if 'changelog' not in self.project.metadata:
+            return None
+        return pd.DataFrame([json.loads(msg) for msg in self.project.metadata['changelog']])
 
     def get_element_by_name(self, element_name: str):
         """Get an element by its name.

@@ -34,7 +34,7 @@ class OMFPandasReader(OMFPandasBase):
         Args:
             blockmodel_name (str): The name of the BlockModel to convert.
             attributes (Optional[list[str]]): The attributes/variables to include in the DataFrame. If None, all
-            variables are included.
+                variables are included.
             query (Optional[str]): A query string to filter the DataFrame. Default is None.
 
         Returns:
@@ -52,7 +52,7 @@ class OMFPandasReader(OMFPandasBase):
 
         Args:
             blockmodel_attributes (dict[str, list[str]]): A dictionary of BlockModel names and the variables to include.
-            If the dict value is None, all attributes in the blockmodel (key) are included.
+                If the dict value is None, all attributes in the blockmodel (key) are included.
 
 
         Returns:

@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:00.190** total execution time for 6 files **from all galleries**:
+**00:02.519** total execution time for 6 files **from all galleries**:
 
 .. container::
 
@@ -32,8 +32,8 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_06_reading_multiple_blockmodels.py` (``..\..\examples\06_reading_multiple_blockmodels.py``)
-     - 00:00.190
+   * - :ref:`sphx_glr_auto_examples_05_validate_blockmodel.py` (``..\..\examples\05_validate_blockmodel.py``)
+     - 00:02.519
      - 0.0
    * - :ref:`sphx_glr_auto_examples_01_omf_blockmodel_to_pandas.py` (``..\..\examples\01_omf_blockmodel_to_pandas.py``)
      - 00:00.000
@@ -47,6 +47,6 @@ Computation times
    * - :ref:`sphx_glr_auto_examples_04_omf_profile_blockmodel.py` (``..\..\examples\04_omf_profile_blockmodel.py``)
      - 00:00.000
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_05_validate_blockmodel.py` (``..\..\examples\05_validate_blockmodel.py``)
+   * - :ref:`sphx_glr_auto_examples_06_reading_multiple_blockmodels.py` (``..\..\examples\06_reading_multiple_blockmodels.py``)
      - 00:00.000
      - 0.0
