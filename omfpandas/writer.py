@@ -38,7 +38,7 @@ class OMFPandasWriter(OMFPandasBase):
             project.name = filepath.stem
             project.description = f"OMF file created by OMFPandasWriter: {filepath.name}"
             self._logger.info(f"Creating new OMF file: {filepath}")
-
+            self.project = project  # to enable the write_to_changelog method
             # create the audit record, which also saves the file
             self.write_to_changelog(element='None', action='create', description=f"File created: {filepath}")
 
