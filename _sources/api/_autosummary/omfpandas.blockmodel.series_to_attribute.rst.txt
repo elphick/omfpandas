@@ -1,0 +1,6 @@
+omfpandas.blockmodel.series\_to\_attribute
+==========================================
+
+.. currentmodule:: omfpandas.blockmodel
+
+.. autofunction:: series_to_attribute

@@ -1,0 +1,39 @@
+omfpandas.writer.OMFPandasWriter
+================================
+
+.. currentmodule:: omfpandas.writer
+
+.. autoclass:: OMFPandasWriter
+   :members:
+   :special-members: __add__, __mul__
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~OMFPandasWriter.__init__
+      ~OMFPandasWriter.delete_blockmodel_attribute
+      ~OMFPandasWriter.get_element_attribute_names
+      ~OMFPandasWriter.get_element_by_name
+      ~OMFPandasWriter.profile_blockmodel
+      ~OMFPandasWriter.view_block_model_profile
+      ~OMFPandasWriter.write_block_model_schema
+      ~OMFPandasWriter.write_blockmodel
+      ~OMFPandasWriter.write_blockmodel_attribute
+      ~OMFPandasWriter.write_to_changelog
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~OMFPandasWriter.changelog
+   
+   

@@ -1,0 +1,6 @@
+omfpandas.blockmodel.index\_to\_geometry
+========================================
+
+.. currentmodule:: omfpandas.blockmodel
+
+.. autofunction:: index_to_geometry
