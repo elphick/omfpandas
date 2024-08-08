@@ -1,13 +1,14 @@
 import getpass
 import json
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Literal
 
 import omf
 import pandas as pd
 import ydata_profiling
 
 from omfpandas import OMFPandasReader
+from omfpandas.audit import ChangeMessage
 from omfpandas.base import OMFPandasBase
 from omfpandas.blockmodel import df_to_blockmodel, series_to_attribute
 
@@ -37,7 +38,9 @@ class OMFPandasWriter(OMFPandasBase):
             project.name = filepath.stem
             project.description = f"OMF file created by OMFPandasWriter: {filepath.name}"
             self._logger.info(f"Creating new OMF file: {filepath}")
-            omf.save(project, str(filepath))
+            self.project = project  # to enable the write_to_changelog method
+            # create the audit record, which also saves the file
+            self.write_to_changelog(element='None', action='create', description=f"File created: {filepath}")
 
         super().__init__(filepath)
 
@@ -52,7 +55,7 @@ class OMFPandasWriter(OMFPandasBase):
             blocks (pd.DataFrame): The dataframe to write to the BlockModel.
             blockmodel_name (str): The name of the BlockModel to write to.
             pd_schema_filepath (Optional[Path]): The path to the Pandera schema file. Default is None.  If provided,
-            the schema will be used to validate the dataframe before writing.
+                the schema will be used to validate the dataframe before writing.
             allow_overwrite (bool): If True, overwrite the existing BlockModel. Default is False.
 
         Raises:
@@ -84,8 +87,27 @@ class OMFPandasWriter(OMFPandasBase):
 
         self.project.elements.append(bm)
 
-        # write the file
+        # create the audit record, which also saves the file
+        self.write_to_changelog(element=bm.name, action='create', description='BlockModel written')
+
+    def write_to_changelog(self, element: str, action: Literal['create', 'update', 'delete'], description: str):
+        """Write a change message to the OMF file.
+
+        Args:
+            element: The name of the element that was changed
+            action: The action taken on the object
+            description: Description of the change
+
+        Returns:
+
+        """
+
+        if 'changelog' not in self.project.metadata:
+            self.project.metadata['changelog'] = []
+        msg = ChangeMessage(element=element, user=self.user_id, action=action, description=description)
+        self.project.metadata['changelog'].append(str(msg))
         omf.save(project=self.project, filename=str(self.filepath), mode='w')
+        self.project = omf.load(str(self.filepath))
 
     def write_blockmodel_attribute(self, blockmodel_name: str, series: pd.Series,
                                    allow_overwrite: bool = False):
@@ -121,8 +143,7 @@ class OMFPandasWriter(OMFPandasBase):
 
         # todo: re-profile...
 
-        # Save the changes
-        omf.save(project=self.project, filename=str(self.filepath), mode='w')
+        self.write_to_changelog(element=bm.name, action='create', description=f"Attribute [{series.name}] written")
 
     def delete_blockmodel_attribute(self, blockmodel_name: str, attribute_name: str):
         """Delete an attribute from a BlockModel.
@@ -140,8 +161,8 @@ class OMFPandasWriter(OMFPandasBase):
 
         self._delete_profile_report(blockmodel_name)
 
-        # Save the changes
-        omf.save(project=self.project, filename=str(self.filepath), mode='w')
+        # create the audit record, which also saves the file
+        self.write_to_changelog(element=bm.name, action='delete', description=f"{attribute_name} deleted")
 
     @log_timer()
     def profile_blockmodel(self, blockmodel_name: str, query: Optional[str] = None):
@@ -181,7 +202,7 @@ class OMFPandasWriter(OMFPandasBase):
         else:
             el.metadata['profile'] = d_profile
 
-        omf.save(project=self.project, filename=str(self.filepath), mode='w')
+        self.write_to_changelog(element=blockmodel_name, action='create', description=f"Profiled with query {query}")
 
         return profile
 
@@ -202,7 +223,7 @@ class OMFPandasWriter(OMFPandasBase):
         schema_description = pd_schema.description if pd_schema.description else ''
         el.description = f"{schema_title}: {schema_description}"
 
-        omf.save(project=self.project, filename=str(self.filepath), mode='w')
+        self.write_to_changelog(element=blockmodel_name, action='create', description=f"Schema written")
 
     def _delete_profile_report(self, blockmodel_name: str):
         """Delete the profile report from the OMF file when data has changed."""
@@ -210,3 +231,4 @@ class OMFPandasWriter(OMFPandasBase):
 
         if 'profile' in bm.metadata:
             del bm.metadata['profile']
+

@@ -73,3 +73,13 @@ omfpw.write_blockmodel_attribute(blockmodel_name='vol', series=blocks['random at
 
 blocks: pd.DataFrame = OMFPandasReader(filepath=temp_omf_path).read_blockmodel(blockmodel_name='vol')
 blocks.head()
+
+# %%
+# View the changelog
+# ------------------
+
+omfpw.changelog
+
+# %%
+# Clean up
+temp_omf_path.unlink()

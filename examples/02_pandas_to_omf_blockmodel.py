@@ -74,7 +74,7 @@ bm = df_to_blockmodel(blocks, 'Modified Block Model')
 
 OMFPandasWriter(filepath=new_omf_filepath).write_blockmodel(blocks=blocks, blockmodel_name='Modified Block Model',
                                                             allow_overwrite=True)
-
+omfpr: OMFPandasReader = OMFPandasReader(filepath=new_omf_filepath)
 # %%
 # Confirm that the new variables are in the model we saved.
 saved_blocks: pd.DataFrame = OMFPandasReader(filepath=new_omf_filepath).read_blockmodel(
