@@ -1,10 +1,12 @@
 from pathlib import Path
 from typing import Optional
 
+import numpy as np
 import pandas as pd
 
 from omfpandas.base import OMFPandasBase
 from omfpandas.blockmodel import blockmodel_to_df, create_index
+from omfpandas.utils.pandas import parse_vars_from_expr
 
 
 class OMFPandasReader(OMFPandasBase):
@@ -26,7 +28,7 @@ class OMFPandasReader(OMFPandasBase):
         super().__init__(filepath)
 
     def read_blockmodel(self, blockmodel_name: str, attributes: Optional[list[str]] = None,
-                        query: Optional[str] = None) -> pd.DataFrame:
+                        query: Optional[str] = None, index_filter: Optional[list[int]] = None) -> pd.DataFrame:
         """Return a DataFrame from a BlockModel.
 
         Only variables assigned to the `cell` (as distinct from the grid `points`) are loaded.
@@ -36,6 +38,7 @@ class OMFPandasReader(OMFPandasBase):
             attributes (Optional[list[str]]): The attributes/variables to include in the DataFrame. If None, all
                 variables are included.
             query (Optional[str]): A query string to filter the DataFrame. Default is None.
+            index_filter (Optional[list[int]]): A list of indexes to filter the DataFrame. Default is None.
 
         Returns:
             pd.DataFrame: The DataFrame representing the BlockModel.
@@ -45,21 +48,41 @@ class OMFPandasReader(OMFPandasBase):
         if bm.__class__.__name__ not in ['RegularBlockModel', 'TensorGridBlockModel']:
             raise ValueError(f"Element '{bm}' is not a supported BlockModel in the OMF file: {self.filepath}")
 
-        return blockmodel_to_df(bm, variables=attributes, query=query)
+        return blockmodel_to_df(bm, variables=attributes, query=query, index_filter=index_filter)
 
-    def read_block_models(self, blockmodel_attributes: dict[str, list[str]]) -> pd.DataFrame:
+    def read_block_models(self, blockmodel_attributes: dict[str, list[str]],
+                          query: Optional[str] = None) -> pd.DataFrame:
         """Return a DataFrame from multiple BlockModels.
 
         Args:
             blockmodel_attributes (dict[str, list[str]]): A dictionary of BlockModel names and the variables to include.
                 If the dict value is None, all attributes in the blockmodel (key) are included.
-
+            query (Optional[str]): A query string to filter the DataFrame. Default is None.
 
         Returns:
             pd.DataFrame: The DataFrame representing the merged BlockModels.
         """
         block_models: dict[str, pd.DataFrame] = {}
         geometry_indexes: dict[str, pd.MultiIndex] = {}
+        index_filter = None
+        if query:
+            # we use the query to generate an index_filter to filter the block models since they may not have
+            # the query attributes available in the given model.
+            query_attrs: list[str] = parse_vars_from_expr(query)
+            # extract the attributes for the query_attributes, noting that they may be in different block models
+            chunks: list[pd.Series] = []
+            for bm_name in blockmodel_attributes:
+                for attr in query_attrs:
+                    if attr in self.element_attributes[bm_name]:
+                        chunks.append(self.read_blockmodel(blockmodel_name=bm_name, attributes=[attr])[attr])
+            tmp_df: pd.DataFrame = pd.concat(chunks, axis=1).query(query)
+            # get the index locations of the filtered index relative to the full index
+            filtered_index = tmp_df.index
+            full_index = create_index(self.get_element_by_name(self._elements[0].name))
+            # Find the intersection of the two MultiIndex objects
+            intersection = full_index.intersection(filtered_index)
+            index_filter = full_index.get_indexer(intersection)
+
         for bm_name, requested_attrs in blockmodel_attributes.items():
             # check that the requested attrs exist in the specified bm
             available_attrs = self.element_attributes[bm_name]
@@ -71,7 +94,8 @@ class OMFPandasReader(OMFPandasBase):
                     raise ValueError(f"Attributes {missing_attrs} not found in BlockModel '{bm_name}'. "
                                      f"Available attributes are: {available_attrs}")
 
-            block_models[bm_name] = self.read_blockmodel(blockmodel_name=bm_name, attributes=requested_attrs)
+            block_models[bm_name] = self.read_blockmodel(blockmodel_name=bm_name, attributes=requested_attrs,
+                                                         index_filter=index_filter if query else None)
             geometry_indexes[bm_name] = create_index(blockmodel=self.get_element_by_name(bm_name))
 
         # validate the indexes are equivalent

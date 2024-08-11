@@ -38,19 +38,21 @@ class TensorGeometry:
 
 
 def blockmodel_to_df(blockmodel: BM, variables: Optional[list[str]] = None,
-                     query: Optional[str] = None) -> pd.DataFrame:
+                     query: Optional[str] = None,
+                     index_filter: Optional[list[int]] = None) -> pd.DataFrame:
     """Convert block model to a DataFrame.
 
     Args:
         blockmodel (BlockModel): The BlockModel to convert.
         variables (Optional[list[str]]): The variables to include in the DataFrame. If None, all variables are included.
         query (Optional[str]): The query to filter the DataFrame.
+        index_filter (Optional[list[int]]): List of integer indices to filter the DataFrame.
 
     Returns:
         pd.DataFrame: The DataFrame representing the BlockModel.
     """
     # read the data
-    df: pd.DataFrame = read_blockmodel_attributes(blockmodel, attributes=variables, query=query)
+    df: pd.DataFrame = read_blockmodel_attributes(blockmodel, attributes=variables, query=query, index_filter=index_filter)
     return df
 
 
@@ -174,20 +176,23 @@ def blockmodel_to_parquet(blockmodel: BM, out_path: Optional[Path] = None,
 
 
 def read_blockmodel_attributes(blockmodel: BM, attributes: Optional[list[str]] = None,
-                               query: Optional[str] = None) -> pd.DataFrame:
+                               query: Optional[str] = None, index_filter: Optional[list[int]] = None) -> pd.DataFrame:
     """Read the attributes/variables from the BlockModel.
 
     Args:
         blockmodel (BlockModel): The BlockModel to read from.
         attributes (list[str]): The attributes to include in the DataFrame.
         query (str): The query to filter the DataFrame.
+        index_filter (list[int]): List of integer indices to filter the DataFrame.
 
     Returns:
         pd.DataFrame: The DataFrame representing the attributes in the BlockModel.
 
     Raises:
-        ValueError: If the attribute is not found in the BlockModel.
+        ValueError: If the attribute is not found in the BlockModel or if both query and index_filter are provided.
     """
+    if query and index_filter:
+        raise ValueError("Cannot use both query and index_filter at the same time.")
 
     # identify 'cell' variables in the file
     attributes_available = [v.name for v in blockmodel.attributes if v.location == 'cells']
@@ -199,7 +204,7 @@ def read_blockmodel_attributes(blockmodel: BM, attributes: Optional[list[str]] =
         raise ValueError(f"Variables {set(attributes).difference(attributes_available)} not found in the BlockModel.")
 
     int_index: np.ndarray = np.arange(blockmodel.num_cells)
-    if query:
+    if query is not None:
         # parse out the attributes from the query using a package
         query_attrs = parse_vars_from_expr(query)
         # check if the attributes in the query are available
@@ -211,6 +216,8 @@ def read_blockmodel_attributes(blockmodel: BM, attributes: Optional[list[str]] =
             query_series.append(attribute_to_series(_get_attribute_by_name(blockmodel, attr_name)))
         df_to_query: pd.DataFrame = pd.concat(query_series, axis=1)
         int_index = np.array(df_to_query.query(query).index)
+    elif index_filter is not None:
+        int_index = np.array(index_filter)
 
     # Loop over the variables
     chunks: list = []
@@ -220,7 +227,7 @@ def read_blockmodel_attributes(blockmodel: BM, attributes: Optional[list[str]] =
 
     # create the geometry index
     geometry_index = create_index(blockmodel)
-    if query:
+    if (query is not None) or (index_filter is not None):
         # filter the index to match the int_index positional index
         geometry_index = geometry_index.take(int_index)
 
