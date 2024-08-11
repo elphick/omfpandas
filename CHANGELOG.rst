@@ -1,3 +1,12 @@
+Omfpandas 0.6.8 (2024-08-11)
+============================
+
+Feature
+-------
+
+- Added calculated blockmodel attributes. Example pending. (#23)
+
+
 Omfpandas 0.6.7 (2024-08-11)
 ============================
 

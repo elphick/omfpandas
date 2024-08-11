@@ -27,7 +27,7 @@ def main():
     # Run the commands
     run_command(f"poetry version {increment}")
     run_command("poetry install --all-extras")
-    run_command("towncrier")
+    run_command("echo n | towncrier")
 
     # remove the news fragments manually.
     run_command("rm -rf ./towncrier/newsfragments/*")

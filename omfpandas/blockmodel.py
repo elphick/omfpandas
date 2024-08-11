@@ -1,5 +1,3 @@
-import ast
-import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, TypeVar, Union
@@ -7,7 +5,6 @@ from typing import Optional, TypeVar, Union
 import numpy as np
 import pandas as pd
 from omf import NumericAttribute, CategoryAttribute, CategoryColormap
-
 from omf.blockmodel import BaseBlockModel, RegularBlockModel, TensorGridBlockModel
 from pandas.core.dtypes.common import is_integer_dtype
 
@@ -52,7 +49,8 @@ def blockmodel_to_df(blockmodel: BM, variables: Optional[list[str]] = None,
         pd.DataFrame: The DataFrame representing the BlockModel.
     """
     # read the data
-    df: pd.DataFrame = read_blockmodel_attributes(blockmodel, attributes=variables, query=query, index_filter=index_filter)
+    df: pd.DataFrame = read_blockmodel_attributes(blockmodel, attributes=variables, query=query,
+                                                  index_filter=index_filter)
     return df
 
 
@@ -177,7 +175,7 @@ def blockmodel_to_parquet(blockmodel: BM, out_path: Optional[Path] = None,
 
 def read_blockmodel_attributes(blockmodel: BM, attributes: Optional[list[str]] = None,
                                query: Optional[str] = None, index_filter: Optional[list[int]] = None) -> pd.DataFrame:
-    """Read the attributes/variables from the BlockModel.
+    """Read the attributes/variables from the BlockModel, including calculated attributes.
 
     Args:
         blockmodel (BlockModel): The BlockModel to read from.
@@ -197,23 +195,34 @@ def read_blockmodel_attributes(blockmodel: BM, attributes: Optional[list[str]] =
     # identify 'cell' variables in the file
     attributes_available = [v.name for v in blockmodel.attributes if v.location == 'cells']
 
-    attributes = attributes or attributes_available
+    # Retrieve calculated attributes from metadata
+    calculated_attributes: dict[str, str] = blockmodel.metadata.get('calculated_attributes', {})
+
+    attributes: list[str] = attributes or (attributes_available + list(calculated_attributes.keys()))
 
     # check if the variables are available
-    if not set(attributes).issubset(attributes_available):
-        raise ValueError(f"Variables {set(attributes).difference(attributes_available)} not found in the BlockModel.")
+    if not set(attributes).issubset(attributes_available + list(calculated_attributes.keys())):
+        raise ValueError(
+            f"Variables {set(attributes).difference(attributes_available + list(calculated_attributes.keys()))} "
+            f"not found in the BlockModel.")
 
     int_index: np.ndarray = np.arange(blockmodel.num_cells)
     if query is not None:
         # parse out the attributes from the query using a package
         query_attrs = parse_vars_from_expr(query)
         # check if the attributes in the query are available
-        if not set(query_attrs).issubset(attributes_available):
+        if not set(query_attrs).issubset(attributes_available + list(calculated_attributes.keys())):
             raise ValueError(
-                f"Variables {set(query_attrs).difference(attributes_available)} not found in the BlockModel.")
+                f"Variables {set(query_attrs).difference(attributes_available + list(calculated_attributes.keys()))} "
+                f"not found in the BlockModel.")
         query_series: list = []
         for attr_name in query_attrs:
-            query_series.append(attribute_to_series(_get_attribute_by_name(blockmodel, attr_name)))
+            if attr_name in calculated_attributes:
+                query_series.append(
+                    _evaluate_calculated_attribute(blockmodel, attr_name, calculated_attributes[attr_name],
+                                                   attributes_available))
+            else:
+                query_series.append(attribute_to_series(_get_attribute_by_name(blockmodel, attr_name)))
         df_to_query: pd.DataFrame = pd.concat(query_series, axis=1)
         int_index = np.array(df_to_query.query(query).index)
     elif index_filter is not None:
@@ -221,9 +230,16 @@ def read_blockmodel_attributes(blockmodel: BM, attributes: Optional[list[str]] =
 
     # Loop over the variables
     chunks: list = []
+    attr: str
     for attr in attributes:
-        attr: Union[CategoryAttribute, NumericAttribute] = _get_attribute_by_name(blockmodel, attr)
-        chunks.append(attribute_to_series(attr).iloc[int_index])
+        if attr in calculated_attributes:
+            # Evaluate the calculated attribute
+            calculated_series = _evaluate_calculated_attribute(blockmodel, attr, calculated_attributes[attr],
+                                                               attributes_available)
+            chunks.append(calculated_series.iloc[int_index])
+        else:
+            attr: Union[CategoryAttribute, NumericAttribute] = _get_attribute_by_name(blockmodel, attr)
+            chunks.append(attribute_to_series(attr).iloc[int_index])
 
     # create the geometry index
     geometry_index = create_index(blockmodel)
@@ -331,3 +347,20 @@ def _get_attribute_by_name(blockmodel: BM, attr_name: str) -> Union[CategoryAttr
     elif len(attrs) > 1:
         raise ValueError(f"Multiple variables with the name '{attr_name}' found in the BlockModel: {blockmodel}")
     return attrs[0]
+
+
+def _evaluate_calculated_attribute(blockmodel: BM, attr_name: str, calculated_expression: str,
+                                   attributes_available: list[str]) -> pd.Series:
+    """Evaluate a calculated attribute using the blockmodel and available attributes.
+
+    Args:
+        blockmodel (BlockModel): The BlockModel to read from.
+        attr_name (str): The name of the calculated attribute.
+        calculated_expression (str): The expression to evaluate.
+        attributes_available (list[str]): List of available attributes in the BlockModel.
+
+    Returns:
+        pd.Series: The evaluated calculated attribute as a pandas Series.
+    """
+    local_dict = {attr: attribute_to_series(_get_attribute_by_name(blockmodel, attr)) for attr in attributes_available}
+    return pd.Series(eval(calculated_expression, {}, local_dict), name=attr_name)
