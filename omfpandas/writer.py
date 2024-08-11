@@ -231,4 +231,3 @@ class OMFPandasWriter(OMFPandasBase):
 
         if 'profile' in bm.metadata:
             del bm.metadata['profile']
-
