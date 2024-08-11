@@ -54,6 +54,11 @@ def log_timer(_func=None, *, my_logger: Union[MyLogger, logging.Logger] = None):
                 else:
                     logger = h_logger
 
+                # args_repr = [repr(a) for a in args]
+                # kwargs_repr = [f"{k}={v!r}" for k, v in kwargs.items()]
+                # signature = ", ".join(args_repr + kwargs_repr)
+                # logger.debug(f"function {func.__name__} called with args {signature}")
+
             except Exception:
                 pass
 

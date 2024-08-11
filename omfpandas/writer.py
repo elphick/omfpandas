@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 from typing import Optional, Literal
 
+import numpy as np
 import omf
 import pandas as pd
 import ydata_profiling
@@ -13,10 +14,11 @@ from omfpandas.base import OMFPandasBase
 from omfpandas.blockmodel import df_to_blockmodel, series_to_attribute
 
 from omfpandas.extras import _import_ydata_profiling, _import_pandera
+from omfpandas.utils.pandas import parse_vars_from_expr
 from omfpandas.utils.timer import log_timer
 
 
-class OMFPandasWriter(OMFPandasBase):
+class OMFPandasWriter(OMFPandasReader):
     """A class to write pandas dataframes to an OMF file.
 
     Attributes:
@@ -89,6 +91,58 @@ class OMFPandasWriter(OMFPandasBase):
 
         # create the audit record, which also saves the file
         self.write_to_changelog(element=bm.name, action='create', description='BlockModel written')
+
+    def add_calculated_blockmodel_attributes(self, blockmodel_name: str, calc_definitions: dict[str, str]):
+        """Add a calculated attribute to a BlockModel.
+
+        Calculated attributes reduce storage space by storing the calculation expression instead of the data.
+        When the attribute is accessed, the expression is evaluated and the result returned.
+        The calculation expression must be a valid pandas expression, and is stored in the metadata of the
+        blockmodel object.
+
+        Args:
+            blockmodel_name (str): The name of the BlockModel.
+            calc_definitions (dict[str, str]): A dictionary of attribute names and calculation expressions.
+        """
+        bm = self.get_element_by_name(blockmodel_name)
+        # confirm the element is a BlockModel
+        if bm.__class__.__name__ not in ['RegularBlockModel', 'TensorGridBlockModel']:
+            raise ValueError(f"Element '{bm}' is not a supported BlockModel in the OMF file: {self.filepath}")
+        for attr_name, expr in calc_definitions.items():
+            # check the attribute does not already exist
+            if attr_name in self.get_element_attribute_names(blockmodel_name):
+                raise ValueError(f"Attribute '{attr_name}' already exists in BlockModel '{blockmodel_name}'.")
+            attrs_in_scope = list(set(parse_vars_from_expr(expr)))
+            # validate that the attributes in the expression are in the schema
+            for attr in attrs_in_scope:
+                if attr not in self.get_element_attribute_names(blockmodel_name):
+                    raise ValueError(f"Expression attribute '{attr}' not found in BlockModel '{blockmodel_name}'.")
+
+            # Load the head dataset containing the attributes in the expression to validate the expression is valid,
+            # though if the attribute exists in the schema file then it will be validated on the entire dataset.
+            index_filter = list(range(0, 6))
+            if bm.metadata.get('pd_schema'):
+                pa = _import_pandera()
+                col_schema = pa.io.from_json(bm.metadata['pd_schema']).get(attr_name)
+                if col_schema:
+                    index_filter = None
+
+            # validate the expression
+            df: pd.DataFrame = self.read_blockmodel(blockmodel_name, attributes=attrs_in_scope,
+                                                    index_filter=index_filter)
+            try:
+                df.eval(expr)
+            except Exception as e:
+                raise ValueError(f"Expression '{expr}' failed during evaluation: {e}")
+
+            # persist the configuration to the blockmodel metadata
+            if 'calculated_attributes' in bm.metadata:
+                bm.metadata['calculated_attributes'][attr_name] = expr
+            else:
+                bm.metadata['calculated_attributes'] = {attr_name: expr}
+
+            self.write_to_changelog(element=blockmodel_name, action='create',
+                                    description=f"Calculated attribute [{attr_name}] added")
 
     def write_to_changelog(self, element: str, action: Literal['create', 'update', 'delete'], description: str):
         """Write a change message to the OMF file.
@@ -202,7 +256,8 @@ class OMFPandasWriter(OMFPandasBase):
         else:
             el.metadata['profile'] = d_profile
 
-        self.write_to_changelog(element=blockmodel_name, action='create', description=f"Profiled with query {query}")
+        self.write_to_changelog(element=blockmodel_name, action='create',
+                                description=f"Profiled with query {query}")
 
         return profile
 
