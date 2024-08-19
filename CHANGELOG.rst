@@ -1,3 +1,12 @@
+Omfpandas 0.6.9 (2024-08-20)
+============================
+
+Bugfix
+------
+
+- Fixed no-file-exists bug for writer.  Added unit test. (#26)
+
+
 Omfpandas 0.6.8 (2024-08-11)
 ============================
 
