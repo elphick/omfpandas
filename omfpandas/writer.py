@@ -31,7 +31,7 @@ class OMFPandasWriter(OMFPandasReader):
         Args:
             filepath (Path): Path to the OMF file.
         """
-        super().__init__(filepath)
+        OMFPandasBase.__init__(self, filepath)
         self.user_id = getpass.getuser()
 
         if not filepath.exists():
@@ -73,6 +73,7 @@ class OMFPandasWriter(OMFPandasReader):
             self._logger.info(f"Writing dataframe to BlockModel: {blockmodel_name}")
             bm = df_to_blockmodel(blocks, blockmodel_name)
             # persist the schema inside the omf file
+            bm.description = pd_schema.description
             bm.metadata['pd_schema'] = pd_schema.to_json()
         else:
             self._logger.info(f"Writing dataframe to BlockModel: {blockmodel_name}")
