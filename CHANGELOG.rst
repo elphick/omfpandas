@@ -1,3 +1,12 @@
+Omfpandas 0.6.10 (2024-09-20)
+=============================
+
+Feature
+-------
+
+- Validation during writing can now be via a dict as well as a schema yaml file. (#28)
+
+
 Omfpandas 0.6.9 (2024-08-20)
 ============================
 
