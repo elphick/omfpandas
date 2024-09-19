@@ -1,4 +1,5 @@
 _pa = None
+_paio = None
 _yp = None
 
 
@@ -14,6 +15,20 @@ def _import_pandera():
                               "Please install it by running 'poetry install omfpandas --extras validate' "
                               "or 'pip install pandera[io]'")
     return _pa
+
+
+def _import_pandera_io():
+    """Helper method to import pandera and handle ImportError."""
+    global _paio
+    if _paio is None:
+        try:
+            import pandera.io as paio
+            _paio = paio
+        except ImportError:
+            raise ImportError("pandera is required to run this method. "
+                              "Please install it by running 'poetry install omfpandas --extras validate' "
+                              "or 'pip install pandera[io]'")
+    return _paio
 
 
 def _import_ydata_profiling():

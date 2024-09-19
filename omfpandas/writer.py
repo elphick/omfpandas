@@ -1,7 +1,7 @@
 import getpass
 import json
 from pathlib import Path
-from typing import Optional, Literal
+from typing import Optional, Literal, Union
 
 import numpy as np
 import omf
@@ -13,7 +13,7 @@ from omfpandas.audit import ChangeMessage
 from omfpandas.base import OMFPandasBase
 from omfpandas.blockmodel import df_to_blockmodel, series_to_attribute
 
-from omfpandas.extras import _import_ydata_profiling, _import_pandera
+from omfpandas.extras import _import_ydata_profiling, _import_pandera, _import_pandera_io
 from omfpandas.utils.pandas import parse_vars_from_expr
 from omfpandas.utils.timer import log_timer
 
@@ -47,7 +47,8 @@ class OMFPandasWriter(OMFPandasReader):
         super().__init__(filepath)
 
     @log_timer()
-    def write_blockmodel(self, blocks: pd.DataFrame, blockmodel_name: str, pd_schema_filepath: Optional[Path] = None,
+    def write_blockmodel(self, blocks: pd.DataFrame, blockmodel_name: str,
+                         pd_schema: Optional[Union[Path, dict]] = None,
                          allow_overwrite: bool = False):
         """Write a dataframe to a BlockModel.
 
@@ -56,19 +57,28 @@ class OMFPandasWriter(OMFPandasReader):
         Args:
             blocks (pd.DataFrame): The dataframe to write to the BlockModel.
             blockmodel_name (str): The name of the BlockModel to write to.
-            pd_schema_filepath (Optional[Path]): The path to the Pandera schema file. Default is None.  If provided,
-                the schema will be used to validate the dataframe before writing.
+            pd_schema (Optional[Union[Path, dict]]): The path to the Pandera schema file or a dict of the schema.
+             efault is None.  If provided, the schema will be used to validate the dataframe before writing.
             allow_overwrite (bool): If True, overwrite the existing BlockModel. Default is False.
 
         Raises:
             ValueError: If the element retrieved is not a BlockModel.
         """
 
-        if pd_schema_filepath:
+        if pd_schema is not None:
             pa = _import_pandera()
+            if not isinstance(pd_schema, (Path, dict)):
+                raise ValueError("pd_schema must be a Path to a Pandera schema file or a dict of the schema.")
+            elif isinstance(pd_schema, Path) and not pd_schema.exists():
+                raise FileNotFoundError(f"Schema file not found: {pd_schema}")
+            elif isinstance(pd_schema, dict):
+                paio = _import_pandera_io()
+                pd_schema = paio.deserialize_schema(pd_schema)
+            elif isinstance(pd_schema, Path):
+                pd_schema = pa.DataFrameSchema.from_yaml(pd_schema)
+                self._logger.info(f"Validating dataframe with schema: {pd_schema}")
+
             # validate the dataframe, which may modify it via coercion
-            pd_schema = pa.DataFrameSchema.from_yaml(pd_schema_filepath)
-            self._logger.info(f"Validating dataframe with schema: {pd_schema_filepath}")
             blocks = pd_schema.validate(blocks)
             self._logger.info(f"Writing dataframe to BlockModel: {blockmodel_name}")
             bm = df_to_blockmodel(blocks, blockmodel_name)

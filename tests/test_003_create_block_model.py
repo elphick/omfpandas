@@ -5,6 +5,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pandera as pa
+import yaml
 
 from omfpandas import OMFPandasWriter
 
@@ -31,14 +33,30 @@ def create_dataframe_blockmodel(origin: tuple[float, float, float] = (0., 0., 0.
     return blocks
 
 
-def test_create_blockmodel_from_dataframe():
+def test_create_blockmodel_from_df_no_schema():
+    blocks: pd.DataFrame = create_dataframe_blockmodel()
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_file_path = Path(temp_dir) / 'blockmodel.omf'
+        writer: OMFPandasWriter = OMFPandasWriter(filepath=temp_file_path)
+        writer.write_blockmodel(blocks=blocks, blockmodel_name='Block Model', allow_overwrite=True)
+
+        assert os.path.exists(temp_file_path)
+        assert temp_file_path.stat().st_size > 0
+        assert writer.project.elements[0].name == 'Block Model'
+        assert writer.project.elements[0].attributes[0].name == 'attr_1'
+        assert writer.project.elements[0].attributes[1].name == 'attr_2'
+        assert writer.project.elements[0].description == ''
+
+
+def test_create_blockmodel_from_df_with_schema_file():
     blocks: pd.DataFrame = create_dataframe_blockmodel()
     schema_file: Path = Path(__file__).parent / 'assets/test_schema.yaml'
 
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_file_path = Path(temp_dir) / 'blockmodel.omf'
         writer: OMFPandasWriter = OMFPandasWriter(filepath=temp_file_path)
-        writer.write_blockmodel(blocks=blocks, blockmodel_name='Block Model', pd_schema_filepath=schema_file,
+        writer.write_blockmodel(blocks=blocks, blockmodel_name='Block Model', pd_schema=schema_file,
                                 allow_overwrite=True)
 
         assert os.path.exists(temp_file_path)
@@ -47,3 +65,24 @@ def test_create_blockmodel_from_dataframe():
         assert writer.project.elements[0].attributes[0].name == 'attr_1'
         assert writer.project.elements[0].attributes[1].name == 'attr_2'
         assert writer.project.elements[0].description == 'A test dataset schema.'
+
+
+def test_create_blockmodel_from_df_with_schema_dict():
+    blocks: pd.DataFrame = create_dataframe_blockmodel()
+    schema_file: Path = Path(__file__).parent / 'assets/test_schema.yaml'
+
+    schema_dict: dict = yaml.safe_load(schema_file.read_text())
+    schema_dict['description'] = 'A modified test dataset schema.'
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_file_path = Path(temp_dir) / 'blockmodel.omf'
+        writer: OMFPandasWriter = OMFPandasWriter(filepath=temp_file_path)
+        writer.write_blockmodel(blocks=blocks, blockmodel_name='Block Model', pd_schema=schema_dict,
+                                allow_overwrite=True)
+
+        assert os.path.exists(temp_file_path)
+        assert temp_file_path.stat().st_size > 0
+        assert writer.project.elements[0].name == 'Block Model'
+        assert writer.project.elements[0].attributes[0].name == 'attr_1'
+        assert writer.project.elements[0].attributes[1].name == 'attr_2'
+        assert writer.project.elements[0].description == 'A modified test dataset schema.'

@@ -36,14 +36,15 @@ blocks.head()
 # %%
 # Write with Schema
 # -----------------
-# The schema used to validate the dataframe is a Pandera schema.  The schema is a YAML file that is loaded into
-# the Pandera library.  The schema is used to validate the dataframe before writing it to the OMF file.
+# The schema used to validate the dataframe is a Pandera schema.  The schema can be a YAML file (or Pandera compatible
+# dictionary) that is loaded by the Pandera library.  The schema is used to validate the dataframe before writing it
+# to the OMF file.
 
 omfpw: OMFPandasWriter = OMFPandasWriter(filepath=temp_omf_path)
 
 # %%
 omfpw.write_blockmodel(blocks=blocks, blockmodel_name='vol',
-                       pd_schema_filepath=test_omf_path.with_suffix('.schema.yaml'),
+                       pd_schema=test_omf_path.with_suffix('.schema.yaml'),
                        allow_overwrite=True)
 
 # %%
@@ -61,7 +62,7 @@ blocks['random attr'] = blocks['random attr'] * 2
 
 try:
     omfpw.write_blockmodel(blocks=blocks, blockmodel_name='vol',
-                           pd_schema_filepath=test_omf_path.with_suffix('.schema.yaml'),
+                           pd_schema=test_omf_path.with_suffix('.schema.yaml'),
                            allow_overwrite=True)
 except Exception as e:
     print(e)
