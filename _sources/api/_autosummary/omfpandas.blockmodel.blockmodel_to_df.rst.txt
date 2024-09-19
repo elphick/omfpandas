@@ -1,0 +1,6 @@
+omfpandas.blockmodel.blockmodel\_to\_df
+=======================================
+
+.. currentmodule:: omfpandas.blockmodel
+
+.. autofunction:: blockmodel_to_df

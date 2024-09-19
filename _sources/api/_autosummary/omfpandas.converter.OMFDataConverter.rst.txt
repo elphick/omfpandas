@@ -1,0 +1,34 @@
+omfpandas.converter.OMFDataConverter
+====================================
+
+.. currentmodule:: omfpandas.converter
+
+.. autoclass:: OMFDataConverter
+   :members:
+   :special-members: __add__, __mul__
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~OMFDataConverter.__init__
+      ~OMFDataConverter.blockmodel_to_parquet
+      ~OMFDataConverter.get_element_attribute_names
+      ~OMFDataConverter.get_element_by_name
+      ~OMFDataConverter.view_block_model_profile
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~OMFDataConverter.changelog
+   
+   

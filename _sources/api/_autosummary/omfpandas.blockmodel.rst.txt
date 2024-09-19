@@ -1,0 +1,45 @@
+﻿omfpandas.blockmodel
+====================
+
+.. automodule:: omfpandas.blockmodel
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      attribute_to_series
+      blockmodel_to_df
+      blockmodel_to_parquet
+      create_index
+      df_to_blockmodel
+      index_to_geometry
+      read_blockmodel_attributes
+      series_to_attribute
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+   
+      TensorGeometry
+   
+   
+
+   
+   
+   
+
+
+
