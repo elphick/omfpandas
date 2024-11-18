@@ -1,0 +1,6 @@
+omfpandas.blockmodel.create\_index
+==================================
+
+.. currentmodule:: omfpandas.blockmodel
+
+.. autofunction:: create_index

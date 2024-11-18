@@ -1,0 +1,6 @@
+omfpandas.blockmodel.blockmodel\_to\_parquet
+============================================
+
+.. currentmodule:: omfpandas.blockmodel
+
+.. autofunction:: blockmodel_to_parquet
