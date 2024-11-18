@@ -36,10 +36,14 @@ class OMFPandasBase(ABC):
         self.element_attributes: dict[str, list[str]] = {e.name: [a.name for a in e.attributes] for e in self._elements}
 
     def __repr__(self):
-        return f"OMFPandasBase({self.filepath})"
+        res: str = f"OMF file({self.filepath})"
+        res += f"\nElement Attributes: {self.element_attributes}"
+        return res
 
     def __str__(self):
-        return f"OMFPandasBase object for OMF file: {self.filepath}"
+        res: str = f"OMF file({self.filepath})"
+        res += f"\nElement Attributes: {self.element_attributes}"
+        return res
 
     @property
     def changelog(self) -> Optional[pd.DataFrame]:

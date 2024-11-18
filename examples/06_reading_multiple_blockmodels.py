@@ -5,57 +5,45 @@ Reading Multiple Block Models
 OMF allows storage of multiple block models in a single file.  This example demonstrates how to read multiple
 block models to return a single pandas dataframe
 """
-import logging
-import shutil
+
 import tempfile
-import webbrowser
 from pathlib import Path
 
 import numpy as np
 import omf
-import pandas as pd
 
-from omfpandas import OMFDataConverter, OMFPandasReader, OMFPandasWriter
+from omfpandas import OMFPandasReader
+
 
 # %%
 # Instantiate
 # -----------
-# Create the object OMFPandas with the path to the OMF file.
-
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s',
-                    datefmt='%Y-%m-%dT%H:%M:%S%z')
-
-
-# %%
 # Create a function to generate a temporary omf file containing two block models.
+
+def create_demo_tensor_model(shape: tuple[int, int, int],
+                             cell_size: tuple[float, float, float],
+                             name: str,
+                             attr_names: list[str]) -> omf.TensorGridBlockModel:
+    """Create a tensor grid block model with random attributes"""
+    return omf.TensorGridBlockModel(
+        name=name,
+        tensor_u=np.full(shape[0], cell_size[0], dtype='float32'),
+        tensor_v=np.full(shape[1], cell_size[1], dtype='float32'),
+        tensor_w=np.full(shape[2], cell_size[2], dtype='float32'),
+        attributes=[omf.NumericAttribute(name=attr_name, location="cells",
+                                         array=np.random.rand(shape[0] * shape[1] * shape[2]).ravel()) for
+                    attr_name in attr_names])
+
+
 def create_temp_omf_file() -> Path:
     """Creates an omf file directly using omf and numpy"""
 
     project = omf.Project(name='Test Project')
 
     # Create block models
-    block_model_1 = omf.TensorGridBlockModel(
-        name='BlockModel1',
-        tensor_u=np.full(10, 10, dtype='float32'),
-        tensor_v=np.full(10, 10, dtype='float32'),
-        tensor_w=np.full(10, 10, dtype='float32'),
-        attributes=[
-            omf.NumericAttribute(name='attr1', location="cells", array=np.random.rand(10 * 10 * 10).ravel()),
-            omf.NumericAttribute(name='attr2', location="cells", array=np.random.rand(10 * 10 * 10).ravel()),
-        ]
-    )
+    block_model_1 = create_demo_tensor_model((10, 10, 10), (10, 10, 10), 'BlockModel1', ['attr1', 'attr2'])
 
-    block_model_2 = omf.TensorGridBlockModel(
-        name='BlockModel2',
-        tensor_u=np.full(10, 10, dtype='float32'),
-        tensor_v=np.full(10, 10, dtype='float32'),
-        tensor_w=np.full(10, 10, dtype='float32'),
-        attributes=[
-            omf.NumericAttribute(name='attr3', location="cells", array=np.random.rand(10 * 10 * 10).ravel()),
-            omf.NumericAttribute(name='attr4', location="cells", array=np.random.rand(10 * 10 * 10).ravel()),
-        ]
-    )
+    block_model_2 = create_demo_tensor_model((10, 10, 10), (10, 10, 10), 'BlockModel2', ['attr3', 'attr4'])
 
     project.elements = [block_model_1, block_model_2]
 
@@ -65,6 +53,10 @@ def create_temp_omf_file() -> Path:
     return Path(temp_file.name)
 
 
+temp_omf_path = create_temp_omf_file()
+reader = OMFPandasReader(temp_omf_path)
+reader
+
 # %%
 # Read from block models
 # ----------------------
@@ -73,13 +65,7 @@ def create_temp_omf_file() -> Path:
 # of attribute names to include in the dataframe.  If None is provided for the attribute list, all attributes
 #
 
-temp_omf_path = create_temp_omf_file()
-reader = OMFPandasReader(temp_omf_path)
-
-blockmodel_attributes = {
-    'BlockModel1': None,
-    'BlockModel2': ['attr4']
-}
+blockmodel_attributes = {'BlockModel1': None, 'BlockModel2': ['attr4']}
 
 df = reader.read_block_models(blockmodel_attributes)
 df.head(20)

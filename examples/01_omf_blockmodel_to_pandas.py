@@ -2,7 +2,7 @@
 OMF Block Model to DataFrame
 ============================
 
-An omf VolumeElement represents a `Block Model`, and can be converted to a Pandas DataFrame.
+An omf TensorGridBlockModel represents a `Block Model`, and can be converted to a Pandas DataFrame.
 
 """
 from pathlib import Path
@@ -26,7 +26,7 @@ omfp.elements
 # %%
 # Read
 # ----
-# We can see by inspection that we have one volume element in the omf file called 'Block Model, so we will
+# We can see by inspection that we have one volume element in the omf file called *vol*, so we will
 # convert that to a Pandas DataFrame.
 
 blocks: pd.DataFrame = omfp.read_blockmodel(blockmodel_name='vol', attributes=None)
@@ -35,8 +35,8 @@ blocks.head()
 
 # %%
 # The index contains the centroid coordinates and the dimensions of the block.
-# The columns contain the variables in the block model, though only variables (attributes) assigned to the `cell`
-# (as distinct from the grid `points`) are loaded.
+# The columns contain the *cell* variables in the block model. Data assigned as points (at the grid vertices) are not
+# included in the DataFrame.
 
 # %%
 # Filter
