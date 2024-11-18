@@ -5,24 +5,19 @@ Validate BlockModel
 This example demonstrates how to validate a block model prior to writing it to an OMF file.
 
 """
-import logging
 import shutil
 import tempfile
-import webbrowser
 from pathlib import Path
 
 import pandas as pd
 
-from omfpandas import OMFDataConverter, OMFPandasReader, OMFPandasWriter
+from omfpandas import OMFPandasReader, OMFPandasWriter
 
 # %%
 # Instantiate
 # -----------
 # Create the object OMFPandas with the path to the OMF file.
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s',
-                    datefmt='%Y-%m-%dT%H:%M:%S%z')
 test_omf_path: Path = Path('./../assets/v2/test_file.omf')
 
 # create a temporary copy to preserve the original file

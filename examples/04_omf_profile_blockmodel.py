@@ -6,7 +6,6 @@ Profiling a dataset is a common task in data analysis.  This example demonstrate
 The profile report is persisted inside the omf file.
 
 """
-import logging
 import shutil
 import tempfile
 from pathlib import Path
@@ -20,9 +19,6 @@ from omfpandas import OMFPandasReader, OMFPandasWriter
 # -----------
 # Create the object OMFPandas with the path to the OMF file.
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s',
-                    datefmt='%Y-%m-%dT%H:%M:%S%z')
 test_omf_path: Path = Path('./../assets/v2/test_file.omf')
 
 # create a temporary copy to preserve the original file
@@ -36,14 +32,15 @@ blocks.head()
 # %%
 # Profile
 # -------
-# View the elements in the OMF file first.
+# Create the writer, write the pandera schema and the profile report into the file.
+# The use of a pandera schema is optional, but it provides a way to describe the attributes in the dataset.
 
 omfpw: OMFPandasWriter = OMFPandasWriter(filepath=temp_omf_path)
-
 omfpw.write_block_model_schema(blockmodel_name='vol', pd_schema_filepath=test_omf_path.with_suffix('.schema.yaml'))
 omfpw.profile_blockmodel(blockmodel_name='vol')
 
 # %%
+# View the profile report, which benefits from the attribute descriptions from the schema.
 omfpw.view_block_model_profile(blockmodel_name='vol')
 
 # %%
@@ -52,4 +49,7 @@ omfpw.view_block_model_profile(blockmodel_name='vol')
 omfpw.profile_blockmodel(blockmodel_name='vol', query='`random attr`>0.5')
 
 # %%
+# View the profile report of the subset.  The dataset tab in the profile report describes the filter applied to the
+# dataset.
+
 omfpw.view_block_model_profile(blockmodel_name='vol', query='`random attr`>0.5')

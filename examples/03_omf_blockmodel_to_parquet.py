@@ -11,7 +11,6 @@ to reduce memory consumption.  This example demonstrates how to convert an OMF b
    However, this is the first step in a series of methods that will allow for more efficient handling of large files.
 
 """
-import logging
 from pathlib import Path
 
 import pandas as pd
@@ -23,9 +22,6 @@ from omfpandas import OMFDataConverter, OMFPandasReader
 # -----------
 # Create the object OMFPandas with the path to the OMF file.
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s',
-                    datefmt='%Y-%m-%dT%H:%M:%S%z')
 test_omf_path: Path = Path('./../assets/v2/test_file.omf')
 omf_converter: OMFDataConverter = OMFDataConverter(filepath=test_omf_path)
 
@@ -59,4 +55,4 @@ blocks_2.head()
 # --------
 # Assert that the original DataFrame and the reloaded DataFrame are equivalent
 
-assert blocks.equals(blocks_2), "The original DataFrame and the reloaded DataFrame are not equivalent."
+assert blocks.equals(blocks_2)
