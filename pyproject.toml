@@ -32,7 +32,7 @@ showcontent = true
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
-pandas = "^2.2.2"
+pandas = ">=2.0"  # "^2.2.2"
 omf = { version = ">=2.0.0a0", allow-prereleases = true }
 pyarrow = { version = "^16.1.0", optional = true }
 #omfvista = { version = "^0.3.0", optional = true}

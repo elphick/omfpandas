@@ -111,3 +111,26 @@ class OMFPandasReader(OMFPandasBase):
         ensure_identical_indexes(geometry_indexes)
 
         return pd.concat(block_models.values(), axis=1)
+
+    def find_nearest_centroid(self, x: float, y: float, z: float, block_size: tuple[float, float, float],
+                              reference_centroid: tuple[float, float, float]) -> tuple[float, float, float]:
+        """Find the nearest centroid for provided x, y, z points using a math rounding approach considering the reference centroid.
+
+        Args:
+            x (float): X coordinate.
+            y (float): Y coordinate.
+            z (float): Z coordinate.
+            block_size (Tuple[float, float, float]): The size of the blocks in the grid (dx, dy, dz).
+            reference_centroid (Tuple[float, float, float]): The reference centroid coordinates (ref_x, ref_y, ref_z).
+
+        Returns:
+            Tuple[float, float, float]: The coordinates of the nearest centroid.
+        """
+        dx, dy, dz = block_size
+        ref_x, ref_y, ref_z = reference_centroid
+
+        nearest_x = round((x - ref_x) / dx) * dx + ref_x
+        nearest_y = round((y - ref_y) / dy) * dy + ref_y
+        nearest_z = round((z - ref_z) / dz) * dz + ref_z
+
+        return nearest_x, nearest_y, nearest_z

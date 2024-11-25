@@ -9,7 +9,9 @@ from typing import Optional
 
 import omf
 import pandas as pd
-from omf import Project
+from omf import Project, TensorGridBlockModel
+
+from omfpandas.blockmodel import TensorGeometry
 
 
 class OMFPandasBase(ABC):
@@ -75,6 +77,23 @@ class OMFPandasBase(ABC):
         """
         element = self.get_element_by_name(element_name)
         return [attr.name for attr in element.attributes]
+
+    def get_bm_geometry(self, blockmodel_name: str) -> TensorGeometry:
+        """Get the geometry of a BlockModel.
+
+        Args:
+            blockmodel_name (str): The name of the BlockModel to retrieve.
+
+        Returns:
+            TensorGeometry: The geometry of the BlockModel.
+        """
+        bm: TensorGridBlockModel = self.get_element_by_name(blockmodel_name)
+        if bm.__class__.__name__ != 'TensorGridBlockModel':
+            raise ValueError(f"Element '{blockmodel_name}' is not a supported BlockModel in the "
+                             f"OMF file: {self.filepath}")
+        geometry: TensorGeometry = TensorGeometry(corner=bm.corner, axis_u=bm.axis_u, axis_v=bm.axis_v, axis_w=bm.axis_w,
+                                                  tensor_u=bm.tensor_u, tensor_v=bm.tensor_v, tensor_w=bm.tensor_w)
+        return geometry
 
     def view_block_model_profile(self, blockmodel_name: str, query: Optional[str] = None):
         """View the profile of a BlockModel in the default web browser.

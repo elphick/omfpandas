@@ -20,7 +20,7 @@ SENTINEL_VALUE = -9  # TODO: possibly move to config file
 @dataclass
 class TensorGeometry:
     """A dataclass to represent the geometry of a tensor grid block model."""
-    origin: np.ndarray
+    corner: np.ndarray
     axis_u: np.ndarray
     axis_v: np.ndarray
     axis_w: np.ndarray
@@ -32,6 +32,26 @@ class TensorGeometry:
         """Return True if the tensor grid is regular."""
         return (np.allclose(self.tensor_u, self.tensor_u[0]) and np.allclose(self.tensor_v, self.tensor_v[0]) and
                 np.allclose(self.tensor_w, self.tensor_w[0]))
+
+    def num_cells(self) -> int:
+        """Return the number of cells in the tensor grid."""
+        return self.tensor_u.size * self.tensor_v.size * self.tensor_w.size
+
+    def shape(self) -> tuple[int, int, int]:
+        """Return the shape of the tensor grid."""
+        return self.tensor_u.size, self.tensor_v.size, self.tensor_w.size
+
+    def centroid_u(self) -> np.ndarray:
+        """Return the x-coordinates of the centroids of the tensor grid."""
+        return (self.tensor_u[:-1] + self.tensor_u[1:]) / 2
+
+    def centroid_v(self) -> np.ndarray:
+        """Return the y-coordinates of the centroids of the tensor grid."""
+        return (self.tensor_v[:-1] + self.tensor_v[1:]) / 2
+
+    def centroid_w(self) -> np.ndarray:
+        """Return the z-coordinates of the centroids of the tensor grid."""
+        return (self.tensor_w[:-1] + self.tensor_w[1:]) / 2
 
 
 def blockmodel_to_df(blockmodel: BM, variables: Optional[list[str]] = None,
@@ -79,7 +99,7 @@ def df_to_blockmodel(df: pd.DataFrame, blockmodel_name: str, is_tensor: bool = T
         if is_tensor:
             blockmodel: BM = TensorGridBlockModel(name=blockmodel_name)
             # assign the geometry properties
-            blockmodel.corner = geometry.origin
+            blockmodel.corner = geometry.corner
             blockmodel.axis_u = geometry.axis_u
             blockmodel.axis_v = geometry.axis_v
             blockmodel.axis_w = geometry.axis_w
@@ -90,7 +110,7 @@ def df_to_blockmodel(df: pd.DataFrame, blockmodel_name: str, is_tensor: bool = T
             if not geometry.is_regular():
                 raise ValueError("RegularBlockModel requires a regular grid.")
             blockmodel: BM = RegularBlockModel(name=blockmodel_name)
-            blockmodel.corner = geometry.origin
+            blockmodel.corner = geometry.corner
             blockmodel.axis_u = geometry.axis_u
             blockmodel.axis_v = geometry.axis_v
             blockmodel.axis_w = geometry.axis_w
@@ -288,7 +308,7 @@ def create_index(blockmodel: BM) -> pd.MultiIndex:
 
 
 def index_to_geometry(index: pd.MultiIndex) -> TensorGeometry:
-    """Convert a MultiIndex to a VolumeGridGeometry.
+    """Convert a MultiIndex to a TensorGridGeometry.
 
     Args:
         index (pd.MultiIndex): The MultiIndex to convert to a TensorGeometry.
@@ -321,7 +341,7 @@ def index_to_geometry(index: pd.MultiIndex) -> TensorGeometry:
     axis_u = np.array([1, 0, 0])
     axis_v = np.array([0, 1, 0])
     axis_w = np.array([0, 0, 1])
-    geometry: TensorGeometry = TensorGeometry(origin=origin, axis_u=axis_u, axis_v=axis_v, axis_w=axis_w,
+    geometry: TensorGeometry = TensorGeometry(corner=origin, axis_u=axis_u, axis_v=axis_v, axis_w=axis_w,
                                               tensor_u=tensor_u, tensor_v=tensor_v, tensor_w=tensor_w)
 
     return geometry
