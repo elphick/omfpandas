@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+import json
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional, TypeVar, Union
 
@@ -19,44 +20,99 @@ SENTINEL_VALUE = -9  # TODO: possibly move to config file
 
 @dataclass
 class TensorGeometry:
-    """A dataclass to represent the geometry of a tensor grid block model."""
-    corner: np.ndarray[float]
-    axis_u: np.ndarray[float]
-    axis_v: np.ndarray[float]
-    axis_w: np.ndarray[float]
-    tensor_u: np.ndarray[float]
-    tensor_v: np.ndarray[float]
-    tensor_w: np.ndarray[float]
+    corner: np.ndarray
+    axis_u: np.ndarray
+    axis_v: np.ndarray
+    axis_w: np.ndarray
+    tensor_u: np.ndarray
+    tensor_v: np.ndarray
+    tensor_w: np.ndarray
+    _centroid_u: Optional[np.ndarray] = field(default=None, init=False, repr=False)
+    _centroid_v: Optional[np.ndarray] = field(default=None, init=False, repr=False)
+    _centroid_w: Optional[np.ndarray] = field(default=None, init=False, repr=False)
+
+    @property
+    def centroid_u(self) -> np.ndarray:
+        if self._centroid_u is None:
+            self._centroid_u = (self.tensor_u[:-1] + self.tensor_u[1:]) / 2
+        return self._centroid_u
+
+    @property
+    def centroid_v(self) -> np.ndarray:
+        if self._centroid_v is None:
+            self._centroid_v = (self.tensor_v[:-1] + self.tensor_v[1:]) / 2
+        return self._centroid_v
+
+    @property
+    def centroid_w(self) -> np.ndarray:
+        if self._centroid_w is None:
+            self._centroid_w = (self.tensor_w[:-1] + self.tensor_w[1:]) / 2
+        return self._centroid_w
 
     def is_regular(self) -> bool:
-        """Return True if the tensor grid is regular."""
-        return (np.allclose(self.tensor_u, self.tensor_u[0]) and np.allclose(self.tensor_v, self.tensor_v[0]) and
+        return (np.allclose(self.tensor_u, self.tensor_u[0]) and
+                np.allclose(self.tensor_v, self.tensor_v[0]) and
                 np.allclose(self.tensor_w, self.tensor_w[0]))
 
     def num_cells(self) -> int:
-        """Return the number of cells in the tensor grid."""
         return self.tensor_u.size * self.tensor_v.size * self.tensor_w.size
 
     def shape(self) -> tuple[int, int, int]:
-        """Return the shape of the tensor grid."""
         return self.tensor_u.size, self.tensor_v.size, self.tensor_w.size
 
-    def centroid_u(self) -> np.ndarray:
-        """Return the x-coordinates of the centroids of the tensor grid."""
-        return (self.tensor_u[:-1] + self.tensor_u[1:]) / 2
+    def cell_sizes(self) -> list[tuple[float, float, float]]:
+        return list(set(zip(self.tensor_u, self.tensor_v, self.tensor_w)))
 
-    def centroid_v(self) -> np.ndarray:
-        """Return the y-coordinates of the centroids of the tensor grid."""
-        return (self.tensor_v[:-1] + self.tensor_v[1:]) / 2
+    def extents(self) -> tuple[tuple[float, float], tuple[float, float], tuple[float, float]]:
+        return ((float(self.centroid_u[0] - self.tensor_u[0] / 2), float(self.centroid_u[-1] + self.tensor_u[0] / 2)),
+                (float(self.centroid_v[0] - self.tensor_v[0] / 2), float(self.centroid_v[-1] + self.tensor_v[0] / 2)),
+                (float(self.centroid_w[0] - self.tensor_w[0] / 2), float(self.centroid_w[-1] + self.tensor_w[0] / 2)))
 
-    def centroid_w(self) -> np.ndarray:
-        """Return the z-coordinates of the centroids of the tensor grid."""
-        return (self.tensor_w[:-1] + self.tensor_w[1:]) / 2
+    def bounding_box(self) -> tuple[tuple[float, float], tuple[float, float]]:
+        return ((float(self.centroid_u[0] - self.tensor_u[0] / 2), float(self.centroid_u[-1] + self.tensor_u[0] / 2)),
+                (float(self.centroid_v[0] - self.tensor_v[0] / 2), float(self.centroid_v[-1] + self.tensor_v[0] / 2)))
 
-    def extents(self) -> tuple[tuple[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray]]:
-        """Return the extents of the tensor grid."""
-        return (self.tensor_u[0], self.tensor_u[-1]), (self.tensor_v[0], self.tensor_v[-1]), (
-            self.tensor_w[0], self.tensor_w[-1])
+    def to_dict(self):
+        return {
+            'corner': self.corner.tolist(),
+            'axis_u': self.axis_u.tolist(),
+            'axis_v': self.axis_v.tolist(),
+            'axis_w': self.axis_w.tolist(),
+            'is_regular': self.is_regular(),
+            'num_cells': self.num_cells(),
+            'shape': self.shape(),
+            'cell_sizes': self.cell_sizes(),
+            'extents': self.extents(),
+            'bounding_box': self.bounding_box()
+        }
+
+    def __repr__(self):
+        return f"TensorGeometry(corner={self.corner}, axis_u={self.axis_u}, axis_v={self.axis_v}, axis_w={self.axis_w}, " \
+               f"is_regular={self.is_regular()}, num_cells={self.num_cells()}, shape={self.shape()}, " \
+               f"cell_sizes={self.cell_sizes()}, extents={self.extents()}, bounding_box={self.bounding_box()})"
+
+    def __str__(self):
+        return f"TensorGeometry(corner={self.corner}, axis_u={self.axis_u}, axis_v={self.axis_v}, axis_w={self.axis_w}, " \
+               f"is_regular={self.is_regular()}, num_cells={self.num_cells()}, shape={self.shape()}, " \
+               f"cell_sizes={self.cell_sizes()}, extents={self.extents()}, bounding_box={self.bounding_box()})"
+
+    def to_json(self):
+        import json
+        return json.dumps(self.to_dict())
+
+    def to_json_file(self, file_path: Path):
+        import json
+        with open(file_path, 'w') as f:
+            json.dump(self.to_dict(), f)
+
+    def to_yaml(self):
+        import yaml
+        return yaml.dump(self.to_dict())
+
+    def to_yaml_file(self, file_path: Path):
+        import yaml
+        with open(file_path, 'w') as f:
+            yaml.dump(self.to_dict(), f)
 
 
 def blockmodel_to_df(blockmodel: BM, variables: Optional[list[str]] = None,
