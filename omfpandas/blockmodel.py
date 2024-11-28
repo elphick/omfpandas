@@ -20,13 +20,13 @@ SENTINEL_VALUE = -9  # TODO: possibly move to config file
 @dataclass
 class TensorGeometry:
     """A dataclass to represent the geometry of a tensor grid block model."""
-    corner: np.ndarray
-    axis_u: np.ndarray
-    axis_v: np.ndarray
-    axis_w: np.ndarray
-    tensor_u: np.ndarray
-    tensor_v: np.ndarray
-    tensor_w: np.ndarray
+    corner: np.ndarray[float]
+    axis_u: np.ndarray[float]
+    axis_v: np.ndarray[float]
+    axis_w: np.ndarray[float]
+    tensor_u: np.ndarray[float]
+    tensor_v: np.ndarray[float]
+    tensor_w: np.ndarray[float]
 
     def is_regular(self) -> bool:
         """Return True if the tensor grid is regular."""
@@ -52,6 +52,11 @@ class TensorGeometry:
     def centroid_w(self) -> np.ndarray:
         """Return the z-coordinates of the centroids of the tensor grid."""
         return (self.tensor_w[:-1] + self.tensor_w[1:]) / 2
+
+    def extents(self) -> tuple[tuple[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray]]:
+        """Return the extents of the tensor grid."""
+        return (self.tensor_u[0], self.tensor_u[-1]), (self.tensor_v[0], self.tensor_v[-1]), (
+            self.tensor_w[0], self.tensor_w[-1])
 
 
 def blockmodel_to_df(blockmodel: BM, variables: Optional[list[str]] = None,

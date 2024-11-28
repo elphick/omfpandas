@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from omfpandas.base import OMFPandasBase
-from omfpandas.blockmodel import blockmodel_to_df, create_index
+from omfpandas.blockmodel import blockmodel_to_df, create_index, TensorGeometry
 from omfpandas.utils.pandas import parse_vars_from_expr
 
 
@@ -112,20 +112,37 @@ class OMFPandasReader(OMFPandasBase):
 
         return pd.concat(block_models.values(), axis=1)
 
-    def find_nearest_centroid(self, x: float, y: float, z: float, block_size: tuple[float, float, float],
-                              reference_centroid: tuple[float, float, float]) -> tuple[float, float, float]:
+    def find_nearest_centroid(self, x: float, y: float, z: float, blockmodel_name: Optional[str] = None) -> tuple[float, float, float]:
         """Find the nearest centroid for provided x, y, z points using a math rounding approach considering the reference centroid.
 
         Args:
             x (float): X coordinate.
             y (float): Y coordinate.
             z (float): Z coordinate.
-            block_size (Tuple[float, float, float]): The size of the blocks in the grid (dx, dy, dz).
-            reference_centroid (Tuple[float, float, float]): The reference centroid coordinates (ref_x, ref_y, ref_z).
+            blockmodel_name: The optional block model name.  If not provided, the geometry for the first Tensor
+             block model is used.
 
         Returns:
             Tuple[float, float, float]: The coordinates of the nearest centroid.
         """
+
+        # get the geometry for the first block model if not provided
+        if blockmodel_name is None:
+            blockmodel_names = [element.name for element in self._elements if element.__class__.__name__ == 'TensorGridBlockModel']
+            if not blockmodel_names:
+                raise ValueError("No TensorGridBlockModel found in the OMF file.")
+            blockmodel_name = blockmodel_names[0]
+
+        bm_geometry: TensorGeometry = self.get_bm_geometry(blockmodel_name)
+        if not bm_geometry.is_regular():
+            raise NotImplementedError("Only regular block models are supported.")
+
+        block_size: tuple[float, float, float] = (bm_geometry.tensor_u[0],
+                                                  bm_geometry.tensor_v[0],
+                                                  bm_geometry.tensor_w[0])
+        reference_centroid: tuple[float, float, float] = (bm_geometry.centroid_u().min(),
+                                                          bm_geometry.centroid_v().min(),
+                                                          bm_geometry.centroid_w().min())
         dx, dy, dz = block_size
         ref_x, ref_y, ref_z = reference_centroid
 
