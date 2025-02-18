@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from omfpandas import OMFDataConverter, OMFPandasReader
+from omfpandas import OMFPandasReader, OMFPandasWriter
 
 # %%
 # Instantiate
@@ -23,10 +23,10 @@ from omfpandas import OMFDataConverter, OMFPandasReader
 # Create the object OMFPandas with the path to the OMF file.
 
 test_omf_path: Path = Path('./../assets/v2/test_file.omf')
-omf_converter: OMFDataConverter = OMFDataConverter(filepath=test_omf_path)
+omf_writer: OMFPandasWriter = OMFPandasWriter(filepath=test_omf_path)
 
 # Display the head of the original block model
-blocks: pd.DataFrame = OMFPandasReader(filepath=test_omf_path).read_blockmodel(blockmodel_name='vol')
+blocks: pd.DataFrame = OMFPandasReader(filepath=test_omf_path).read_blockmodel(blockmodel_name='regular')
 print("Original DataFrame:")
 blocks.head()
 
@@ -34,12 +34,12 @@ blocks.head()
 # Convert
 # -------
 # View the elements in the OMF file first.
-print(omf_converter.elements)
+print(omf_writer.element_types)
 
 # %%
 # Convert 'Block Model' to a Parquet file.
-omf_converter.blockmodel_to_parquet(blockmodel_name='vol', parquet_filepath=Path('blocks.parquet'),
-                                    allow_overwrite=True)
+omf_writer.blockmodel_to_parquet(blockmodel_name='regular', out_path=Path('blocks.parquet'),
+                                 allow_overwrite=True)
 
 # %%
 # Load the Parquet

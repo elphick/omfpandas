@@ -1,15 +1,18 @@
-import io
+import json
 import json
 import logging
 import tempfile
 import webbrowser
 from abc import ABC
 from pathlib import Path
-from typing import Optional
+from typing import Optional, TYPE_CHECKING, Union, Any
 
 import omf
 import pandas as pd
-from omf import Project
+
+if TYPE_CHECKING:
+    from omf import Project
+    from omfpandas.blockmodels.geometry import RegularGeometry, TensorGeometry
 
 
 class OMFPandasBase(ABC):
@@ -25,25 +28,59 @@ class OMFPandasBase(ABC):
             ValueError: If the file is not an OMF file.
         """
         self._logger = logging.getLogger(__class__.__name__)
+        from omfpandas import __omf_version__
+        self.omf_version = __omf_version__
+
         if not filepath.suffix == '.omf':
             raise ValueError(f'File is not an OMF file: {filepath}')
         self.filepath: Path = filepath
         self.project: Optional[Project] = None
         if filepath.exists():
-            self.project = omf.load(str(filepath))
-        self._elements = self.project.elements if self.project else []
-        self.elements: dict[str, str] = {e.name: e.__class__.__name__ for e in self._elements}
-        self.element_attributes: dict[str, list[str]] = {e.name: [a.name for a in e.attributes] for e in self._elements}
+            try:
+                if self.omf_version == 'v1':
+                    self.project = omf.OMFReader(str(filepath)).get_project()
+                elif self.omf_version == 'v2':
+                    self.project = omf.load(str(filepath))
+            except Exception as e:
+                raise ValueError(f"Invalid OMF file. The file is not {__omf_version__} compatible")
+        # self._elements = self.project.elements if self.project else []
+        # self.elements: dict[str, str] = {e.name: e.__class__.__name__ for e in self._elements}
+        # self.element_attributes: dict[str, list[str]]
+        # if __omf_version__ == 'v1':
+        #     self.element_attributes = []
+        # if __omf_version__ == 'v2':
+        #     self.element_attributes = {e.name: [a.name for a in e.attributes] for e in self._elements}
 
     def __repr__(self):
         res: str = f"OMF file({self.filepath})"
-        res += f"\nElement Attributes: {self.element_attributes}"
+        res += f"\nElements: {self.element_types}"
         return res
 
     def __str__(self):
         res: str = f"OMF file({self.filepath})"
-        res += f"\nElement Attributes: {self.element_attributes}"
+        res += f"\nElements: {self.element_types}"
         return res
+
+    @property
+    def element_types(self) -> Optional[dict[str, Any]]:
+        """Dictionary of elements keyed by name"""
+        _elements = self.project.elements if self.project else []
+        if _elements:
+            return {e.name: e.__class__.__name__ for e in _elements}
+        else:
+            return {}
+
+    @property
+    def blockmodel_attributes(self) -> Optional[dict[str, list[str]]]:
+        """Attributes for blockmodel elements, keyed by element name"""
+        elements = [el for el in self.project.elements if el.__class__.__name__ in ['VolumeGridGeometry',
+                                                                                    'TensorGridBlockModel',
+                                                                                    'RegularBlockModel']]
+        if elements:
+            if self.omf_version == 'v1':
+                return {}
+            if self.omf_version == 'v2':
+                return {e.name: [a.name for a in e.attributes] for e in elements}
 
     @property
     def changelog(self) -> Optional[pd.DataFrame]:
@@ -58,10 +95,11 @@ class OMFPandasBase(ABC):
         :param element_name: The name of the element to retrieve.
         :return:
         """
-        element = [e for e in self._elements if e.name == element_name]
+        element_names = list(self.element_types.keys())
+        element = [e for e in self.project.elements if e.name == element_name]
         if not element:
             raise ValueError(f"Element '{element_name}' not found in the OMF file: {self.filepath.name}. "
-                             f"Available elements are: {list(self.elements.keys())}")
+                             f"Available elements are: {element_names}")
         elif len(element) > 1:
             raise ValueError(f"Multiple elements with the name '{element_name}' found in the OMF file: "
                              f"{self.filepath.name}")
@@ -75,6 +113,26 @@ class OMFPandasBase(ABC):
         """
         element = self.get_element_by_name(element_name)
         return [attr.name for attr in element.attributes]
+
+    def get_bm_geometry(self, blockmodel_name: str) -> Union['RegularGeometry', 'TensorGeometry']:
+        """Get the geometry of a BlockModel.
+
+        Args:
+            blockmodel_name (str): The name of the BlockModel to retrieve.
+
+        Returns:
+            TensorGeometry: The geometry of the BlockModel.
+        """
+        bm = self.get_element_by_name(blockmodel_name)
+        if bm.__class__.__name__ == 'TensorGridBlockModel':
+            from omfpandas.blockmodels.geometry import TensorGeometry
+            return TensorGeometry.from_element(bm)
+        elif bm.__class__.__name__ == 'RegularBlockModel':
+            from omfpandas.blockmodels.geometry import RegularGeometry
+            return RegularGeometry.from_element(bm)
+        else:
+            raise ValueError(
+                f"Element '{blockmodel_name}' is not a supported BlockModel in the OMF file: {self.filepath}")
 
     def view_block_model_profile(self, blockmodel_name: str, query: Optional[str] = None):
         """View the profile of a BlockModel in the default web browser.

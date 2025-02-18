@@ -1,9 +1,8 @@
-import getpass
 import json
+import os
 from pathlib import Path
 from typing import Optional, Literal, Union
 
-import numpy as np
 import omf
 import pandas as pd
 import ydata_profiling
@@ -11,15 +10,28 @@ import ydata_profiling
 from omfpandas import OMFPandasReader
 from omfpandas.audit import ChangeMessage
 from omfpandas.base import OMFPandasBase
-from omfpandas.blockmodel import df_to_blockmodel, series_to_attribute
+from omfpandas.blockmodels.factory import df_to_blockmodel_factory, blockmodel_to_df_factory
 
 from omfpandas.extras import _import_ydata_profiling, _import_pandera, _import_pandera_io
 from omfpandas.utils.pandas import parse_vars_from_expr
+from omfpandas.utils.pandera import DataFrameMetaProcessor, load_schema_from_yaml
 from omfpandas.utils.timer import log_timer
+
+def get_username():
+    try:
+        return os.getlogin()
+    except OSError:
+        return os.environ.get('USER') or os.environ.get('USERNAME') or 'unknown_user'
 
 
 class OMFPandasWriter(OMFPandasReader):
     """A class to write pandas dataframes to an OMF file.
+
+    Methods are named to align with CRUD
+    create -> create a new element on the omf file
+    read -> read a dataframe from an element (using OMFPandasReader inheritance)
+    update -> update (part of) an existing element by providing a dataframe  # TODO
+    delete -> delete an element from the omf file.  # TODO
 
     Attributes:
         filepath (Path): Path to the OMF file.
@@ -32,7 +44,7 @@ class OMFPandasWriter(OMFPandasReader):
             filepath (Path): Path to the OMF file.
         """
         OMFPandasBase.__init__(self, filepath)
-        self.user_id = getpass.getuser()
+        self.user_id = get_username()
 
         if not filepath.exists():
             # log a message and create a new project
@@ -41,16 +53,18 @@ class OMFPandasWriter(OMFPandasReader):
             project.description = f"OMF file created by OMFPandasWriter: {filepath.name}"
             self._logger.info(f"Creating new OMF file: {filepath}")
             self.project = project  # to enable the write_to_changelog method
-            # create the audit record, which also saves the file
+            # create the audit record
             self.write_to_changelog(element='None', action='create', description=f"File created: {filepath}")
+            # save the (now modified) project to the omf file
+            self.persist_project()
 
         super().__init__(filepath)
 
     @log_timer()
-    def write_blockmodel(self, blocks: pd.DataFrame, blockmodel_name: str,
-                         pd_schema: Optional[Union[Path, dict]] = None,
-                         allow_overwrite: bool = False):
-        """Write a dataframe to a BlockModel.
+    def create_blockmodel(self, blocks: pd.DataFrame, blockmodel_name: str,
+                          pd_schema: Optional[Union[Path, dict]] = None,
+                          allow_overwrite: bool = False):
+        """Create an omf BlockModel from a dataframe.
 
         Only dataframes with centroid (x, y, z) and block dims (dx, dy, dz) indexes are supported.
 
@@ -58,13 +72,21 @@ class OMFPandasWriter(OMFPandasReader):
             blocks (pd.DataFrame): The dataframe to write to the BlockModel.
             blockmodel_name (str): The name of the BlockModel to write to.
             pd_schema (Optional[Union[Path, dict]]): The path to the Pandera schema file or a dict of the schema.
-             efault is None.  If provided, the schema will be used to validate the dataframe before writing.
+             Default is None.  If provided, the schema will be used to validate the dataframe before writing.
             allow_overwrite (bool): If True, overwrite the existing BlockModel. Default is False.
 
         Raises:
             ValueError: If the element retrieved is not a BlockModel.
         """
 
+        if 'x' not in blocks.index.names and 'y' not in blocks.index.names and 'z' not in blocks.index.names:
+            raise ValueError("Dataframe must have centroid coordinates (x, y, z) in the index.")
+        elif 'dx' in blocks.index.names and 'dy' in blocks.index.names and 'dz' in blocks.index.names:
+            is_tensor: bool = True
+        else:
+            is_tensor: bool = False
+
+        calculation_map: dict = {}
         if pd_schema is not None:
             pa = _import_pandera()
             if not isinstance(pd_schema, (Path, dict)):
@@ -75,19 +97,32 @@ class OMFPandasWriter(OMFPandasReader):
                 paio = _import_pandera_io()
                 pd_schema = paio.deserialize_schema(pd_schema)
             elif isinstance(pd_schema, Path):
-                pd_schema = pa.DataFrameSchema.from_yaml(pd_schema)
+                pd_schema = load_schema_from_yaml(pd_schema)
+                # below line suffers from bug: https://github.com/unionai-oss/pandera/issues/1301
+                # pd_schema = pa.DataFrameSchema.from_yaml(pd_schema)
                 self._logger.info(f"Validating dataframe with schema: {pd_schema}")
 
             # validate the dataframe, which may modify it via coercion
-            blocks = pd_schema.validate(blocks)
-            self._logger.info(f"Writing dataframe to BlockModel: {blockmodel_name}")
-            bm = df_to_blockmodel(blocks, blockmodel_name)
-            # persist the schema inside the omf file
-            bm.description = pd_schema.description
-            bm.metadata['pd_schema'] = pd_schema.to_json()
+
+            # add any calculated attributes in the schema
+            dfmp: DataFrameMetaProcessor = DataFrameMetaProcessor(schema=pd_schema)
+            calculation_map = dfmp.calculation_map
+            blocks = dfmp.preprocess(blocks)
+            if self.omf_version == 'v2':
+                blocks = dfmp.validate(blocks, return_calculated_columns=False)
+            else:
+                # omf1 does not support calculated attributes, so return them for direct storage.
+                blocks = dfmp.validate(blocks, return_calculated_columns=True)
+
+            self._logger.info(f"Creating BlockModel from dataframe: {blockmodel_name}")
+            bm = df_to_blockmodel_factory(is_tensor)(blocks, blockmodel_name)
+            if self.omf_version == 'v2':
+                # persist the schema inside the omf file
+                bm.description = pd_schema.description
+                bm.metadata['pd_schema'] = pd_schema.to_json()
         else:
-            self._logger.info(f"Writing dataframe to BlockModel: {blockmodel_name}")
-            bm = df_to_blockmodel(blocks, blockmodel_name)
+            self._logger.info(f"Creating BlockModel from dataframe: {blockmodel_name}")
+            bm = df_to_blockmodel_factory(is_tensor)(blocks, blockmodel_name)
 
         if bm.name in [element.name for element in self.project.elements]:
             if not allow_overwrite:
@@ -100,22 +135,29 @@ class OMFPandasWriter(OMFPandasReader):
 
         self.project.elements.append(bm)
 
-        # create the audit record, which also saves the file
+        # create the audit record
         self.write_to_changelog(element=bm.name, action='create', description='BlockModel written')
+        # write the omf project to file
+        self.persist_project()
 
-    def add_calculated_blockmodel_attributes(self, blockmodel_name: str, calc_definitions: dict[str, str]):
-        """Add a calculated attribute to a BlockModel.
+        # write the calculated variables to the omf block model metadata
+        if pd_schema is not None and self.omf_version == 'v2':
+            self.create_calculated_blockmodel_attributes(blockmodel_name, calc_definitions=calculation_map)
+
+    def create_calculated_blockmodel_attributes(self, blockmodel_name: str, calc_definitions: dict[str, str]):
+        """Create a calculated attribute for a BlockModel.
 
         Calculated attributes reduce storage space by storing the calculation expression instead of the data.
         When the attribute is accessed, the expression is evaluated and the result returned.
         The calculation expression must be a valid pandas expression, and is stored in the metadata of the
-        blockmodel object.
+        blockmodel object.  Only OMF2 supports this feature.
 
         Args:
             blockmodel_name (str): The name of the BlockModel.
             calc_definitions (dict[str, str]): A dictionary of attribute names and calculation expressions.
         """
         bm = self.get_element_by_name(blockmodel_name)
+
         # confirm the element is a BlockModel
         if bm.__class__.__name__ not in ['RegularBlockModel', 'TensorGridBlockModel']:
             raise ValueError(f"Element '{bm}' is not a supported BlockModel in the OMF file: {self.filepath}")
@@ -134,7 +176,7 @@ class OMFPandasWriter(OMFPandasReader):
             index_filter = list(range(0, 6))
             if bm.metadata.get('pd_schema'):
                 pa = _import_pandera()
-                col_schema = pa.io.from_json(bm.metadata['pd_schema']).get(attr_name)
+                col_schema = pa.io.from_json(bm.metadata['pd_schema']).columns.get(attr_name)
                 if col_schema:
                     index_filter = None
 
@@ -153,7 +195,9 @@ class OMFPandasWriter(OMFPandasReader):
                 bm.metadata['calculated_attributes'] = {attr_name: expr}
 
             self.write_to_changelog(element=blockmodel_name, action='create',
-                                    description=f"Calculated attribute [{attr_name}] added")
+                                    description=f"Calculated attribute [{attr_name}] added with expression {expr}")
+
+        self.persist_project()
 
     def write_to_changelog(self, element: str, action: Literal['create', 'update', 'delete'], description: str):
         """Write a change message to the OMF file.
@@ -171,6 +215,9 @@ class OMFPandasWriter(OMFPandasReader):
             self.project.metadata['changelog'] = []
         msg = ChangeMessage(element=element, user=self.user_id, action=action, description=description)
         self.project.metadata['changelog'].append(str(msg))
+
+    def persist_project(self):
+        """Persist the omf project to file and reload the project property"""
         omf.save(project=self.project, filename=str(self.filepath), mode='w')
         self.project = omf.load(str(self.filepath))
 
@@ -183,6 +230,10 @@ class OMFPandasWriter(OMFPandasReader):
             series (pd.Series): The data to write to the attribute.
             allow_overwrite (bool): If True, overwrite the existing attribute. Default is False.
         """
+        from omfpandas.blockmodels.v2.attributes import series_to_attribute
+
+        if self.omf_version == 'v1':
+            raise NotImplementedError("Writing attributes to BlockModels is not supported in OMF1.")
 
         bm = self.get_element_by_name(blockmodel_name)
         if bm.metadata.get('pd_schema'):
@@ -297,3 +348,54 @@ class OMFPandasWriter(OMFPandasReader):
 
         if 'profile' in bm.metadata:
             del bm.metadata['profile']
+
+    def blockmodel_to_parquet(self, blockmodel_name: str, out_path: Optional[Path] = None,
+                              variables: Optional[list[str]] = None,
+                              allow_overwrite: bool = False):
+        """Convert blockmodel to a Parquet file.
+
+        Args:
+            blockmodel_name (str): The BlockModel element to convert.
+            out_path (Optional[Path]): The path to the Parquet file to write. If None, a file with the blockmodel name is
+            created.
+            variables (Optional[list[str]]): The variables to include in the DataFrame. If None, all variables are included.
+            allow_overwrite (bool): If True, overwrite the existing Parquet file. Default is False.
+
+        Raises:
+            FileExistsError: If the file already exists and allow_overwrite is False.
+        """
+        bm = self.get_element_by_name(blockmodel_name)
+        if out_path is None:
+            out_path = Path(f"{blockmodel_name}.parquet")
+        if out_path.exists() and not allow_overwrite:
+            raise FileExistsError(
+                f"File already exists: {out_path}. If you want to overwrite, set allow_overwrite=True.")
+        is_tensor: bool = True if bm.__class__.__name__ == 'TensorGridBlockModel' else False
+        df: pd.DataFrame = blockmodel_to_df_factory(is_tensor=is_tensor)(blockmodel=bm, variables=variables)
+        df.to_parquet(out_path)
+
+    def blockmodel_to_orc(self, blockmodel_name: str, out_path: Optional[Path] = None,
+                          variables: Optional[list[str]] = None,
+                          allow_overwrite: bool = False):
+        """Convert blockmodel to an ORC file.
+
+        Args:
+            blockmodel_name (str): The BlockModel element to convert.
+            out_path (Optional[Path]): The path to the ORC file to write. If None, a file with the blockmodel name is
+            created.
+            variables (Optional[list[str]]): The variables to include in the DataFrame. If None, all variables are included.
+            allow_overwrite (bool): If True, overwrite the existing ORC file. Default is False.
+
+        Raises:
+            FileExistsError: If the file already exists and allow_overwrite is False.
+        """
+        bm = self.get_element_by_name(blockmodel_name)
+
+        if out_path is None:
+            out_path = Path(f"{blockmodel_name}.orc")
+        if out_path.exists() and not allow_overwrite:
+            raise FileExistsError(
+                f"File already exists: {out_path}. If you want to overwrite, set allow_overwrite=True.")
+        is_tensor: bool = True if bm.__class__.__name__ == 'TensorGridBlockModel' else False
+        df: pd.DataFrame = blockmodel_to_df_factory(is_tensor=is_tensor)(blockmodel=bm, variables=variables)
+        df.to_orc(out_path)

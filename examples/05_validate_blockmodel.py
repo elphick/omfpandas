@@ -25,7 +25,7 @@ temp_omf_path: Path = Path(tempfile.gettempdir()) / 'test_file_copy.omf'
 shutil.copy(test_omf_path, temp_omf_path)
 
 # Display the head of the original block model
-blocks: pd.DataFrame = OMFPandasReader(filepath=temp_omf_path).read_blockmodel(blockmodel_name='vol')
+blocks: pd.DataFrame = OMFPandasReader(filepath=temp_omf_path).read_blockmodel(blockmodel_name='regular')
 blocks.head()
 
 # %%
@@ -38,14 +38,14 @@ blocks.head()
 omfpw: OMFPandasWriter = OMFPandasWriter(filepath=temp_omf_path)
 
 # %%
-omfpw.write_blockmodel(blocks=blocks, blockmodel_name='vol',
-                       pd_schema=test_omf_path.with_suffix('.schema.yaml'),
-                       allow_overwrite=True)
+omfpw.create_blockmodel(blocks=blocks, blockmodel_name='regular',
+                        pd_schema=test_omf_path.with_suffix('.schema.yaml'),
+                        allow_overwrite=True)
 
 # %%
 # The schema is persisted inside the omf file.  This enables the schema to be used to validate modifications.
 
-bm = omfpw.get_element_by_name('vol')
+bm = omfpw.get_element_by_name('regular')
 print(bm.metadata.get('pd_schema'))
 
 # %%
@@ -56,18 +56,18 @@ print(bm.metadata.get('pd_schema'))
 blocks['random attr'] = blocks['random attr'] * 2
 
 try:
-    omfpw.write_blockmodel(blocks=blocks, blockmodel_name='vol',
-                           pd_schema=test_omf_path.with_suffix('.schema.yaml'),
-                           allow_overwrite=True)
+    omfpw.create_blockmodel(blocks=blocks, blockmodel_name='regular',
+                            pd_schema=test_omf_path.with_suffix('.schema.yaml'),
+                            allow_overwrite=True)
 except Exception as e:
     print(e)
 
 # %%
 # Update with valid data
 
-omfpw.write_blockmodel_attribute(blockmodel_name='vol', series=blocks['random attr'] / 4, allow_overwrite=True)
+omfpw.write_blockmodel_attribute(blockmodel_name='regular', series=blocks['random attr'] / 4, allow_overwrite=True)
 
-blocks: pd.DataFrame = OMFPandasReader(filepath=temp_omf_path).read_blockmodel(blockmodel_name='vol')
+blocks: pd.DataFrame = OMFPandasReader(filepath=temp_omf_path).read_blockmodel(blockmodel_name='regular')
 blocks.head()
 
 # %%
