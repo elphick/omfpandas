@@ -26,7 +26,7 @@ temp_omf_path: Path = Path(tempfile.gettempdir()) / 'test_file_copy.omf'
 shutil.copy(test_omf_path, temp_omf_path)
 
 # Display the head of the original block model
-blocks: pd.DataFrame = OMFPandasReader(filepath=temp_omf_path).read_blockmodel(blockmodel_name='vol')
+blocks: pd.DataFrame = OMFPandasReader(filepath=temp_omf_path).read_blockmodel(blockmodel_name='regular')
 blocks.head()
 
 # %%
@@ -36,20 +36,20 @@ blocks.head()
 # The use of a pandera schema is optional, but it provides a way to describe the attributes in the dataset.
 
 omfpw: OMFPandasWriter = OMFPandasWriter(filepath=temp_omf_path)
-omfpw.write_block_model_schema(blockmodel_name='vol', pd_schema_filepath=test_omf_path.with_suffix('.schema.yaml'))
-omfpw.profile_blockmodel(blockmodel_name='vol')
+omfpw.write_block_model_schema(blockmodel_name='regular', pd_schema_filepath=test_omf_path.with_suffix('.schema.yaml'))
+omfpw.profile_blockmodel(blockmodel_name='regular')
 
 # %%
 # View the profile report, which benefits from the attribute descriptions from the schema.
-omfpw.view_block_model_profile(blockmodel_name='vol')
+omfpw.view_block_model_profile(blockmodel_name='regular')
 
 # %%
 # Profile a subset with a query filter string
 
-omfpw.profile_blockmodel(blockmodel_name='vol', query='`random attr`>0.5')
+omfpw.profile_blockmodel(blockmodel_name='regular', query='`random attr`>0.5')
 
 # %%
 # View the profile report of the subset.  The dataset tab in the profile report describes the filter applied to the
 # dataset.
 
-omfpw.view_block_model_profile(blockmodel_name='vol', query='`random attr`>0.5')
+omfpw.view_block_model_profile(blockmodel_name='regular', query='`random attr`>0.5')

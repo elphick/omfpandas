@@ -2,7 +2,7 @@ schema_type: dataframe
 version: 0.20.3
 columns:
   random attr:
-    title: Random Attribute
+    title: Random Attribute 1
     description: A random attribute for testing
     dtype: float64
     nullable: false

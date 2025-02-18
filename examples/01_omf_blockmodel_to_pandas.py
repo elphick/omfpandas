@@ -21,7 +21,7 @@ omfp: OMFPandasReader = OMFPandasReader(filepath=test_omf_path)
 # %%
 # We'll inspect the elements in the omf file, and determine what volume element to convert.
 
-omfp.elements
+omfp.element_types
 
 # %%
 # Read
@@ -29,7 +29,7 @@ omfp.elements
 # We can see by inspection that we have one volume element in the omf file called *vol*, so we will
 # convert that to a Pandas DataFrame.
 
-blocks: pd.DataFrame = omfp.read_blockmodel(blockmodel_name='vol', attributes=None)
+blocks: pd.DataFrame = omfp.read_blockmodel(blockmodel_name='regular', attributes=None)
 print(f"DataFrame shape: {blocks.shape}")
 blocks.head()
 
@@ -43,6 +43,6 @@ blocks.head()
 # ------
 # Standard pandas query expressions can be used to filter the returned data.
 
-blocks_filtered: pd.DataFrame = omfp.read_blockmodel(blockmodel_name='vol', attributes=None, query='`random attr`>0.5')
+blocks_filtered: pd.DataFrame = omfp.read_blockmodel(blockmodel_name='regular', attributes=None, query='`random attr`>0.5')
 print(f"DataFrame shape: {blocks_filtered.shape}")
 blocks_filtered.head()

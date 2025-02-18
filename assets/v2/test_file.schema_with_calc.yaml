@@ -1,0 +1,67 @@
+schema_type: dataframe
+version: 0.20.3
+columns:
+  attr1:
+    title: Random Attribute 1
+    description: A random attribute for testing
+    dtype: float64
+    nullable: false
+    checks:
+      greater_than_or_equal_to: 0.0
+      less_than_or_equal_to: 1.0
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  attr2:
+    title: Random Attribute 2
+    description: A random attribute for testing
+    dtype: float64
+    nullable: false
+    checks:
+      greater_than_or_equal_to: 0.0
+      less_than_or_equal_to: 1.0
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  calc_attr1:
+    title: Calculated Attribute 1
+    description: A calculated attribute for testing
+    dtype: float32
+    nullable: false
+    checks:
+      greater_than_or_equal_to: 0.0
+      less_than_or_equal_to: 2.0
+    unique: false
+    coerce: true
+    required: false
+    regex: false
+    metadata:
+      calculation: "attr1 * 2"
+  calc_attr2:
+    title: Calculated Attribute 2
+    description: A calculated attribute for testing, same value as attr1, only float32.
+    dtype: float32
+    nullable: false
+    checks:
+      greater_than_or_equal_to: 0.0
+      less_than_or_equal_to: 1.0
+    unique: false
+    coerce: true
+    required: false
+    regex: false
+    metadata:
+      calculation: "attr1"
+checks: null
+dtype: null
+coerce: true
+strict: false
+name: null
+ordered: false
+unique: null
+report_duplicates: all
+unique_column_names: false
+add_missing_columns: false
+title: Test Schema
+description: A test dataset schema.

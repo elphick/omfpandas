@@ -16,7 +16,6 @@ import omf
 from omf import Project
 
 from omfpandas import OMFPandasReader, OMFPandasWriter
-from omfpandas.blockmodel import df_to_blockmodel
 
 # %%
 # Instantiate
@@ -25,7 +24,7 @@ from omfpandas.blockmodel import df_to_blockmodel
 
 
 test_omf_filepath: Path = Path('../assets/v2/test_file.omf')
-blocks: pd.DataFrame = OMFPandasReader(filepath=test_omf_filepath).read_blockmodel(blockmodel_name='vol')
+blocks: pd.DataFrame = OMFPandasReader(filepath=test_omf_filepath).read_blockmodel(blockmodel_name='regular')
 blocks.head()
 
 # %%
@@ -62,10 +61,8 @@ blocks.dtypes
 
 new_omf_filepath: Path = Path('modified_test_file.omf')
 
-bm = df_to_blockmodel(blocks, 'Modified Block Model')
-
-OMFPandasWriter(filepath=new_omf_filepath).write_blockmodel(blocks=blocks, blockmodel_name='Modified Block Model',
-                                                            allow_overwrite=True)
+OMFPandasWriter(filepath=new_omf_filepath).create_blockmodel(blocks=blocks, blockmodel_name='Modified Block Model',
+                                                             allow_overwrite=True)
 omfpr: OMFPandasReader = OMFPandasReader(filepath=new_omf_filepath)
 # %%
 # Confirm that the new variables are in the model we saved.
@@ -84,9 +81,8 @@ saved_blocks.dtypes
 project_1: Project = omf.load(str(test_omf_filepath))
 project_2: Project = omf.load(str(new_omf_filepath))
 
-bm_1: omf.TensorGridBlockModel = [element for element in project_1.elements if element.name == 'vol'][0]
-bm_2: omf.TensorGridBlockModel = [element for element in project_2.elements if
-                                  element.name == 'Modified Block Model'][0]
+bm_1: omf.RegularBlockModel = [element for element in project_1.elements if element.name == 'regular'][0]
+bm_2: omf.RegularBlockModel = [element for element in project_2.elements if element.name == 'Modified Block Model'][0]
 
 for i, attr_1 in enumerate(bm_1.attributes):
     attr_2 = bm_2.attributes[i]

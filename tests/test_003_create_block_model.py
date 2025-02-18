@@ -6,9 +6,11 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pandera as pa
+import pytest
 import yaml
 
 from omfpandas import OMFPandasWriter
+from conftest import requires_omf_version, get_test_schema
 
 
 def create_dataframe_blockmodel(origin: tuple[float, float, float] = (0., 0., 0.),
@@ -29,7 +31,7 @@ def create_dataframe_blockmodel(origin: tuple[float, float, float] = (0., 0., 0.
         axis=1).set_index(['x', 'y', 'z', 'dx', 'dy', 'dz']).index
 
     blocks = pd.DataFrame(index=index,
-                          data={'attr_1': np.random.rand(num_cells), 'attr_2': np.random.rand(num_cells)})
+                          data={'attr1': np.random.rand(num_cells), 'attr2': np.random.rand(num_cells)})
     return blocks
 
 
@@ -39,37 +41,37 @@ def test_create_blockmodel_from_df_no_schema():
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_file_path = Path(temp_dir) / 'blockmodel.omf'
         writer: OMFPandasWriter = OMFPandasWriter(filepath=temp_file_path)
-        writer.write_blockmodel(blocks=blocks, blockmodel_name='Block Model', allow_overwrite=True)
+        writer.create_blockmodel(blocks=blocks, blockmodel_name='Block Model', allow_overwrite=True)
 
         assert os.path.exists(temp_file_path)
         assert temp_file_path.stat().st_size > 0
         assert writer.project.elements[0].name == 'Block Model'
-        assert writer.project.elements[0].attributes[0].name == 'attr_1'
-        assert writer.project.elements[0].attributes[1].name == 'attr_2'
+        assert writer.project.elements[0].attributes[0].name == 'attr1'
+        assert writer.project.elements[0].attributes[1].name == 'attr2'
         assert writer.project.elements[0].description == ''
 
-
+@requires_omf_version('v2')
 def test_create_blockmodel_from_df_with_schema_file():
     blocks: pd.DataFrame = create_dataframe_blockmodel()
-    schema_file: Path = Path(__file__).parent / 'assets/test_schema.yaml'
+    schema_file: Path = get_test_schema()
 
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_file_path = Path(temp_dir) / 'blockmodel.omf'
         writer: OMFPandasWriter = OMFPandasWriter(filepath=temp_file_path)
-        writer.write_blockmodel(blocks=blocks, blockmodel_name='Block Model', pd_schema=schema_file,
-                                allow_overwrite=True)
+        writer.create_blockmodel(blocks=blocks, blockmodel_name='Block Model', pd_schema=schema_file,
+                                 allow_overwrite=True)
 
         assert os.path.exists(temp_file_path)
         assert temp_file_path.stat().st_size > 0
         assert writer.project.elements[0].name == 'Block Model'
-        assert writer.project.elements[0].attributes[0].name == 'attr_1'
-        assert writer.project.elements[0].attributes[1].name == 'attr_2'
+        assert writer.project.elements[0].attributes[0].name == 'attr1'
+        assert writer.project.elements[0].attributes[1].name == 'attr2'
         assert writer.project.elements[0].description == 'A test dataset schema.'
 
-
+@requires_omf_version('v2')
 def test_create_blockmodel_from_df_with_schema_dict():
     blocks: pd.DataFrame = create_dataframe_blockmodel()
-    schema_file: Path = Path(__file__).parent / 'assets/test_schema.yaml'
+    schema_file: Path = get_test_schema()
 
     schema_dict: dict = yaml.safe_load(schema_file.read_text())
     schema_dict['description'] = 'A modified test dataset schema.'
@@ -77,12 +79,12 @@ def test_create_blockmodel_from_df_with_schema_dict():
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_file_path = Path(temp_dir) / 'blockmodel.omf'
         writer: OMFPandasWriter = OMFPandasWriter(filepath=temp_file_path)
-        writer.write_blockmodel(blocks=blocks, blockmodel_name='Block Model', pd_schema=schema_dict,
-                                allow_overwrite=True)
+        writer.create_blockmodel(blocks=blocks, blockmodel_name='Block Model', pd_schema=schema_dict,
+                                 allow_overwrite=True)
 
         assert os.path.exists(temp_file_path)
         assert temp_file_path.stat().st_size > 0
         assert writer.project.elements[0].name == 'Block Model'
-        assert writer.project.elements[0].attributes[0].name == 'attr_1'
-        assert writer.project.elements[0].attributes[1].name == 'attr_2'
+        assert writer.project.elements[0].attributes[0].name == 'attr1'
+        assert writer.project.elements[0].attributes[1].name == 'attr2'
         assert writer.project.elements[0].description == 'A modified test dataset schema.'

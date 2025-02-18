@@ -1,12 +1,11 @@
 from pathlib import Path
 from typing import Optional
 
-import numpy as np
 import pandas as pd
 
 from omfpandas.base import OMFPandasBase
-from omfpandas.blockmodel import blockmodel_to_df, create_index, TensorGeometry
 from omfpandas.utils.pandas import parse_vars_from_expr
+from omfpandas.blockmodels.factory import blockmodel_to_df_factory
 
 
 class OMFPandasReader(OMFPandasBase):
@@ -48,6 +47,18 @@ class OMFPandasReader(OMFPandasBase):
         if bm.__class__.__name__ not in ['RegularBlockModel', 'TensorGridBlockModel']:
             raise ValueError(f"Element '{bm}' is not a supported BlockModel in the OMF file: {self.filepath}")
 
+        if self.omf_version == 'v1':
+            blockmodel_to_df = blockmodel_to_df_factory(is_tensor=False)
+        elif self.omf_version == 'v2':
+            if bm.__class__.__name__ == 'RegularBlockModel':
+                blockmodel_to_df = blockmodel_to_df_factory(is_tensor=False)
+            elif bm.__class__.__name__ == 'TensorGridBlockModel':
+                blockmodel_to_df = blockmodel_to_df_factory(is_tensor=True)
+            else:
+                raise NotImplementedError(f"Conversion for {bm.__class__.__name__} is not implemented.")
+        else:
+            raise ValueError(f"Unsupported omf version: {self.omf_version}")
+
         return blockmodel_to_df(bm, variables=attributes, query=query, index_filter=index_filter)
 
     def read_block_models(self, blockmodel_attributes: dict[str, list[str]],
@@ -73,19 +84,21 @@ class OMFPandasReader(OMFPandasBase):
             chunks: list[pd.Series] = []
             for bm_name in blockmodel_attributes:
                 for attr in query_attrs:
-                    if attr in self.element_attributes[bm_name]:
+                    if attr in self.blockmodel_attributes[bm_name]:
                         chunks.append(self.read_blockmodel(blockmodel_name=bm_name, attributes=[attr])[attr])
             tmp_df: pd.DataFrame = pd.concat(chunks, axis=1).query(query)
             # get the index locations of the filtered index relative to the full index
             filtered_index = tmp_df.index
-            full_index = create_index(self.get_element_by_name(self._elements[0].name))
+            # full_index = geometry_to_index(self.get_element_by_name(self._elements[0].name).geometry)
+            full_index: pd.MultiIndex = self.get_bm_geometry(
+                blockmodel_name=list(blockmodel_attributes.keys())[0]).to_multi_index()
             # Find the intersection of the two MultiIndex objects
             intersection = full_index.intersection(filtered_index)
             index_filter = full_index.get_indexer(intersection)
 
         for bm_name, requested_attrs in blockmodel_attributes.items():
             # check that the requested attrs exist in the specified bm
-            available_attrs = self.element_attributes[bm_name]
+            available_attrs = self.blockmodel_attributes[bm_name]
             if requested_attrs is None:
                 requested_attrs = available_attrs
             else:
@@ -96,7 +109,8 @@ class OMFPandasReader(OMFPandasBase):
 
             block_models[bm_name] = self.read_blockmodel(blockmodel_name=bm_name, attributes=requested_attrs,
                                                          index_filter=index_filter if query else None)
-            geometry_indexes[bm_name] = create_index(blockmodel=self.get_element_by_name(bm_name))
+            # geometry_indexes[bm_name] = geometry_to_index(self.get_bm_geometry(bm_name))
+            geometry_indexes[bm_name] = self.get_bm_geometry(blockmodel_name=bm_name).to_multi_index()
 
         # validate the indexes are equivalent
         def ensure_identical_indexes(index_dict: dict[str, pd.MultiIndex]) -> None:
@@ -112,7 +126,8 @@ class OMFPandasReader(OMFPandasBase):
 
         return pd.concat(block_models.values(), axis=1)
 
-    def find_nearest_centroid(self, x: float, y: float, z: float, blockmodel_name: Optional[str] = None) -> tuple[float, float, float]:
+    def find_nearest_centroid(self, x: float, y: float, z: float, blockmodel_name: Optional[str] = None) -> tuple[
+        float, float, float]:
         """Find the nearest centroid for provided x, y, z points using a math rounding approach considering the reference centroid.
 
         Args:
@@ -128,26 +143,15 @@ class OMFPandasReader(OMFPandasBase):
 
         # get the geometry for the first block model if not provided
         if blockmodel_name is None:
-            blockmodel_names = [element.name for element in self._elements if element.__class__.__name__ == 'TensorGridBlockModel']
+            blockmodel_names = [element.name for element in self._elements if
+                                element.__class__.__name__ == 'TensorGridBlockModel']
             if not blockmodel_names:
                 raise ValueError("No TensorGridBlockModel found in the OMF file.")
             blockmodel_name = blockmodel_names[0]
 
-        bm_geometry: TensorGeometry = self.get_bm_geometry(blockmodel_name)
-        if not bm_geometry.is_regular():
-            raise NotImplementedError("Only regular block models are supported.")
-
-        block_size: tuple[float, float, float] = (bm_geometry.tensor_u[0],
-                                                  bm_geometry.tensor_v[0],
-                                                  bm_geometry.tensor_w[0])
-        reference_centroid: tuple[float, float, float] = (bm_geometry.centroid_u().min(),
-                                                          bm_geometry.centroid_v().min(),
-                                                          bm_geometry.centroid_w().min())
-        dx, dy, dz = block_size
-        ref_x, ref_y, ref_z = reference_centroid
-
-        nearest_x = round((x - ref_x) / dx) * dx + ref_x
-        nearest_y = round((y - ref_y) / dy) * dy + ref_y
-        nearest_z = round((z - ref_z) / dz) * dz + ref_z
+        # get the geometry for the block model
+        geometry: 'TensorGeometry' = self.get_element_by_name(blockmodel_name).geometry
+        # perform the lookup
+        nearest_x, nearest_y, nearest_z = geometry.nearest_centroid_lookup(x, y, z)
 
         return nearest_x, nearest_y, nearest_z

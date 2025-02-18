@@ -10,5 +10,6 @@ API Reference
 
     reader
     writer
-    converter
     blockmodel
+    blockmodels
+    utils
