@@ -17,6 +17,12 @@ from omfpandas.utils.pandas import parse_vars_from_expr
 from omfpandas.utils.pandera import DataFrameMetaProcessor, load_schema_from_yaml
 from omfpandas.utils.timer import log_timer
 
+def get_username():
+    try:
+        return os.getlogin()
+    except OSError:
+        return os.environ.get('USER') or os.environ.get('USERNAME') or 'unknown_user'
+
 
 class OMFPandasWriter(OMFPandasReader):
     """A class to write pandas dataframes to an OMF file.
@@ -38,7 +44,7 @@ class OMFPandasWriter(OMFPandasReader):
             filepath (Path): Path to the OMF file.
         """
         OMFPandasBase.__init__(self, filepath)
-        self.user_id = os.getlogin()  # getpass.getuser()
+        self.user_id = get_username()
 
         if not filepath.exists():
             # log a message and create a new project
