@@ -1,3 +1,12 @@
+Omfpandas 0.7.0 (2025-02-19)
+============================
+
+Feature
+-------
+
+- Breaking changes to support omf and omf2.  Modified tests and examples. (#34)
+
+
 Omfpandas 0.6.11 (2024-11-18)
 =============================
 
