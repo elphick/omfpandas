@@ -159,3 +159,4 @@ class OMFPandasBase(ABC):
 
         # Open the temporary file in the default web browser
         webbrowser.open(f"file://{temp_file_path}")
+
