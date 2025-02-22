@@ -14,7 +14,7 @@ This package also provides a simple interface to convert an omf element to a par
 When datasets do not fit into memory, parquet files can be read in chunks or by column.
 
 > **Note:**
-> This package *only* supports omf 2.0, which is currently only a pre-release.
+> This package supports omf 2.0, which is currently only a pre-release.
 
 ## Installation
 
