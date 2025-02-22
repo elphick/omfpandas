@@ -5,12 +5,11 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import pandera as pa
-import pytest
+
 import yaml
 
 from omfpandas import OMFPandasWriter
-from conftest import requires_omf_version, get_test_schema
+from conftest import get_test_schema
 
 
 def create_dataframe_blockmodel(origin: tuple[float, float, float] = (0., 0., 0.),
@@ -50,7 +49,6 @@ def test_create_blockmodel_from_df_no_schema():
         assert writer.project.elements[0].attributes[1].name == 'attr2'
         assert writer.project.elements[0].description == ''
 
-@requires_omf_version('v2')
 def test_create_blockmodel_from_df_with_schema_file():
     blocks: pd.DataFrame = create_dataframe_blockmodel()
     schema_file: Path = get_test_schema()
@@ -68,7 +66,6 @@ def test_create_blockmodel_from_df_with_schema_file():
         assert writer.project.elements[0].attributes[1].name == 'attr2'
         assert writer.project.elements[0].description == 'A test dataset schema.'
 
-@requires_omf_version('v2')
 def test_create_blockmodel_from_df_with_schema_dict():
     blocks: pd.DataFrame = create_dataframe_blockmodel()
     schema_file: Path = get_test_schema()

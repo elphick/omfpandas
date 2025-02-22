@@ -1,13 +1,7 @@
 import sys
-import tempfile
 import time
 
-import numpy as np
-import omf
-import pandas as pd
-from pathlib import Path
 import pytest
-from omf import Project, NumericAttribute, TensorGridBlockModel
 
 from omfpandas.reader import OMFPandasReader
 

@@ -10,12 +10,10 @@ except metadata.PackageNotFoundError:
 
 try:
     omf_version = metadata.version('omf')
-    if omf_version.startswith('1'):
-        __omf_version__ = 'v1'
-    elif omf_version.startswith('2'):
+    if omf_version.startswith('2'):
         __omf_version__ = 'v2'
     else:
-        raise ValueError(f"Unsupported omf version: {omf_version}")
+        raise ValueError(f"Unsupported omf version: {omf_version} is installed.")
 except metadata.PackageNotFoundError:
     # OMF package is not installed
     __omf_version__ = None

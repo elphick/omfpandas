@@ -24,7 +24,7 @@ from omfpandas import OMFPandasReader, OMFPandasWriter
 # Read the original block model from the OMF file which is a tensor model
 
 
-test_omf_filepath: Path = Path('../assets/v2/test_file.original.omf')
+test_omf_filepath: Path = Path('../assets/test_file.original.omf')
 omfpr: OMFPandasReader = OMFPandasReader(filepath=test_omf_filepath)
 blocks: pd.DataFrame = omfpr.read_blockmodel(blockmodel_name='vol')
 blocks.head()

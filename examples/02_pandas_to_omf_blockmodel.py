@@ -23,7 +23,7 @@ from omfpandas import OMFPandasReader, OMFPandasWriter
 # Read the original block model from the OMF file.
 
 
-test_omf_filepath: Path = Path('../assets/v2/test_file.omf')
+test_omf_filepath: Path = Path('../assets/test_file.omf')
 blocks: pd.DataFrame = OMFPandasReader(filepath=test_omf_filepath).read_blockmodel(blockmodel_name='regular')
 blocks.head()
 

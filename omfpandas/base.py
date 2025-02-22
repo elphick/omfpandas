@@ -14,8 +14,9 @@ if TYPE_CHECKING:
     from omf import Project
     from omfpandas.blockmodels.geometry import RegularGeometry, TensorGeometry
 
+SUPPORTED_BM_TYPES = ['RegularBlockModel', 'TensorGridBlockModel']
 
-class OMFPandasBase(ABC):
+class OMFPandas(ABC):
 
     def __init__(self, filepath: Path):
         """Instantiate the OMFPandas object.
@@ -37,19 +38,10 @@ class OMFPandasBase(ABC):
         self.project: Optional[Project] = None
         if filepath.exists():
             try:
-                if self.omf_version == 'v1':
-                    self.project = omf.OMFReader(str(filepath)).get_project()
-                elif self.omf_version == 'v2':
+                if self.omf_version == 'v2':
                     self.project = omf.load(str(filepath))
             except Exception as e:
                 raise ValueError(f"Invalid OMF file. The file is not {__omf_version__} compatible")
-        # self._elements = self.project.elements if self.project else []
-        # self.elements: dict[str, str] = {e.name: e.__class__.__name__ for e in self._elements}
-        # self.element_attributes: dict[str, list[str]]
-        # if __omf_version__ == 'v1':
-        #     self.element_attributes = []
-        # if __omf_version__ == 'v2':
-        #     self.element_attributes = {e.name: [a.name for a in e.attributes] for e in self._elements}
 
     def __repr__(self):
         res: str = f"OMF file({self.filepath})"
@@ -73,14 +65,10 @@ class OMFPandasBase(ABC):
     @property
     def blockmodel_attributes(self) -> Optional[dict[str, list[str]]]:
         """Attributes for blockmodel elements, keyed by element name"""
-        elements = [el for el in self.project.elements if el.__class__.__name__ in ['VolumeGridGeometry',
-                                                                                    'TensorGridBlockModel',
+        elements = [el for el in self.project.elements if el.__class__.__name__ in ['TensorGridBlockModel',
                                                                                     'RegularBlockModel']]
         if elements:
-            if self.omf_version == 'v1':
-                return {}
-            if self.omf_version == 'v2':
-                return {e.name: [a.name for a in e.attributes] for e in elements}
+            return {e.name: [a.name for a in e.attributes] for e in elements}
 
     @property
     def changelog(self) -> Optional[pd.DataFrame]:

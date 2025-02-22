@@ -1,0 +1,45 @@
+"""
+This series of tests will validate the sorting of the dataframes in the examples.
+
+When sorting is incorrect, noisy visualisation output is produced.
+"""
+from pathlib import Path
+
+import pandas as pd
+
+from omfpandas.blockmodels.convert_blockmodel import blockmodel_to_df, df_to_blockmodel
+from omfpandas.reader import OMFPandasReader
+
+# %%
+# Load the data
+# ------------
+
+filepath: Path = Path(__file__).parents[1] / 'assets/copper_deposit.omf'
+
+omfpr: OMFPandasReader = OMFPandasReader(filepath=filepath)
+blocks: pd.DataFrame = omfpr.read_blockmodel(blockmodel_name='Block Model')
+
+blocks.reset_index(level=['dx', 'dy', 'dz'], inplace=True)
+blocks['volume'] = blocks.dx * blocks.dy * blocks.dz
+blocks.reset_index().set_index(keys=['x', 'y', 'z', 'dx', 'dy', 'dz'], inplace=True)
+blocks.rename(columns={'CU_pct': 'Cu'}, inplace=True)
+blocks['mass'] = blocks['volume'] * 2.265
+
+# %%
+# Sort the data
+# ------------
+
+bm = df_to_blockmodel(df=blocks, blockmodel_name='Block Model')
+blocks_sorted = blockmodel_to_df(blockmodel=bm)
+
+# %%
+# Test the sorting
+# ----------------
+
+def test_sorting():
+    assert blocks_sorted.equals(blocks.sort_index(level=['x', 'y', 'z']))
+
+# %%
+# Plot the data
+# -------------
+

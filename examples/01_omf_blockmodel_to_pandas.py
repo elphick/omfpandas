@@ -15,7 +15,7 @@ from omfpandas import OMFPandasReader
 # Instantiate
 # -----------
 # Create the object OMFPandas with the path to the OMF file.
-test_omf_path: Path = Path('../assets/v2/test_file.omf')
+test_omf_path: Path = Path('../assets/test_file.omf')
 omfp: OMFPandasReader = OMFPandasReader(filepath=test_omf_path)
 
 # %%
