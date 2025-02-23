@@ -13,6 +13,7 @@ from omf import TensorGridBlockModel, RegularBlockModel, NumericAttribute, Categ
 from omfpandas.blockmodels.attributes import read_blockmodel_attributes, BM, series_to_attribute
 from omfpandas.blockmodels.geometry import RegularGeometry, TensorGeometry
 
+import pyvista as pv
 
 def df_to_blockmodel(df: pd.DataFrame, blockmodel_name: str) -> Union[RegularBlockModel, TensorGridBlockModel]:
     """
@@ -66,8 +67,8 @@ def df_to_regular_bm(df: pd.DataFrame, blockmodel_name: str) -> RegularBlockMode
         RegularBlockModel: The RegularBlockModel representing the DataFrame.
     """
 
-    # Sort the dataframe to align with the omf spec
-    df.sort_index(level=['z', 'y', 'x'])
+    # Sort the dataframe to align with the omf spec - 'C' order
+    df.sort_index(level=['x', 'y', 'z'])
 
     # Create the block model and geometry
     blockmodel = RegularBlockModel(name=blockmodel_name)
@@ -104,8 +105,8 @@ def df_to_tensor_bm(df: pd.DataFrame, blockmodel_name: str) -> BM:
         BlockModel: The BlockModel representing the DataFrame.
     """
 
-    # Sort the dataframe to align with the omf spec
-    df.sort_index(level=['z', 'y', 'x'], inplace=True)
+    # Sort the dataframe to align with the omf spec - 'C' order
+    df.sort_index(level=['x', 'y', 'z'], inplace=True)
 
     # Create the blockmodel and geometry
 
@@ -137,7 +138,7 @@ def df_to_tensor_bm(df: pd.DataFrame, blockmodel_name: str) -> BM:
 def df_to_pv_structured_grid(df: pd.DataFrame) -> 'pv.StructuredGrid':
     import pyvista as pv
 
-    # ensure the dataframe is sorted by z, y, x
+    # ensure the dataframe is sorted by z, y, x, since Pyvista uses 'F' order.
     df = df.sort_index(level=['z', 'y', 'x'])
 
     # Get the unique x, y, z coordinates (centroids)
@@ -174,10 +175,10 @@ def df_to_pv_unstructured_grid(df: pd.DataFrame) -> 'pv.UnstructuredGrid':
     :return:
     """
 
-    import pyvista as pv
+    # ensure the dataframe is sorted by z, y, x, since Pyvista uses 'F' order.
+    blocks = df.reset_index().sort_values(['z', 'y', 'x'])
 
     # Get the x, y, z coordinates and cell dimensions
-    blocks = df.reset_index().sort_values(['z', 'y', 'x'])
     # if no dims are passed, estimate them
     if 'dx' not in blocks.columns:
         dx, dy, dz = df.common_block_size()

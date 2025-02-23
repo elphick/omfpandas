@@ -42,6 +42,7 @@ class OMFBlockModel:
 
         # Add a thresholded mesh to the plotter
         plotter.add_mesh_threshold(mesh, scalars=scalar, show_edges=show_edges)
+        plotter.title = self.blockmodel.name
 
         return plotter
 

@@ -36,6 +36,6 @@ pip install omfpandas[io]
 - [x] 0.4.0 - Convert to omf 2.0 support.
 - [x] 0.5.0 - Block model profiling, with reports persisted in the omf file.
 - [x] 0.6.0 - Optional block model validation using pandera json schemas.
-- [x] 0.7.0 - Add support for omf1 and omf2
-- [ ] 0.8.0 - Add support for low-memory/out-of-core writing an omf element to parquet
+- [x] ...
+- [ ] 0.9.0 - Add support for low-memory/out-of-core writing an omf element to parquet
 - [ ] ...
