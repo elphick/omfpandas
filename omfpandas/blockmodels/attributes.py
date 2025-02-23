@@ -17,6 +17,8 @@ SENTINEL_VALUE = -9  # TODO: possibly move to config file
 
 
 def series_to_attribute(series: pd.Series) -> Union[CategoryAttribute, NumericAttribute]:
+
+    # todo manage sorting - see attribute_to_series
     if isinstance(series.dtype, pd.CategoricalDtype):
         cat_map = {i: c for i, c in enumerate(series.cat.categories)}
         cat_col_map = CategoryColormap(indices=list(cat_map.keys()), values=list(cat_map.values()))
@@ -173,5 +175,6 @@ def read_blockmodel_attributes(blockmodel: BM, attributes: Optional[list[str]] =
         geometry_index = geometry_index.take(int_index)
 
     res = pd.concat(chunks, axis=1)
+    # res.index = geometry_index.to_frame().reset_index(drop=True).sort_values(by=['z', 'y', 'x']).set_index(geometry_index.names).index
     res.index = geometry_index
     return res if isinstance(res, pd.DataFrame) else res.to_frame()

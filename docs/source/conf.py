@@ -5,10 +5,13 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('..'))
-sys.path.insert(0, os.path.abspath('../..'))
+import numpy as np
 
 import omfpandas
+import pyvista
+
+sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../..'))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -17,6 +20,20 @@ project = 'omfpandas'
 copyright = '2024, Greg Elphick'
 author = 'Greg Elphick'
 version = omfpandas.__version__
+
+# -- pyvista configuration ---------------------------------------------------
+
+# Manage errors
+pyvista.set_error_output_file("errors.txt")
+# Ensure that offscreen rendering is used for docs generation
+pyvista.OFF_SCREEN = True  # Not necessary - simply an insurance policy
+pyvista.BUILDING_GALLERY = True  # necessary when building the sphinx gallery
+# Preferred plotting style for documentation
+pyvista.set_plot_theme("document")
+pyvista.global_theme.window_size = np.array([1024, 768]) * 2
+
+image_scrapers = ("pyvista", "matplotlib")
+
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -40,6 +57,7 @@ sphinx_gallery_conf = {
     'nested_sections': False,
     'download_all_examples': True,
     'within_subsection_order': 'FileNameSortKey',
+    "image_scrapers": image_scrapers,
 }
 
 templates_path = ['_templates']

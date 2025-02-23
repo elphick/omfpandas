@@ -29,6 +29,10 @@ class Geometry(ABC):
     define the geometry in terms of block centroids.
     Additionally, other properties of the geometry are defined here, such as the shape of the geometry.
 
+    Attributes (in omf and pyvista) are stored in Fortran 'F' order, meaning that the last index changes the fastest.
+    Hence the MultiIndex levels need to be sorted by 'z', 'y', 'x', to align with the Fortran order.
+    This has x changing fastest, z changing slowest.
+
     """
     corner: Point
     axis_u: Vector
@@ -343,7 +347,8 @@ class RegularGeometry(Geometry):
         index = pd.MultiIndex.from_arrays([rotated_centroids[0], rotated_centroids[1], rotated_centroids[2]],
                                           names=['x', 'y', 'z'])
 
-        return index
+        # Sort the MultiIndex by x, y, z levels
+        return index.sortlevel(level=['x', 'y', 'z'])[0]
 
     def nearest_centroid_lookup(self, x: float, y: float, z: float) -> Point:
         """Find the nearest centroid for provided x, y, z points.
@@ -549,11 +554,12 @@ class TensorGeometry(Geometry):
 
         # TODO: consider rotation
 
-        index: pd.MultiIndex = pd.MultiIndex.from_arrays([xx.ravel("F"), yy.ravel("F"), zz.ravel("F"),
-                                                          dxx.ravel("F"), dyy.ravel("F"), dzz.ravel("F")],
+        index: pd.MultiIndex = pd.MultiIndex.from_arrays([xx.ravel(), yy.ravel(), zz.ravel(),
+                                                          dxx.ravel(), dyy.ravel(), dzz.ravel()],
                                                          names=['x', 'y', 'z', 'dx', 'dy', 'dz'])
 
-        return index
+        # Sort the MultiIndex by x, y, z levels
+        return index.sortlevel(level=['x', 'y', 'z'])[0]
 
     def nearest_centroid_lookup(self, x: float, y: float, z: float) -> Point:
         """Find the nearest centroid for provided x, y, z points.
