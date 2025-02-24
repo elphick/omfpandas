@@ -2,7 +2,7 @@
 Validate BlockModel
 ===================
 
-This example demonstrates how to validate a block model prior to writing it to an OMF file.
+This example demonstrates how to validate a pandas block model with a pandera schema prior to writing it to an OMF file.
 
 """
 import shutil
@@ -18,7 +18,7 @@ from omfpandas import OMFPandasReader, OMFPandasWriter
 # -----------
 # Create the object OMFPandas with the path to the OMF file.
 
-test_omf_path: Path = Path('./../assets/v2/test_file.omf')
+test_omf_path: Path = Path('../assets/test_file.omf')
 
 # create a temporary copy to preserve the original file
 temp_omf_path: Path = Path(tempfile.gettempdir()) / 'test_file_copy.omf'

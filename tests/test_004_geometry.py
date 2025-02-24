@@ -11,7 +11,7 @@ from omf import Project
 from omfpandas.blockmodels.geometry import RegularGeometry, TensorGeometry
 
 from omfpandas import OMFPandasReader
-from conftest import requires_omf_version, get_omf_file
+from conftest import get_omf_file
 
 
 def test_regular_geometry_initialization():
@@ -61,7 +61,6 @@ def test_regular_geometry_extents():
     assert geometry.extents == expected_extents
 
 
-@requires_omf_version('v2')
 def test_tensor_geometry_initialization():
     corner = (0.0, 0.0, 0.0)
     axis_u = (1.0, 0.0, 0.0)
@@ -82,7 +81,6 @@ def test_tensor_geometry_initialization():
     assert np.allclose(geometry.tensor_w, tensor_w)
 
 
-@requires_omf_version('v2')
 def test_tensor_geometry_centroids():
     corner = (0.0, 0.0, 0.0)
     axis_u = (1.0, 0.0, 0.0)
@@ -99,7 +97,6 @@ def test_tensor_geometry_centroids():
     assert np.allclose(geometry.centroid_w, np.arange(5.0, 105.0, 10.0))
 
 
-@requires_omf_version('v2')
 def test_tensor_geometry_extents():
     corner = (0.0, 0.0, 0.0)
     axis_u = (1.0, 0.0, 0.0)
@@ -115,7 +112,6 @@ def test_tensor_geometry_extents():
     assert geometry.extents == expected_extents
 
 
-# @requires_omf_version('v1|v2')
 def test_regular_geometry_from_multi_index():
     index = pd.MultiIndex.from_product([range(10), range(10), range(10)], names=['x', 'y', 'z'])
     geometry = RegularGeometry.from_multi_index(index)
@@ -124,7 +120,6 @@ def test_regular_geometry_from_multi_index():
     assert geometry.block_size == (1.0, 1.0, 1.0)
 
 
-@requires_omf_version('v2')
 def test_tensor_geometry_from_multi_index():
     index = pd.MultiIndex.from_product([range(10), range(10), range(10), [1.0], [1.0], [1.0]],
                                        names=['x', 'y', 'z', 'dx', 'dy', 'dz'])
@@ -136,22 +131,6 @@ def test_tensor_geometry_from_multi_index():
     assert np.allclose(geometry.tensor_w, np.full(10, 1.0))
 
 
-@requires_omf_version('v1')
-def test_regular_geometry_from_element_v1():
-    # load the block model from an omf file
-    omfp: OMFPandasReader = OMFPandasReader(filepath=get_omf_file())
-    bm_element_name: str = 'Block Model'
-    geometry = RegularGeometry.from_element(omfp.get_element_by_name(bm_element_name))
-
-    assert np.allclose(geometry.corner, (444700.0, 492800.0, 2330.0))
-    assert np.allclose(geometry.axis_u, (1.0, 0.0, 0.0))
-    assert np.allclose(geometry.axis_v, (0.0, 1.0, 0.0))
-    assert np.allclose(geometry.axis_w, (0.0, 0.0, 1.0))
-    assert np.allclose(geometry.block_size, (10.0, 10.0, 10.0))
-    assert np.allclose(geometry.shape, (110, 160, 96))
-
-
-@requires_omf_version('v2')
 def test_tensor_regular_geometry_conversion():
     from omf.blockmodel import TensorGridBlockModel, RegularBlockModel
     # load the block model from an omf file
@@ -198,7 +177,6 @@ def test_tensor_regular_geometry_conversion():
     assert np.allclose(tensor_geometry.tensor_w[0], regular_geometry.block_size[2])
 
 
-@requires_omf_version('v2')
 def test_tensor_geometry_from_element():
     # load the block model from an omf file
     omfp: OMFPandasReader = OMFPandasReader(filepath=get_omf_file())
@@ -213,7 +191,6 @@ def test_tensor_geometry_from_element():
     assert np.allclose(geometry.tensor_w, np.full(20, 1.0))
 
 
-@requires_omf_version('v2')
 def test_tensor_geometry_json_round_trip():
     from omfpandas.blockmodels.geometry import TensorGeometry
 
@@ -238,7 +215,6 @@ def test_tensor_geometry_json_round_trip():
     assert np.allclose(geom.tensor_w, geom2.tensor_w)
 
 
-@requires_omf_version('v2')
 def test_tensor_geometry_json_file_round_trip():
     from omfpandas.blockmodels.geometry import TensorGeometry
 
@@ -323,7 +299,6 @@ def test_regular_geometry_json_file_round_trip():
         temp_file_path.unlink()  # Ensure the temporary file is deleted
 
 
-@requires_omf_version('v2')
 def test_centroid_lookup():
     from omfpandas.blockmodels.geometry import TensorGeometry
 

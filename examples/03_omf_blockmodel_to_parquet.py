@@ -22,7 +22,7 @@ from omfpandas import OMFPandasReader, OMFPandasWriter
 # -----------
 # Create the object OMFPandas with the path to the OMF file.
 
-test_omf_path: Path = Path('./../assets/v2/test_file.omf')
+test_omf_path: Path = Path('../assets/test_file.omf')
 omf_writer: OMFPandasWriter = OMFPandasWriter(filepath=test_omf_path)
 
 # Display the head of the original block model

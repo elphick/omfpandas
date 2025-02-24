@@ -1,3 +1,20 @@
+Omfpandas 0.8.0 (2025-02-24)
+============================
+
+Bugfix
+------
+
+- Corrected MultiIndex order to C-order (x, y, z). (#39)
+
+
+Other Tasks
+-----------
+
+- Added blockmodel attribute sorting validation example. (#39)
+- Removed __omf_version__ (#39)
+- Removed OMF1 support for simplicity. (#39)
+
+
 Omfpandas 0.7.0 (2025-02-19)
 ============================
 

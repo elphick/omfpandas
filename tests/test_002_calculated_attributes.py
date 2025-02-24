@@ -8,10 +8,9 @@ from omf import Project
 
 from omfpandas import OMFPandasReader
 from omfpandas.writer import OMFPandasWriter
-from conftest import requires_omf_version, get_test_schema
+from conftest import get_test_schema
 
 
-@requires_omf_version('v2')
 def create_test_omf2_file() -> Path:
     from omf import NumericAttribute, TensorGridBlockModel
     project = Project(name='Test Project')

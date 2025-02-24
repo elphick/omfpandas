@@ -1,14 +1,19 @@
+import os
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 import pandas as pd
 
-from omfpandas.base import OMFPandasBase
+from omfpandas.base import OMFPandas, SUPPORTED_BM_TYPES
+from omfpandas.blockmodel import OMFBlockModel
+from omfpandas.blockmodels.convert_blockmodel import blockmodel_to_df
+from omfpandas.blockmodels.geometry import Geometry
 from omfpandas.utils.pandas import parse_vars_from_expr
-from omfpandas.blockmodels.factory import blockmodel_to_df_factory
+
+PathLike = Union[str, Path, os.PathLike]
 
 
-class OMFPandasReader(OMFPandasBase):
+class OMFPandasReader(OMFPandas):
     """A class to read an OMF file to a pandas DataFrame.
 
     Attributes:
@@ -16,12 +21,15 @@ class OMFPandasReader(OMFPandasBase):
 
     """
 
-    def __init__(self, filepath: Path):
+    def __init__(self, filepath: PathLike):
         """Instantiate the OMFPandasReader object
 
         Args:
             filepath: Path to the OMF file.
         """
+        if not isinstance(filepath, Path):
+            filepath = Path(filepath)
+
         if not filepath.exists():
             raise FileNotFoundError(f'File does not exist: {filepath}')
         super().__init__(filepath)
@@ -46,18 +54,6 @@ class OMFPandasReader(OMFPandasBase):
         # check the element retrieved is the expected type
         if bm.__class__.__name__ not in ['RegularBlockModel', 'TensorGridBlockModel']:
             raise ValueError(f"Element '{bm}' is not a supported BlockModel in the OMF file: {self.filepath}")
-
-        if self.omf_version == 'v1':
-            blockmodel_to_df = blockmodel_to_df_factory(is_tensor=False)
-        elif self.omf_version == 'v2':
-            if bm.__class__.__name__ == 'RegularBlockModel':
-                blockmodel_to_df = blockmodel_to_df_factory(is_tensor=False)
-            elif bm.__class__.__name__ == 'TensorGridBlockModel':
-                blockmodel_to_df = blockmodel_to_df_factory(is_tensor=True)
-            else:
-                raise NotImplementedError(f"Conversion for {bm.__class__.__name__} is not implemented.")
-        else:
-            raise ValueError(f"Unsupported omf version: {self.omf_version}")
 
         return blockmodel_to_df(bm, variables=attributes, query=query, index_filter=index_filter)
 
@@ -126,6 +122,23 @@ class OMFPandasReader(OMFPandasBase):
 
         return pd.concat(block_models.values(), axis=1)
 
+    def plot_blockmodel(self, blockmodel_name: str, scalar: str, threshold: bool = True, show_edges: bool = True,
+                        show_axes: bool = True) -> 'pv.Plotter':
+        """Plot the BlockModel using PyVista.
+
+        Args:
+            blockmodel_name (str): The name of the BlockModel to plot.
+            scalar (str): The scalar to plot.
+            threshold (bool): If True, plot the thresholded mesh. Default is True.
+            show_edges (bool): If True, show the edges. Default is True.
+            show_axes (bool): If True, show the axes. Default is True.
+
+        Returns:
+            pv.Plotter: The PyVista plotter object.
+        """
+        block_model = OMFBlockModel(self.get_element_by_name(blockmodel_name))
+        return block_model.plot(scalar=scalar, threshold=threshold, show_edges=show_edges, show_axes=show_axes)
+
     def find_nearest_centroid(self, x: float, y: float, z: float, blockmodel_name: Optional[str] = None) -> tuple[
         float, float, float]:
         """Find the nearest centroid for provided x, y, z points using a math rounding approach considering the reference centroid.
@@ -143,14 +156,14 @@ class OMFPandasReader(OMFPandasBase):
 
         # get the geometry for the first block model if not provided
         if blockmodel_name is None:
-            blockmodel_names = [element.name for element in self._elements if
-                                element.__class__.__name__ == 'TensorGridBlockModel']
+            blockmodel_names = [element_name for element_name, element_type in self.element_types.items() if
+                                element_type in SUPPORTED_BM_TYPES]
             if not blockmodel_names:
-                raise ValueError("No TensorGridBlockModel found in the OMF file.")
+                raise ValueError("No BlockModel found in the OMF file.")
             blockmodel_name = blockmodel_names[0]
 
         # get the geometry for the block model
-        geometry: 'TensorGeometry' = self.get_element_by_name(blockmodel_name).geometry
+        geometry: Geometry = OMFBlockModel(self.get_element_by_name(blockmodel_name)).geometry
         # perform the lookup
         nearest_x, nearest_y, nearest_z = geometry.nearest_centroid_lookup(x, y, z)
 

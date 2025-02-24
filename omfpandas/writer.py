@@ -9,8 +9,8 @@ import ydata_profiling
 
 from omfpandas import OMFPandasReader
 from omfpandas.audit import ChangeMessage
-from omfpandas.base import OMFPandasBase
-from omfpandas.blockmodels.factory import df_to_blockmodel_factory, blockmodel_to_df_factory
+from omfpandas.base import OMFPandas
+from omfpandas.blockmodels.convert_blockmodel import df_to_blockmodel, blockmodel_to_df
 
 from omfpandas.extras import _import_ydata_profiling, _import_pandera, _import_pandera_io
 from omfpandas.utils.pandas import parse_vars_from_expr
@@ -23,6 +23,7 @@ def get_username():
     except OSError:
         return os.environ.get('USER') or os.environ.get('USERNAME') or 'unknown_user'
 
+PathLike = Union[str, Path, os.PathLike]
 
 class OMFPandasWriter(OMFPandasReader):
     """A class to write pandas dataframes to an OMF file.
@@ -37,14 +38,17 @@ class OMFPandasWriter(OMFPandasReader):
         filepath (Path): Path to the OMF file.
     """
 
-    def __init__(self, filepath: Path):
+    def __init__(self, filepath: PathLike):
         """Instantiate the OMFPandasWriter object.
 
         Args:
             filepath (Path): Path to the OMF file.
         """
-        OMFPandasBase.__init__(self, filepath)
+        OMFPandas.__init__(self, filepath)
         self.user_id = get_username()
+
+        if not isinstance(filepath, Path):
+            filepath = Path(filepath)
 
         if not filepath.exists():
             # log a message and create a new project
@@ -79,13 +83,6 @@ class OMFPandasWriter(OMFPandasReader):
             ValueError: If the element retrieved is not a BlockModel.
         """
 
-        if 'x' not in blocks.index.names and 'y' not in blocks.index.names and 'z' not in blocks.index.names:
-            raise ValueError("Dataframe must have centroid coordinates (x, y, z) in the index.")
-        elif 'dx' in blocks.index.names and 'dy' in blocks.index.names and 'dz' in blocks.index.names:
-            is_tensor: bool = True
-        else:
-            is_tensor: bool = False
-
         calculation_map: dict = {}
         if pd_schema is not None:
             pa = _import_pandera()
@@ -108,21 +105,17 @@ class OMFPandasWriter(OMFPandasReader):
             dfmp: DataFrameMetaProcessor = DataFrameMetaProcessor(schema=pd_schema)
             calculation_map = dfmp.calculation_map
             blocks = dfmp.preprocess(blocks)
-            if self.omf_version == 'v2':
-                blocks = dfmp.validate(blocks, return_calculated_columns=False)
-            else:
-                # omf1 does not support calculated attributes, so return them for direct storage.
-                blocks = dfmp.validate(blocks, return_calculated_columns=True)
+            blocks = dfmp.validate(blocks, return_calculated_columns=False)
 
             self._logger.info(f"Creating BlockModel from dataframe: {blockmodel_name}")
-            bm = df_to_blockmodel_factory(is_tensor)(blocks, blockmodel_name)
-            if self.omf_version == 'v2':
-                # persist the schema inside the omf file
-                bm.description = pd_schema.description
-                bm.metadata['pd_schema'] = pd_schema.to_json()
+            bm = df_to_blockmodel(blocks, blockmodel_name)
+
+            # persist the schema inside the omf file
+            bm.description = pd_schema.description
+            bm.metadata['pd_schema'] = pd_schema.to_json()
         else:
             self._logger.info(f"Creating BlockModel from dataframe: {blockmodel_name}")
-            bm = df_to_blockmodel_factory(is_tensor)(blocks, blockmodel_name)
+            bm = df_to_blockmodel(blocks, blockmodel_name)
 
         if bm.name in [element.name for element in self.project.elements]:
             if not allow_overwrite:
@@ -141,7 +134,7 @@ class OMFPandasWriter(OMFPandasReader):
         self.persist_project()
 
         # write the calculated variables to the omf block model metadata
-        if pd_schema is not None and self.omf_version == 'v2':
+        if pd_schema is not None:
             self.create_calculated_blockmodel_attributes(blockmodel_name, calc_definitions=calculation_map)
 
     def create_calculated_blockmodel_attributes(self, blockmodel_name: str, calc_definitions: dict[str, str]):
@@ -230,10 +223,7 @@ class OMFPandasWriter(OMFPandasReader):
             series (pd.Series): The data to write to the attribute.
             allow_overwrite (bool): If True, overwrite the existing attribute. Default is False.
         """
-        from omfpandas.blockmodels.v2.attributes import series_to_attribute
-
-        if self.omf_version == 'v1':
-            raise NotImplementedError("Writing attributes to BlockModels is not supported in OMF1.")
+        from omfpandas.blockmodels.attributes import series_to_attribute
 
         bm = self.get_element_by_name(blockmodel_name)
         if bm.metadata.get('pd_schema'):
@@ -370,8 +360,7 @@ class OMFPandasWriter(OMFPandasReader):
         if out_path.exists() and not allow_overwrite:
             raise FileExistsError(
                 f"File already exists: {out_path}. If you want to overwrite, set allow_overwrite=True.")
-        is_tensor: bool = True if bm.__class__.__name__ == 'TensorGridBlockModel' else False
-        df: pd.DataFrame = blockmodel_to_df_factory(is_tensor=is_tensor)(blockmodel=bm, variables=variables)
+        df: pd.DataFrame = blockmodel_to_df(blockmodel=bm, variables=variables)
         df.to_parquet(out_path)
 
     def blockmodel_to_orc(self, blockmodel_name: str, out_path: Optional[Path] = None,
@@ -397,5 +386,5 @@ class OMFPandasWriter(OMFPandasReader):
             raise FileExistsError(
                 f"File already exists: {out_path}. If you want to overwrite, set allow_overwrite=True.")
         is_tensor: bool = True if bm.__class__.__name__ == 'TensorGridBlockModel' else False
-        df: pd.DataFrame = blockmodel_to_df_factory(is_tensor=is_tensor)(blockmodel=bm, variables=variables)
+        df: pd.DataFrame = blockmodel_to_df(blockmodel=bm, variables=variables)
         df.to_orc(out_path)

@@ -1,6 +1,7 @@
 import json
 import json
 import logging
+import os
 import tempfile
 import webbrowser
 from abc import ABC
@@ -14,10 +15,13 @@ if TYPE_CHECKING:
     from omf import Project
     from omfpandas.blockmodels.geometry import RegularGeometry, TensorGeometry
 
+SUPPORTED_BM_TYPES = ['RegularBlockModel', 'TensorGridBlockModel']
 
-class OMFPandasBase(ABC):
+PathLike = Union[str, Path, os.PathLike]
 
-    def __init__(self, filepath: Path):
+class OMFPandas(ABC):
+
+    def __init__(self, filepath: PathLike):
         """Instantiate the OMFPandas object.
 
         Args:
@@ -28,28 +32,16 @@ class OMFPandasBase(ABC):
             ValueError: If the file is not an OMF file.
         """
         self._logger = logging.getLogger(__class__.__name__)
-        from omfpandas import __omf_version__
-        self.omf_version = __omf_version__
+
+        if not isinstance(filepath, Path):
+            filepath = Path(filepath)
 
         if not filepath.suffix == '.omf':
             raise ValueError(f'File is not an OMF file: {filepath}')
         self.filepath: Path = filepath
         self.project: Optional[Project] = None
         if filepath.exists():
-            try:
-                if self.omf_version == 'v1':
-                    self.project = omf.OMFReader(str(filepath)).get_project()
-                elif self.omf_version == 'v2':
-                    self.project = omf.load(str(filepath))
-            except Exception as e:
-                raise ValueError(f"Invalid OMF file. The file is not {__omf_version__} compatible")
-        # self._elements = self.project.elements if self.project else []
-        # self.elements: dict[str, str] = {e.name: e.__class__.__name__ for e in self._elements}
-        # self.element_attributes: dict[str, list[str]]
-        # if __omf_version__ == 'v1':
-        #     self.element_attributes = []
-        # if __omf_version__ == 'v2':
-        #     self.element_attributes = {e.name: [a.name for a in e.attributes] for e in self._elements}
+           self.project = omf.load(str(filepath))
 
     def __repr__(self):
         res: str = f"OMF file({self.filepath})"
@@ -73,14 +65,10 @@ class OMFPandasBase(ABC):
     @property
     def blockmodel_attributes(self) -> Optional[dict[str, list[str]]]:
         """Attributes for blockmodel elements, keyed by element name"""
-        elements = [el for el in self.project.elements if el.__class__.__name__ in ['VolumeGridGeometry',
-                                                                                    'TensorGridBlockModel',
+        elements = [el for el in self.project.elements if el.__class__.__name__ in ['TensorGridBlockModel',
                                                                                     'RegularBlockModel']]
         if elements:
-            if self.omf_version == 'v1':
-                return {}
-            if self.omf_version == 'v2':
-                return {e.name: [a.name for a in e.attributes] for e in elements}
+            return {e.name: [a.name for a in e.attributes] for e in elements}
 
     @property
     def changelog(self) -> Optional[pd.DataFrame]:

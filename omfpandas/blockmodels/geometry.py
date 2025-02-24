@@ -7,8 +7,6 @@ from typing import Union, Optional
 import numpy as np
 import pandas as pd
 
-from omfpandas import __omf_version__
-
 FloatArray = Union[np.ndarray, list[float], np.ndarray[float]]
 Vector = Union[tuple[float, float, float], list[float, float, float]]
 Point = Union[tuple[float, float, float], list[float, float, float]]
@@ -23,13 +21,17 @@ MinMax = Union[tuple[float, float], list[float, float]]
 #         return super().default(obj)
 
 @dataclass
-class GeometryBase(ABC):
+class Geometry(ABC):
     """Base class for geometry objects.
 
     The geometry associated with omf block models are not defined by block centroids, and vary by block model type.
     In the pandas representation, the geometry is defined by the block centroids, so this class is used to
     define the geometry in terms of block centroids.
     Additionally, other properties of the geometry are defined here, such as the shape of the geometry.
+
+    Attributes (in omf and pyvista) are stored in Fortran 'F' order, meaning that the last index changes the fastest.
+    Hence the MultiIndex levels need to be sorted by 'z', 'y', 'x', to align with the Fortran order.
+    This has x changing fastest, z changing slowest.
 
     """
     corner: Point
@@ -116,7 +118,7 @@ class GeometryBase(ABC):
 
     @classmethod
     @abstractmethod
-    def from_element(cls, element) -> 'GeometryBase':
+    def from_element(cls, element) -> 'Geometry':
         pass
 
     @classmethod
@@ -134,7 +136,7 @@ class GeometryBase(ABC):
 
 
 @dataclass
-class RegularGeometry(GeometryBase):
+class RegularGeometry(Geometry):
     """Regular geometry data class.
 
     Regular Geometry applies to an omf.v1 VolumeElement or an omf.v2 RegularBlockModel.
@@ -213,27 +215,12 @@ class RegularGeometry(GeometryBase):
 
     @classmethod
     def from_element(cls, element) -> 'RegularGeometry':
-        if __omf_version__ == 'v1':
-            from omf import VolumeElement, VolumeGridGeometry
-            if not isinstance(element, VolumeElement):
-                raise ValueError("Element must be an instance of omf.VolumeElement")
-
-            geom: VolumeGridGeometry = element.geometry
-            return cls(corner=geom.origin,
-                       axis_u=geom.axis_u,
-                       axis_v=geom.axis_v,
-                       axis_w=geom.axis_w,
-                       block_size=(geom.tensor_u[0], geom.tensor_v[0], geom.tensor_w[0]),
-                       shape=(len(geom.tensor_u), len(geom.tensor_v), len(geom.tensor_w)))
-        elif __omf_version__ == 'v2':
-            from omf import RegularBlockModel
-            if not isinstance(element, RegularBlockModel):
-                raise ValueError("Element must be an instance of omf.RegularBlockModel")
-            return cls(element.corner,
-                       element.axis_u, element.axis_v, element.axis_w,
-                       element.block_size, shape=element.block_count)
-        else:
-            raise ValueError(f"Invalid OMF file. The file is not {__omf_version__} compatible")
+        from omf import RegularBlockModel
+        if not isinstance(element, RegularBlockModel):
+            raise ValueError("Element must be an instance of omf.RegularBlockModel")
+        return cls(element.corner,
+                   element.axis_u, element.axis_v, element.axis_w,
+                   element.block_size, shape=element.block_count)
 
     @classmethod
     def from_multi_index(cls, index: pd.MultiIndex,
@@ -360,7 +347,8 @@ class RegularGeometry(GeometryBase):
         index = pd.MultiIndex.from_arrays([rotated_centroids[0], rotated_centroids[1], rotated_centroids[2]],
                                           names=['x', 'y', 'z'])
 
-        return index
+        # Sort the MultiIndex by x, y, z levels
+        return index.sortlevel(level=['x', 'y', 'z'])[0]
 
     def nearest_centroid_lookup(self, x: float, y: float, z: float) -> Point:
         """Find the nearest centroid for provided x, y, z points.
@@ -386,7 +374,7 @@ class RegularGeometry(GeometryBase):
 
 
 @dataclass
-class TensorGeometry(GeometryBase):
+class TensorGeometry(Geometry):
     """Tensor geometry data class.
 
     Applicable for on omf.v2 TensorGridBlockModel.
@@ -459,15 +447,13 @@ class TensorGeometry(GeometryBase):
 
     @classmethod
     def from_element(cls, element) -> 'TensorGeometry':
-        if __omf_version__ == 'v2':
-            from omf import TensorGridBlockModel
-            if not isinstance(element, TensorGridBlockModel):
-                raise ValueError("Element must be an instance of omf.TensorGridBlockModel")
+        from omf import TensorGridBlockModel
+        if not isinstance(element, TensorGridBlockModel):
+            raise ValueError("Element must be an instance of omf.TensorGridBlockModel")
 
-            return cls(element.corner, element.axis_u, element.axis_v, element.axis_w,
-                       element.tensor_u, element.tensor_v, element.tensor_w)
-        else:
-            raise ValueError(f"Invalid OMF file. The file is not {__omf_version__} compatible")
+        return cls(element.corner, element.axis_u, element.axis_v, element.axis_w,
+                   element.tensor_u, element.tensor_v, element.tensor_w)
+
 
     @classmethod
     def from_multi_index(cls, index: pd.MultiIndex) -> 'TensorGeometry':
@@ -568,11 +554,12 @@ class TensorGeometry(GeometryBase):
 
         # TODO: consider rotation
 
-        index: pd.MultiIndex = pd.MultiIndex.from_arrays([xx.ravel("F"), yy.ravel("F"), zz.ravel("F"),
-                                                          dxx.ravel("F"), dyy.ravel("F"), dzz.ravel("F")],
+        index: pd.MultiIndex = pd.MultiIndex.from_arrays([xx.ravel(), yy.ravel(), zz.ravel(),
+                                                          dxx.ravel(), dyy.ravel(), dzz.ravel()],
                                                          names=['x', 'y', 'z', 'dx', 'dy', 'dz'])
 
-        return index
+        # Sort the MultiIndex by x, y, z levels
+        return index.sortlevel(level=['x', 'y', 'z'])[0]
 
     def nearest_centroid_lookup(self, x: float, y: float, z: float) -> Point:
         """Find the nearest centroid for provided x, y, z points.
