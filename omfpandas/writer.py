@@ -23,6 +23,7 @@ def get_username():
     except OSError:
         return os.environ.get('USER') or os.environ.get('USERNAME') or 'unknown_user'
 
+PathLike = Union[str, Path, os.PathLike]
 
 class OMFPandasWriter(OMFPandasReader):
     """A class to write pandas dataframes to an OMF file.
@@ -37,7 +38,7 @@ class OMFPandasWriter(OMFPandasReader):
         filepath (Path): Path to the OMF file.
     """
 
-    def __init__(self, filepath: Path):
+    def __init__(self, filepath: PathLike):
         """Instantiate the OMFPandasWriter object.
 
         Args:
@@ -45,6 +46,9 @@ class OMFPandasWriter(OMFPandasReader):
         """
         OMFPandas.__init__(self, filepath)
         self.user_id = get_username()
+
+        if not isinstance(filepath, Path):
+            filepath = Path(filepath)
 
         if not filepath.exists():
             # log a message and create a new project

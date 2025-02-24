@@ -30,7 +30,7 @@ class OMFBlockModel:
     def from_dataframe(cls, df: pd.DataFrame, blockmodel_name: str):
         return cls(blockmodel=df_to_blockmodel(df=df, blockmodel_name=blockmodel_name))
 
-    def plot(self, scalar: str, show_edges: bool = True) -> 'pv.Plotter':
+    def plot(self, scalar: str, threshold: bool=True, show_edges: bool = True, show_axes: bool=True) -> 'pv.Plotter':
         import pyvista as pv
         if scalar not in self.attributes.keys():
             raise ValueError(f"Column '{scalar}' not found in the OMFBlockModel.")
@@ -41,8 +41,14 @@ class OMFBlockModel:
         mesh = self.get_blocks(attributes=[scalar])
 
         # Add a thresholded mesh to the plotter
-        plotter.add_mesh_threshold(mesh, scalars=scalar, show_edges=show_edges)
+        if threshold:
+            plotter.add_mesh_threshold(mesh, scalars=scalar, show_edges=show_edges)
+        else:
+            plotter.add_mesh(mesh, scalars=scalar, show_edges=show_edges)
+
         plotter.title = self.blockmodel.name
+        if show_axes:
+            plotter.show_axes()
 
         return plotter
 

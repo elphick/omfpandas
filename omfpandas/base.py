@@ -1,6 +1,7 @@
 import json
 import json
 import logging
+import os
 import tempfile
 import webbrowser
 from abc import ABC
@@ -16,9 +17,11 @@ if TYPE_CHECKING:
 
 SUPPORTED_BM_TYPES = ['RegularBlockModel', 'TensorGridBlockModel']
 
+PathLike = Union[str, Path, os.PathLike]
+
 class OMFPandas(ABC):
 
-    def __init__(self, filepath: Path):
+    def __init__(self, filepath: PathLike):
         """Instantiate the OMFPandas object.
 
         Args:
@@ -31,6 +34,9 @@ class OMFPandas(ABC):
         self._logger = logging.getLogger(__class__.__name__)
         from omfpandas import __omf_version__
         self.omf_version = __omf_version__
+
+        if not isinstance(filepath, Path):
+            filepath = Path(filepath)
 
         if not filepath.suffix == '.omf':
             raise ValueError(f'File is not an OMF file: {filepath}')
