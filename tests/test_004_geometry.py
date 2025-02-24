@@ -143,7 +143,7 @@ def test_tensor_regular_geometry_conversion():
 
     # Convert the tensor model to a regular block model
     regular_model = RegularBlockModel(name=f'{tensor_model.name}_regular',
-                                      origin=tensor_model.origin,
+                                      corner=tensor_model.corner,
                                       axis_u=tensor_model.axis_u,
                                       axis_v=tensor_model.axis_v,
                                       axis_w=tensor_model.axis_w,
@@ -182,7 +182,7 @@ def test_tensor_geometry_from_element():
     omfp: OMFPandasReader = OMFPandasReader(filepath=get_omf_file())
     geometry = TensorGeometry.from_element(omfp.get_element_by_name(element_name='tensor'))
 
-    assert np.allclose(geometry.corner, (0.0, 0.0, 0.0))
+    assert np.allclose(geometry.corner, (10.0, 10.0, -10.0))
     assert np.allclose(geometry.axis_u, (1.0, 0.0, 0.0))
     assert np.allclose(geometry.axis_v, (0.0, 1.0, 0.0))
     assert np.allclose(geometry.axis_w, (0.0, 0.0, 1.0))

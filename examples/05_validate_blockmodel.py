@@ -2,7 +2,7 @@
 Validate BlockModel
 ===================
 
-This example demonstrates how to validate a block model prior to writing it to an OMF file.
+This example demonstrates how to validate a pandas block model with a pandera schema prior to writing it to an OMF file.
 
 """
 import shutil

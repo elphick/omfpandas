@@ -4,7 +4,7 @@ from typing import Literal
 import pandas as pd
 import pytest
 
-from omfpandas import OMFPandasReader, __omf_version__
+from omfpandas import OMFPandasReader
 from omfpandas.blockmodel import OMFBlockModel
 from conftest import get_omf_file
 
@@ -15,7 +15,6 @@ def test_init():
 
     #
     omfp: OMFPandasReader = OMFPandasReader(filepath=test_omf_path)
-    assert omfp.omf_version == __omf_version__
 
 
 def test_blockmodel_to_dataframe():

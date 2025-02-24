@@ -10,9 +10,7 @@ from omfpandas.blockmodels.geometry import Geometry, TensorGeometry, RegularGeom
 
 class OMFBlockModel:
     def __init__(self, blockmodel: Union['BaseBlockModel', 'RegularBlockModel', 'TensorGridBlockModel']):
-        from omfpandas import __omf_version__
         self._logger = logging.getLogger(__class__.__name__)
-        self.omf_version = __omf_version__
         self.blockmodel = blockmodel
         self.bm_type: str = blockmodel.__class__.__name__
         self.geometry: Geometry = TensorGeometry.from_element(

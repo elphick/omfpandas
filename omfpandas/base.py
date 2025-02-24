@@ -32,8 +32,6 @@ class OMFPandas(ABC):
             ValueError: If the file is not an OMF file.
         """
         self._logger = logging.getLogger(__class__.__name__)
-        from omfpandas import __omf_version__
-        self.omf_version = __omf_version__
 
         if not isinstance(filepath, Path):
             filepath = Path(filepath)
@@ -43,11 +41,7 @@ class OMFPandas(ABC):
         self.filepath: Path = filepath
         self.project: Optional[Project] = None
         if filepath.exists():
-            try:
-                if self.omf_version == 'v2':
-                    self.project = omf.load(str(filepath))
-            except Exception as e:
-                raise ValueError(f"Invalid OMF file. The file is not {__omf_version__} compatible")
+           self.project = omf.load(str(filepath))
 
     def __repr__(self):
         res: str = f"OMF file({self.filepath})"

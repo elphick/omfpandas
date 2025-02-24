@@ -134,7 +134,7 @@ class OMFPandasWriter(OMFPandasReader):
         self.persist_project()
 
         # write the calculated variables to the omf block model metadata
-        if pd_schema is not None and self.omf_version == 'v2':
+        if pd_schema is not None:
             self.create_calculated_blockmodel_attributes(blockmodel_name, calc_definitions=calculation_map)
 
     def create_calculated_blockmodel_attributes(self, blockmodel_name: str, calc_definitions: dict[str, str]):
@@ -224,9 +224,6 @@ class OMFPandasWriter(OMFPandasReader):
             allow_overwrite (bool): If True, overwrite the existing attribute. Default is False.
         """
         from omfpandas.blockmodels.attributes import series_to_attribute
-
-        if self.omf_version == 'v1':
-            raise NotImplementedError("Writing attributes to BlockModels is not supported in OMF1.")
 
         bm = self.get_element_by_name(blockmodel_name)
         if bm.metadata.get('pd_schema'):
