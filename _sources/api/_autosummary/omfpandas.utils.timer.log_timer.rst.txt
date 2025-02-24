@@ -1,0 +1,6 @@
+omfpandas.utils.timer.log\_timer
+================================
+
+.. currentmodule:: omfpandas.utils.timer
+
+.. autofunction:: log_timer

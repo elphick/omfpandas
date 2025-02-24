@@ -1,0 +1,38 @@
+﻿omfpandas.writer
+================
+
+.. automodule:: omfpandas.writer
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      get_username
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+   
+      OMFPandasWriter
+   
+   
+
+   
+   
+   
+
+
+

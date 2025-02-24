@@ -1,0 +1,34 @@
+omfpandas.utils.pandas
+======================
+
+.. automodule:: omfpandas.utils.pandas
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      is_nullable_integer_dtype
+      parse_vars_from_expr
+      to_nullable_integer_dtype
+      to_numpy_integer_dtype
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

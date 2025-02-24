@@ -1,0 +1,50 @@
+omfpandas.writer.OMFPandasWriter
+================================
+
+.. currentmodule:: omfpandas.writer
+
+.. autoclass:: OMFPandasWriter
+   :members:
+   :special-members: __add__, __mul__
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~OMFPandasWriter.__init__
+      ~OMFPandasWriter.blockmodel_to_orc
+      ~OMFPandasWriter.blockmodel_to_parquet
+      ~OMFPandasWriter.create_blockmodel
+      ~OMFPandasWriter.create_calculated_blockmodel_attributes
+      ~OMFPandasWriter.delete_blockmodel_attribute
+      ~OMFPandasWriter.find_nearest_centroid
+      ~OMFPandasWriter.get_bm_geometry
+      ~OMFPandasWriter.get_element_attribute_names
+      ~OMFPandasWriter.get_element_by_name
+      ~OMFPandasWriter.persist_project
+      ~OMFPandasWriter.plot_blockmodel
+      ~OMFPandasWriter.profile_blockmodel
+      ~OMFPandasWriter.read_block_models
+      ~OMFPandasWriter.read_blockmodel
+      ~OMFPandasWriter.view_block_model_profile
+      ~OMFPandasWriter.write_block_model_schema
+      ~OMFPandasWriter.write_blockmodel_attribute
+      ~OMFPandasWriter.write_to_changelog
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~OMFPandasWriter.blockmodel_attributes
+      ~OMFPandasWriter.changelog
+      ~OMFPandasWriter.element_types
+   
+   
