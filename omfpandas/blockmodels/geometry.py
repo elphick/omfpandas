@@ -218,7 +218,7 @@ class RegularGeometry(Geometry):
         from omf import RegularBlockModel
         if not isinstance(element, RegularBlockModel):
             raise ValueError("Element must be an instance of omf.RegularBlockModel")
-        return cls(element.origin,
+        return cls(element.corner,
                    element.axis_u, element.axis_v, element.axis_w,
                    element.block_size, shape=element.block_count)
 
@@ -451,7 +451,7 @@ class TensorGeometry(Geometry):
         if not isinstance(element, TensorGridBlockModel):
             raise ValueError("Element must be an instance of omf.TensorGridBlockModel")
 
-        return cls(element.origin, element.axis_u, element.axis_v, element.axis_w,
+        return cls(element.corner, element.axis_u, element.axis_v, element.axis_w,
                    element.tensor_u, element.tensor_v, element.tensor_w)
 
 
