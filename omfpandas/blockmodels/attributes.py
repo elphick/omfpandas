@@ -7,7 +7,7 @@ from omf.blockmodel import BaseBlockModel, RegularBlockModel, TensorGridBlockMod
 from pandas.core.dtypes.common import is_integer_dtype
 
 from omfpandas.blockmodels.geometry import RegularGeometry, TensorGeometry
-from omfpandas.utils.pandas import is_nullable_integer_dtype, to_numpy_integer_dtype, to_nullable_integer_dtype, \
+from omfpandas.utils.pandas_utils import is_nullable_integer_dtype, to_numpy_integer_dtype, to_nullable_integer_dtype, \
     parse_vars_from_expr
 
 # generic type variable, used for type hinting, to indicate that the type is a subclass of BaseBlockModel

@@ -1,3 +1,18 @@
+Omfpandas 0.8.1 (2025-02-25)
+============================
+
+Feature
+-------
+
+- Added test_block_model utility function. (#41)
+
+
+Other Tasks
+-----------
+
+- Renamed utils modules to avoid name conflicts. (#41)
+
+
 Omfpandas 0.8.0 (2025-02-24)
 ============================
 

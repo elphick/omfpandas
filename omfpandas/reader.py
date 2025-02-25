@@ -8,7 +8,7 @@ from omfpandas.base import OMFPandas, SUPPORTED_BM_TYPES
 from omfpandas.blockmodel import OMFBlockModel
 from omfpandas.blockmodels.convert_blockmodel import blockmodel_to_df
 from omfpandas.blockmodels.geometry import Geometry
-from omfpandas.utils.pandas import parse_vars_from_expr
+from omfpandas.utils.pandas_utils import parse_vars_from_expr
 
 PathLike = Union[str, Path, os.PathLike]
 
