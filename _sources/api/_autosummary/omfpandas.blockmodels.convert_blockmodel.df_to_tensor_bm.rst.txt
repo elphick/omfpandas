@@ -1,0 +1,6 @@
+omfpandas.blockmodels.convert\_blockmodel.df\_to\_tensor\_bm
+============================================================
+
+.. currentmodule:: omfpandas.blockmodels.convert_blockmodel
+
+.. autofunction:: df_to_tensor_bm

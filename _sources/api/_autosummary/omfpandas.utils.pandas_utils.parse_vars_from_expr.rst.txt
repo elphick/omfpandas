@@ -1,0 +1,6 @@
+omfpandas.utils.pandas\_utils.parse\_vars\_from\_expr
+=====================================================
+
+.. currentmodule:: omfpandas.utils.pandas_utils
+
+.. autofunction:: parse_vars_from_expr

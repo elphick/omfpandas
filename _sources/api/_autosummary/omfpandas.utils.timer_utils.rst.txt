@@ -1,0 +1,39 @@
+omfpandas.utils.timer\_utils
+============================
+
+.. automodule:: omfpandas.utils.timer_utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      get_default_logger
+      log_timer
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+   
+      MyLogger
+   
+   
+
+   
+   
+   
+
+
+

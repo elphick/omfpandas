@@ -1,0 +1,32 @@
+omfpandas.blockmodels.geometry
+==============================
+
+.. automodule:: omfpandas.blockmodels.geometry
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+   
+      Geometry
+      RegularGeometry
+      TensorGeometry
+   
+   
+
+   
+   
+   
+
+
+

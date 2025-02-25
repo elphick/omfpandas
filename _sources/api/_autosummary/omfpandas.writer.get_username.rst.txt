@@ -1,0 +1,6 @@
+omfpandas.writer.get\_username
+==============================
+
+.. currentmodule:: omfpandas.writer
+
+.. autofunction:: get_username

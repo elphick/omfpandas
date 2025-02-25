@@ -1,0 +1,6 @@
+omfpandas.blockmodels.attributes.evaluate\_calculated\_attribute
+================================================================
+
+.. currentmodule:: omfpandas.blockmodels.attributes
+
+.. autofunction:: evaluate_calculated_attribute
