@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:00.992** total execution time for 8 files **from all galleries**:
+**00:05.842** total execution time for 8 files **from all galleries**:
 
 .. container::
 
@@ -32,11 +32,8 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_05_validate_blockmodel.py` (``..\..\examples\05_validate_blockmodel.py``)
-     - 00:00.813
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_06_reading_multiple_blockmodels.py` (``..\..\examples\06_reading_multiple_blockmodels.py``)
-     - 00:00.179
+   * - :ref:`sphx_glr_auto_examples_08_validate_blockmodel_sort_order.py` (``..\..\examples\08_validate_blockmodel_sort_order.py``)
+     - 00:05.842
      - 0.0
    * - :ref:`sphx_glr_auto_examples_01_omf_blockmodel_to_pandas.py` (``..\..\examples\01_omf_blockmodel_to_pandas.py``)
      - 00:00.000
@@ -50,9 +47,12 @@ Computation times
    * - :ref:`sphx_glr_auto_examples_04_omf_profile_blockmodel.py` (``..\..\examples\04_omf_profile_blockmodel.py``)
      - 00:00.000
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_07_visualise_blockmodel.py` (``..\..\examples\07_visualise_blockmodel.py``)
+   * - :ref:`sphx_glr_auto_examples_05_validate_blockmodel.py` (``..\..\examples\05_validate_blockmodel.py``)
      - 00:00.000
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_08_validate_blockmodel_sort_order.py` (``..\..\examples\08_validate_blockmodel_sort_order.py``)
+   * - :ref:`sphx_glr_auto_examples_06_reading_multiple_blockmodels.py` (``..\..\examples\06_reading_multiple_blockmodels.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_07_visualise_blockmodel.py` (``..\..\examples\07_visualise_blockmodel.py``)
      - 00:00.000
      - 0.0

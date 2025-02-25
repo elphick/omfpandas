@@ -32,13 +32,17 @@ import pandas as pd
 import pyvista as pv
 
 from omfpandas import OMFPandasWriter
+from omfpandas.utils.blockmodel_utils import create_test_blockmodel
 
 # %%
-# Load
-# ----
-# Create the object OMFPandas with the path to the OMF file.
-test_bm_path: Path = Path('../assets/test_blockmodel.parquet')
-blocks: pd.DataFrame = pd.read_parquet(test_bm_path)
+# Create Block Model Dataframe
+# ----------------------------
+
+shape = (5, 4, 3)
+block_size = (1.0, 1.0, 0.5)
+corner = (100.0, 200.0, 300.0)
+
+blocks: pd.DataFrame = create_test_blockmodel(shape, block_size, corner)
 
 # %%
 # The dataframe is C-style (x, y, z).  The last index (z) changes the fastest.
@@ -53,11 +57,11 @@ blocks.sort_index(level=['z', 'y', 'x'])
 # Sort Order Check
 # ----------------
 # Check the ordering by first sorting by x,y,z and confirming the c-raveled attribute is monotonic.
-assert np.array_equal(blocks.sort_index(level=['x', 'y', 'z'])['c_order_xyz'].values, np.arange(len(blocks)))
+assert np.array_equal(blocks.sort_index(level=['x', 'y', 'z'])['c_style_xyz'].values, np.arange(len(blocks)))
 
 # %%
 # Similarly, sort by z,y,x and confirm the f-raveled attribute is monotonic.
-assert np.array_equal(blocks.sort_index(level=['z', 'y', 'x'])['f_order_zyx'].values, np.arange(len(blocks)))
+assert np.array_equal(blocks.sort_index(level=['z', 'y', 'x'])['f_style_zyx'].values, np.arange(len(blocks)))
 
 
 # %%
@@ -86,11 +90,11 @@ p.show()
 # %%
 # Plot the c-raveled attribute.
 
-p: pv.Plotter = omfp.plot_blockmodel(blockmodel_name='sort_check', scalar='c_order_xyz', threshold=False)
+p: pv.Plotter = omfp.plot_blockmodel(blockmodel_name='sort_check', scalar='c_style_xyz', threshold=False)
 p.show()
 
 # %%
 # Plot the f-raveled attribute.
 
-p = omfp.plot_blockmodel(blockmodel_name='sort_check', scalar='f_order_zyx', threshold=False)
+p = omfp.plot_blockmodel(blockmodel_name='sort_check', scalar='f_style_zyx', threshold=False)
 p.show()

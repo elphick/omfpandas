@@ -11,8 +11,7 @@ from pathlib import Path
 import pandas as pd
 
 from omfpandas import OMFPandasReader, OMFPandasWriter
-from omfpandas.blockmodels.convert_blockmodel import convert_tensor_to_regular, df_to_tensor_bm, df_to_regular_bm, \
-    blockmodel_to_df
+from omfpandas.blockmodels.convert_blockmodel import df_to_regular_bm, blockmodel_to_df
 
 # %%
 # Instantiate

@@ -13,9 +13,9 @@ from omfpandas.base import OMFPandas
 from omfpandas.blockmodels.convert_blockmodel import df_to_blockmodel, blockmodel_to_df
 
 from omfpandas.extras import _import_ydata_profiling, _import_pandera, _import_pandera_io
-from omfpandas.utils.pandas import parse_vars_from_expr
-from omfpandas.utils.pandera import DataFrameMetaProcessor, load_schema_from_yaml
-from omfpandas.utils.timer import log_timer
+from omfpandas.utils.pandas_utils import parse_vars_from_expr
+from omfpandas.utils.pandera_utils import DataFrameMetaProcessor, load_schema_from_yaml
+from omfpandas.utils import log_timer
 
 def get_username():
     try:
