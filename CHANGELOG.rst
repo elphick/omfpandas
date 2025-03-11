@@ -1,3 +1,12 @@
+Omfpandas 0.8.2 (2025-03-11)
+============================
+
+Feature
+-------
+
+- Added composite element support for block models.  Uses dot notation: composite_name.blockmodel_name (#48)
+
+
 Omfpandas 0.8.1 (2025-02-25)
 ============================
 

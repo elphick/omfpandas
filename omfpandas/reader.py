@@ -41,7 +41,7 @@ class OMFPandasReader(OMFPandas):
         Only variables assigned to the `cell` (as distinct from the grid `points`) are loaded.
 
         Args:
-            blockmodel_name (str): The name of the BlockModel to convert.
+            blockmodel_name (str): The name of the BlockModel to read. Use dot notation for composite (e.g., Composite.BlockModel).
             attributes (Optional[list[str]]): The attributes/variables to include in the DataFrame. If None, all
                 variables are included.
             query (Optional[str]): A query string to filter the DataFrame. Default is None.
