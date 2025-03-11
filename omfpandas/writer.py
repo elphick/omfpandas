@@ -74,7 +74,7 @@ class OMFPandasWriter(OMFPandasReader):
 
         Args:
             blocks (pd.DataFrame): The dataframe to write to the BlockModel.
-            blockmodel_name (str): The name of the BlockModel to write to.
+            blockmodel_name (str): The name of the BlockModel to write to. Use dot notation for composite (e.g., Composite.BlockModel).
             pd_schema (Optional[Union[Path, dict]]): The path to the Pandera schema file or a dict of the schema.
              Default is None.  If provided, the schema will be used to validate the dataframe before writing.
             allow_overwrite (bool): If True, overwrite the existing BlockModel. Default is False.
@@ -82,6 +82,9 @@ class OMFPandasWriter(OMFPandasReader):
         Raises:
             ValueError: If the element retrieved is not a BlockModel.
         """
+        composite_name = None
+        if '.' in blockmodel_name:
+            composite_name, blockmodel_name = blockmodel_name.split('.', 1)
 
         calculation_map: dict = {}
         if pd_schema is not None:
@@ -126,10 +129,21 @@ class OMFPandasWriter(OMFPandasReader):
                 volume_to_remove = [element for element in self.project.elements if element.name == bm.name][0]
                 self.project.elements.remove(volume_to_remove)
 
-        self.project.elements.append(bm)
+        log_description: str = f"BlockModel written with {len(bm.attributes)} attributes"
+        if composite_name:
+            # get the composite if it exists or create it if it does not
+            if composite_name not in [element.name for element in self.project.elements]:
+                composite = omf.Composite(name=composite_name)
+                self.project.elements.append(composite)
+            else:
+                composite = self.get_element_by_name(composite_name)
+            composite.elements.append(bm)
+            log_description += f" in composite {composite_name}"
+        else:
+            self.project.elements.append(bm)
 
         # create the audit record
-        self.write_to_changelog(element=bm.name, action='create', description='BlockModel written')
+        self.write_to_changelog(element=bm.name, action='create', description=log_description)
         # write the omf project to file
         self.persist_project()
 

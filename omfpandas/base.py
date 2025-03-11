@@ -80,17 +80,29 @@ class OMFPandas(ABC):
     def get_element_by_name(self, element_name: str):
         """Get an element by its name.
 
-        :param element_name: The name of the element to retrieve.
+        :param element_name: The name of the element to retrieve. Use dot notation for composite (e.g., Composite.BlockModel).
         :return:
         """
-        element_names = list(self.element_types.keys())
-        element = [e for e in self.project.elements if e.name == element_name]
-        if not element:
-            raise ValueError(f"Element '{element_name}' not found in the OMF file: {self.filepath.name}. "
-                             f"Available elements are: {element_names}")
-        elif len(element) > 1:
-            raise ValueError(f"Multiple elements with the name '{element_name}' found in the OMF file: "
-                             f"{self.filepath.name}")
+        composite_name = None
+        if '.' in element_name:
+            composite_name, element_name = element_name.split('.', 1)
+
+        if composite_name:
+            composite = [e for e in self.project.elements if e.name == composite_name]
+            if not composite:
+                raise ValueError(f"Composite '{composite_name}' not found in the OMF file: {self.filepath.name}.")
+            composite = composite[0]
+            element = [e for e in composite.elements if e.name == element_name]
+            if not element:
+                raise ValueError(f"Element '{element_name}' not found in composite '{composite_name}'.")
+        else:
+            element = [e for e in self.project.elements if e.name == element_name]
+            if not element:
+                raise ValueError(f"Element '{element_name}' not found in the OMF file: {self.filepath.name}.")
+            elif len(element) > 1:
+                raise ValueError(f"Multiple elements with the name '{element_name}' found in the OMF file: "
+                                 f"{self.filepath.name}")
+
         return element[0]
 
     def get_element_attribute_names(self, element_name: str) -> list[str]:
