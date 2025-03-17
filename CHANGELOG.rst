@@ -1,3 +1,12 @@
+Omfpandas 0.8.3 (2025-03-17)
+============================
+
+Feature
+-------
+
+- Added optional encoded integer index to regular blockmodel dataframe (#50)
+
+
 Omfpandas 0.8.2 (2025-03-11)
 ============================
 
