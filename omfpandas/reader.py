@@ -6,6 +6,7 @@ import pandas as pd
 
 from omfpandas.base import OMFPandas, SUPPORTED_BM_TYPES
 from omfpandas.blockmodel import OMFBlockModel
+from omfpandas.blockmodels import multiindex_to_encoded_index
 from omfpandas.blockmodels.convert_blockmodel import blockmodel_to_df
 from omfpandas.blockmodels.geometry import Geometry
 from omfpandas.utils.pandas_utils import parse_vars_from_expr
@@ -31,11 +32,17 @@ class OMFPandasReader(OMFPandas):
             filepath = Path(filepath)
 
         if not filepath.exists():
-            raise FileNotFoundError(f'File does not exist: {filepath}')
+            raise FileNotFoundError(f"File does not exist: {filepath}")
         super().__init__(filepath)
 
-    def read_blockmodel(self, blockmodel_name: str, attributes: Optional[list[str]] = None,
-                        query: Optional[str] = None, index_filter: Optional[list[int]] = None) -> pd.DataFrame:
+    def read_blockmodel(
+            self,
+            blockmodel_name: str,
+            attributes: Optional[list[str]] = None,
+            query: Optional[str] = None,
+            index_filter: Optional[list[int]] = None,
+            encode_index: bool = False,
+    ) -> pd.DataFrame:
         """Return a DataFrame from a BlockModel.
 
         Only variables assigned to the `cell` (as distinct from the grid `points`) are loaded.
@@ -46,25 +53,37 @@ class OMFPandasReader(OMFPandas):
                 variables are included.
             query (Optional[str]): A query string to filter the DataFrame. Default is None.
             index_filter (Optional[list[int]]): A list of indexes to filter the DataFrame. Default is None.
+            encode_index (bool): If True, encode the index to a single integer.
 
         Returns:
             pd.DataFrame: The DataFrame representing the BlockModel.
         """
         bm = self.get_element_by_name(blockmodel_name)
         # check the element retrieved is the expected type
-        if bm.__class__.__name__ not in ['RegularBlockModel', 'TensorGridBlockModel']:
-            raise ValueError(f"Element '{bm}' is not a supported BlockModel in the OMF file: {self.filepath}")
+        if bm.__class__.__name__ not in ["RegularBlockModel", "TensorGridBlockModel"]:
+            raise ValueError(
+                f"Element '{bm}' is not a supported BlockModel in the OMF file: {self.filepath}"
+            )
+        res: pd.DataFrame = blockmodel_to_df(
+            bm, variables=attributes, query=query, index_filter=index_filter
+        )
+        if encode_index:
+            res.index = multiindex_to_encoded_index(res.index)
+        return res
 
-        return blockmodel_to_df(bm, variables=attributes, query=query, index_filter=index_filter)
-
-    def read_block_models(self, blockmodel_attributes: dict[str, list[str]],
-                          query: Optional[str] = None) -> pd.DataFrame:
+    def read_block_models(
+            self,
+            blockmodel_attributes: dict[str, list[str]],
+            query: Optional[str] = None,
+            encode_index: bool = False,
+    ) -> pd.DataFrame:
         """Return a DataFrame from multiple BlockModels.
 
         Args:
             blockmodel_attributes (dict[str, list[str]]): A dictionary of BlockModel names and the variables to include.
                 If the dict value is None, all attributes in the blockmodel (key) are included.
             query (Optional[str]): A query string to filter the DataFrame. Default is None.
+            encode_index: If True, encode the index to a single integer.
 
         Returns:
             pd.DataFrame: The DataFrame representing the merged BlockModels.
@@ -81,13 +100,16 @@ class OMFPandasReader(OMFPandas):
             for bm_name in blockmodel_attributes:
                 for attr in query_attrs:
                     if attr in self.blockmodel_attributes[bm_name]:
-                        chunks.append(self.read_blockmodel(blockmodel_name=bm_name, attributes=[attr])[attr])
+                        chunks.append(
+                            self.read_blockmodel(blockmodel_name=bm_name,
+                                                 attributes=[attr], encode_index=encode_index)[attr])
             tmp_df: pd.DataFrame = pd.concat(chunks, axis=1).query(query)
             # get the index locations of the filtered index relative to the full index
             filtered_index = tmp_df.index
             # full_index = geometry_to_index(self.get_element_by_name(self._elements[0].name).geometry)
             full_index: pd.MultiIndex = self.get_bm_geometry(
-                blockmodel_name=list(blockmodel_attributes.keys())[0]).to_multi_index()
+                blockmodel_name=list(blockmodel_attributes.keys())[0]
+            ).to_multi_index()
             # Find the intersection of the two MultiIndex objects
             intersection = full_index.intersection(filtered_index)
             index_filter = full_index.get_indexer(intersection)
@@ -100,13 +122,20 @@ class OMFPandasReader(OMFPandas):
             else:
                 missing_attrs = set(requested_attrs) - set(available_attrs)
                 if missing_attrs:
-                    raise ValueError(f"Attributes {missing_attrs} not found in BlockModel '{bm_name}'. "
-                                     f"Available attributes are: {available_attrs}")
+                    raise ValueError(
+                        f"Attributes {missing_attrs} not found in BlockModel '{bm_name}'. "
+                        f"Available attributes are: {available_attrs}"
+                    )
 
-            block_models[bm_name] = self.read_blockmodel(blockmodel_name=bm_name, attributes=requested_attrs,
-                                                         index_filter=index_filter if query else None)
+            block_models[bm_name] = self.read_blockmodel(
+                blockmodel_name=bm_name,
+                attributes=requested_attrs,
+                index_filter=index_filter if query else None,
+            )
             # geometry_indexes[bm_name] = geometry_to_index(self.get_bm_geometry(bm_name))
-            geometry_indexes[bm_name] = self.get_bm_geometry(blockmodel_name=bm_name).to_multi_index()
+            geometry_indexes[bm_name] = self.get_bm_geometry(
+                blockmodel_name=bm_name
+            ).to_multi_index()
 
         # validate the indexes are equivalent
         def ensure_identical_indexes(index_dict: dict[str, pd.MultiIndex]) -> None:
@@ -116,14 +145,22 @@ class OMFPandasReader(OMFPandas):
             first_index = next(iter(index_dict.values()))
             for name, index in index_dict.items():
                 if not first_index.equals(index):
-                    raise ValueError(f"Index for '{name}' is different from the first index.")
+                    raise ValueError(
+                        f"Index for '{name}' is different from the first index."
+                    )
 
         ensure_identical_indexes(geometry_indexes)
 
         return pd.concat(block_models.values(), axis=1)
 
-    def plot_blockmodel(self, blockmodel_name: str, scalar: str, threshold: bool = True, show_edges: bool = True,
-                        show_axes: bool = True) -> 'pv.Plotter':
+    def plot_blockmodel(
+            self,
+            blockmodel_name: str,
+            scalar: str,
+            threshold: bool = True,
+            show_edges: bool = True,
+            show_axes: bool = True,
+    ) -> "pv.Plotter":
         """Plot the BlockModel using PyVista.
 
         Args:
@@ -137,10 +174,16 @@ class OMFPandasReader(OMFPandas):
             pv.Plotter: The PyVista plotter object.
         """
         block_model = OMFBlockModel(self.get_element_by_name(blockmodel_name))
-        return block_model.plot(scalar=scalar, threshold=threshold, show_edges=show_edges, show_axes=show_axes)
+        return block_model.plot(
+            scalar=scalar,
+            threshold=threshold,
+            show_edges=show_edges,
+            show_axes=show_axes,
+        )
 
-    def find_nearest_centroid(self, x: float, y: float, z: float, blockmodel_name: Optional[str] = None) -> tuple[
-        float, float, float]:
+    def find_nearest_centroid(
+            self, x: float, y: float, z: float, blockmodel_name: Optional[str] = None
+    ) -> tuple[float, float, float]:
         """Find the nearest centroid for provided x, y, z points using a math rounding approach considering the reference centroid.
 
         Args:
@@ -156,14 +199,19 @@ class OMFPandasReader(OMFPandas):
 
         # get the geometry for the first block model if not provided
         if blockmodel_name is None:
-            blockmodel_names = [element_name for element_name, element_type in self.element_types.items() if
-                                element_type in SUPPORTED_BM_TYPES]
+            blockmodel_names = [
+                element_name
+                for element_name, element_type in self.element_types.items()
+                if element_type in SUPPORTED_BM_TYPES
+            ]
             if not blockmodel_names:
                 raise ValueError("No BlockModel found in the OMF file.")
             blockmodel_name = blockmodel_names[0]
 
         # get the geometry for the block model
-        geometry: Geometry = OMFBlockModel(self.get_element_by_name(blockmodel_name)).geometry
+        geometry: Geometry = OMFBlockModel(
+            self.get_element_by_name(blockmodel_name)
+        ).geometry
         # perform the lookup
         nearest_x, nearest_y, nearest_z = geometry.nearest_centroid_lookup(x, y, z)
 
