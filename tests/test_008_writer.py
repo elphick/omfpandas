@@ -1,7 +1,7 @@
 import pandas as pd
 from pathlib import Path
 from omfpandas.writer import OMFPandasWriter
-from omfpandas.utils.blockmodel_utils import create_test_blockmodel
+from omfpandas.utils import create_test_blockmodel
 
 
 def test_write_regular_blockmodel(tmp_path):
