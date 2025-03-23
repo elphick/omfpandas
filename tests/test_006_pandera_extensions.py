@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pandera as pa
 from pandera.api.pandas.components import Column
-from omfpandas.utils import DataFrameMetaProcessor
+from omfpandas.utils.pandera_utils import DataFrameMetaProcessor
 
 
 def test_rename_from_meta_alias():

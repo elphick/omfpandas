@@ -32,7 +32,7 @@ import pandas as pd
 import pyvista as pv
 
 from omfpandas import OMFPandasWriter
-from omfpandas.utils.blockmodel_utils import create_test_blockmodel
+from omfpandas.utils import create_test_blockmodel
 
 # %%
 # Create Block Model Dataframe

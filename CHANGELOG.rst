@@ -1,3 +1,18 @@
+Omfpandas 0.9.0 (2025-03-23)
+============================
+
+Feature
+-------
+
+- Added aggregate function to utils (#52)
+
+
+Other Tasks
+-----------
+
+- Moved create_test_blockmodel to pandas_utils (#52)
+
+
 Omfpandas 0.8.3 (2025-03-17)
 ============================
 
