@@ -1,0 +1,6 @@
+omfpandas.blockmodels.coordinate\_encoding.decode\_coordinates
+==============================================================
+
+.. currentmodule:: omfpandas.blockmodels.coordinate_encoding
+
+.. autofunction:: decode_coordinates

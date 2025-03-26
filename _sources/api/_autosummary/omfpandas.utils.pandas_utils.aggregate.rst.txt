@@ -1,0 +1,6 @@
+omfpandas.utils.pandas\_utils.aggregate
+=======================================
+
+.. currentmodule:: omfpandas.utils.pandas_utils
+
+.. autofunction:: aggregate

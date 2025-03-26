@@ -1,0 +1,37 @@
+omfpandas.blockmodels.convert\_blockmodel
+=========================================
+
+.. automodule:: omfpandas.blockmodels.convert_blockmodel
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      blockmodel_to_df
+      convert_tensor_to_regular
+      df_to_blockmodel
+      df_to_pv_structured_grid
+      df_to_pv_unstructured_grid
+      df_to_regular_bm
+      df_to_tensor_bm
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

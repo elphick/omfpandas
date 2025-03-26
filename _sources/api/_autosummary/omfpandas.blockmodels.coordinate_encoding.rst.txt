@@ -1,0 +1,34 @@
+omfpandas.blockmodels.coordinate\_encoding
+==========================================
+
+.. automodule:: omfpandas.blockmodels.coordinate_encoding
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      decode_coordinates
+      encode_coordinates
+      encoded_index_to_multiindex
+      multiindex_to_encoded_index
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

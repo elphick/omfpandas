@@ -1,0 +1,6 @@
+omfpandas.blockmodels.convert\_blockmodel.convert\_tensor\_to\_regular
+======================================================================
+
+.. currentmodule:: omfpandas.blockmodels.convert_blockmodel
+
+.. autofunction:: convert_tensor_to_regular

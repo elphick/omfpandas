@@ -1,0 +1,6 @@
+omfpandas.utils.timer\_utils.get\_default\_logger
+=================================================
+
+.. currentmodule:: omfpandas.utils.timer_utils
+
+.. autofunction:: get_default_logger

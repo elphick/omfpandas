@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visualise a BlockModel &mdash; omfpandas  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=1a8b2067" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Validate BlockModel Sort Order" href="08_validate_blockmodel_sort_order.html" />
+    <link rel="prev" title="Reading Multiple Block Models" href="06_reading_multiple_blockmodels.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            omfpandas
+          </a>
+              <div class="version">
+                0.9.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="01_omf_blockmodel_to_pandas.html">OMF Block Model to DataFrame</a></li>
+<li class="toctree-l2"><a class="reference internal" href="02_pandas_to_omf_blockmodel.html">Pandas Block Model to OMF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="03_omf_blockmodel_to_parquet.html">OMF Block Model to Parquet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="04_omf_profile_blockmodel.html">OMF Profile Block Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05_validate_blockmodel.html">Validate BlockModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="06_reading_multiple_blockmodels.html">Reading Multiple Block Models</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Visualise a BlockModel</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#instantiate">Instantiate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#read">Read</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visualise">Visualise</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visualise-regular-model">Visualise Regular Model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="08_validate_blockmodel_sort_order.html">Validate BlockModel Sort Order</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api/modules.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license/license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">omfpandas</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">Visualise a BlockModel</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/auto_examples/07_visualise_blockmodel.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="#sphx-glr-download-auto-examples-07-visualise-blockmodel-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code.</p>
+</div>
+<section class="sphx-glr-example-title" id="visualise-a-blockmodel">
+<span id="sphx-glr-auto-examples-07-visualise-blockmodel-py"></span><h1>Visualise a BlockModel<a class="headerlink" href="#visualise-a-blockmodel" title="Link to this heading"></a></h1>
+<p>It is always useful to visually validate our data. In this example, we will read a block model from an OMF file and
+visualise it using PyVista.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">OMFPandasReader</span><span class="p">,</span> <span class="n">OMFPandasWriter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.blockmodels.convert_blockmodel</span><span class="w"> </span><span class="kn">import</span> <span class="n">df_to_regular_bm</span><span class="p">,</span> <span class="n">blockmodel_to_df</span>
+</pre></div>
+</div>
+<section id="instantiate">
+<h2>Instantiate<a class="headerlink" href="#instantiate" title="Link to this heading"></a></h2>
+<p>Create the object OMFPandas with the path to the OMF file.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">test_omf_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;../assets/copper_deposit.omf&#39;</span><span class="p">)</span>
+<span class="n">omfpr</span><span class="p">:</span> <span class="n">OMFPandasReader</span> <span class="o">=</span> <span class="n">OMFPandasReader</span><span class="p">(</span><span class="n">filepath</span><span class="o">=</span><span class="n">test_omf_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We’ll inspect the elements in the omf file, and determine what volume element to convert.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">omfpr</span><span class="o">.</span><span class="n">element_types</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>{&#39;collar&#39;: &#39;PointSet&#39;, &#39;wolfpass_WP_assay&#39;: &#39;LineSet&#39;, &#39;Topography&#39;: &#39;Surface&#39;, &#39;Basement&#39;: &#39;Surface&#39;, &#39;Early Diorite&#39;: &#39;Surface&#39;, &#39;Intermineral diorite&#39;: &#39;Surface&#39;, &#39;Dacite&#39;: &#39;Surface&#39;, &#39;Cover&#39;: &#39;Surface&#39;, &#39;Block Model&#39;: &#39;TensorGridBlockModel&#39;}
+</pre></div>
+</div>
+</section>
+<section id="read">
+<h2>Read<a class="headerlink" href="#read" title="Link to this heading"></a></h2>
+<p>We can see by inspection that we have a TensorGridBlockModel in the omf file called <em>Block Model</em>, so we will
+convert that to a Pandas DataFrame, simply for the purposes of showing the first few records.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">blocks</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">omfpr</span><span class="o">.</span><span class="n">read_blockmodel</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="o">=</span><span class="s1">&#39;Block Model&#39;</span><span class="p">,</span> <span class="n">attributes</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DataFrame shape: </span><span class="si">{</span><span class="n">blocks</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">blocks</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>DataFrame shape: (1689600, 1)
+</pre></div>
+</div>
+<div class="output_subarea output_html rendered_html output_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th>CU_pct</th>
+    </tr>
+    <tr>
+      <th>x</th>
+      <th>y</th>
+      <th>z</th>
+      <th>dx</th>
+      <th>dy</th>
+      <th>dz</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">5.0</th>
+      <th rowspan="5" valign="top">5.0</th>
+      <th>5.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.002696</td>
+    </tr>
+    <tr>
+      <th>15.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.002720</td>
+    </tr>
+    <tr>
+      <th>25.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.002744</td>
+    </tr>
+    <tr>
+      <th>35.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.002768</td>
+    </tr>
+    <tr>
+      <th>45.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.002793</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+<br />
+<br /><p>We read the block model and convert it to an OMFBlockModel object</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.blockmodel</span><span class="w"> </span><span class="kn">import</span> <span class="n">OMFBlockModel</span>
+
+<span class="n">bm</span><span class="p">:</span> <span class="n">OMFBlockModel</span> <span class="o">=</span> <span class="n">OMFBlockModel</span><span class="p">(</span><span class="n">omfpr</span><span class="o">.</span><span class="n">get_element_by_name</span><span class="p">(</span><span class="s1">&#39;Block Model&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="visualise">
+<h2>Visualise<a class="headerlink" href="#visualise" title="Link to this heading"></a></h2>
+<p>We can visualise the block model using PyVista.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">bm</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">scalar</span><span class="o">=</span><span class="s1">&#39;CU_pct&#39;</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_07_visualise_blockmodel_001.png" srcset="../_images/sphx_glr_07_visualise_blockmodel_001.png" alt="07 visualise blockmodel" class = "sphx-glr-single-img"/><p>Create a regular model</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># ----------------------</span>
+<span class="c1"># We can only do this since this particular tensor model has consistent block sizes.</span>
+<span class="c1">#</span>
+<span class="c1"># Make a copy of the file first.</span>
+
+<span class="n">demo_omf_filepath</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">test_omf_path</span><span class="p">,</span> <span class="n">test_omf_path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.modified.omf&#39;</span><span class="p">))</span>
+
+<span class="n">regular_bm</span> <span class="o">=</span> <span class="n">df_to_regular_bm</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="o">=</span><span class="s1">&#39;Regular Block Model&#39;</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="n">blocks</span><span class="o">.</span><span class="n">droplevel</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;dx&#39;</span><span class="p">,</span> <span class="s1">&#39;dy&#39;</span><span class="p">,</span> <span class="s1">&#39;dz&#39;</span><span class="p">]))</span>
+<span class="n">regular_blocks</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">blockmodel_to_df</span><span class="p">(</span><span class="n">regular_bm</span><span class="p">)</span>
+
+<span class="n">omfpw</span><span class="p">:</span> <span class="n">OMFPandasWriter</span> <span class="o">=</span> <span class="n">OMFPandasWriter</span><span class="p">(</span><span class="n">filepath</span><span class="o">=</span><span class="n">demo_omf_filepath</span><span class="p">)</span>
+<span class="n">omfpw</span><span class="o">.</span><span class="n">create_blockmodel</span><span class="p">(</span><span class="n">blocks</span><span class="o">=</span><span class="n">regular_blocks</span><span class="p">,</span> <span class="n">blockmodel_name</span><span class="o">=</span><span class="s1">&#39;Regular Block Model&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="visualise-regular-model">
+<h2>Visualise Regular Model<a class="headerlink" href="#visualise-regular-model" title="Link to this heading"></a></h2>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">bm_regular</span><span class="p">:</span> <span class="n">OMFBlockModel</span> <span class="o">=</span> <span class="n">OMFBlockModel</span><span class="p">(</span><span class="n">omfpw</span><span class="o">.</span><span class="n">get_element_by_name</span><span class="p">(</span><span class="s1">&#39;Regular Block Model&#39;</span><span class="p">))</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">bm_regular</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">scalar</span><span class="o">=</span><span class="s1">&#39;CU_pct&#39;</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_07_visualise_blockmodel_002.png" srcset="../_images/sphx_glr_07_visualise_blockmodel_002.png" alt="07 visualise blockmodel" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 11.230 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-07-visualise-blockmodel-py">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/bc2bd9c662b4a0f3442d326aeaf6b165/07_visualise_blockmodel.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">07_visualise_blockmodel.ipynb</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/7cf4b1535e98568d384539a8f7fd83df/07_visualise_blockmodel.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">07_visualise_blockmodel.py</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="06_reading_multiple_blockmodels.html" class="btn btn-neutral float-left" title="Reading Multiple Block Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="08_validate_blockmodel_sort_order.html" class="btn btn-neutral float-right" title="Validate BlockModel Sort Order" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Greg Elphick.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

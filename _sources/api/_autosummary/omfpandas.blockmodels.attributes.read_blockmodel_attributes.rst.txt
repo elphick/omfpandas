@@ -1,0 +1,6 @@
+omfpandas.blockmodels.attributes.read\_blockmodel\_attributes
+=============================================================
+
+.. currentmodule:: omfpandas.blockmodels.attributes
+
+.. autofunction:: read_blockmodel_attributes

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>omfpandas.blockmodels.attributes &mdash; omfpandas  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery.css?v=61a4c737" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=1a8b2067" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            omfpandas
+          </a>
+              <div class="version">
+                0.9.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../auto_examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license/license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">omfpandas</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">omfpandas.blockmodels.attributes</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for omfpandas.blockmodels.attributes</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omf</span><span class="w"> </span><span class="kn">import</span> <span class="n">CategoryAttribute</span><span class="p">,</span> <span class="n">NumericAttribute</span><span class="p">,</span> <span class="n">CategoryColormap</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omf.blockmodel</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseBlockModel</span><span class="p">,</span> <span class="n">RegularBlockModel</span><span class="p">,</span> <span class="n">TensorGridBlockModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pandas.core.dtypes.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_integer_dtype</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.blockmodels.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegularGeometry</span><span class="p">,</span> <span class="n">TensorGeometry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.utils.pandas_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_nullable_integer_dtype</span><span class="p">,</span> <span class="n">to_numpy_integer_dtype</span><span class="p">,</span> <span class="n">to_nullable_integer_dtype</span><span class="p">,</span> \
+    <span class="n">parse_vars_from_expr</span>
+
+<span class="c1"># generic type variable, used for type hinting, to indicate that the type is a subclass of BaseBlockModel</span>
+<span class="n">BM</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;BM&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">BaseBlockModel</span><span class="p">)</span>
+
+<span class="n">SENTINEL_VALUE</span> <span class="o">=</span> <span class="o">-</span><span class="mi">9</span>  <span class="c1"># TODO: possibly move to config file</span>
+
+
+<div class="viewcode-block" id="series_to_attribute">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.attributes.series_to_attribute.html#omfpandas.blockmodels.attributes.series_to_attribute">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">series_to_attribute</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">CategoryAttribute</span><span class="p">,</span> <span class="n">NumericAttribute</span><span class="p">]:</span>
+
+    <span class="c1"># todo manage sorting - see attribute_to_series</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">CategoricalDtype</span><span class="p">):</span>
+        <span class="n">cat_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">c</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">categories</span><span class="p">)}</span>
+        <span class="n">cat_col_map</span> <span class="o">=</span> <span class="n">CategoryColormap</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">cat_map</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="n">values</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">cat_map</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+        <span class="n">attribute</span> <span class="o">=</span> <span class="n">CategoryAttribute</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">series</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="s2">&quot;cells&quot;</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">codes</span><span class="p">),</span>
+                                      <span class="n">categories</span><span class="o">=</span><span class="n">cat_col_map</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># manage the sentinel / null placeholders</span>
+        <span class="c1"># REF: https://github.com/gmggroup/omf-python/issues/59</span>
+        <span class="k">if</span> <span class="n">is_nullable_integer_dtype</span><span class="p">(</span><span class="n">series</span><span class="p">):</span>
+            <span class="c1"># set null_values and assign metadata</span>
+            <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">SENTINEL_VALUE</span><span class="p">)</span><span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">to_numpy_integer_dtype</span><span class="p">)</span>
+            <span class="n">attribute</span> <span class="o">=</span> <span class="n">NumericAttribute</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">series</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="s2">&quot;cells&quot;</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+            <span class="n">attribute</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;null_value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SENTINEL_VALUE</span>
+        <span class="k">elif</span> <span class="n">is_integer_dtype</span><span class="p">(</span><span class="n">series</span><span class="p">):</span>
+            <span class="n">attribute</span> <span class="o">=</span> <span class="n">NumericAttribute</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">series</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="s2">&quot;cells&quot;</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="n">series</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+            <span class="n">attribute</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;null_value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SENTINEL_VALUE</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">attribute</span> <span class="o">=</span> <span class="n">NumericAttribute</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">series</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="s2">&quot;cells&quot;</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="n">series</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+            <span class="n">attribute</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;null_value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;np.nan&#39;</span>
+    <span class="k">return</span> <span class="n">attribute</span></div>
+
+
+
+<div class="viewcode-block" id="attribute_to_series">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.attributes.attribute_to_series.html#omfpandas.blockmodels.attributes.attribute_to_series">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">attribute_to_series</span><span class="p">(</span><span class="n">attribute</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">CategoryAttribute</span><span class="p">,</span> <span class="n">NumericAttribute</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attribute</span><span class="p">,</span> <span class="n">CategoryAttribute</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="o">.</span><span class="n">from_codes</span><span class="p">(</span><span class="n">codes</span><span class="o">=</span><span class="n">attribute</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+                                                   <span class="n">categories</span><span class="o">=</span><span class="n">attribute</span><span class="o">.</span><span class="n">categories</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                                                   <span class="n">ordered</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="n">attribute</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># if an int with null_value in metadata then convert to a nullable int</span>
+        <span class="k">if</span> <span class="n">attribute</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;null_value&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">is_integer_dtype</span><span class="p">(</span><span class="n">attribute</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">array</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">attribute</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">name</span><span class="o">=</span><span class="n">attribute</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">pipe</span><span class="p">(</span>
+                <span class="n">to_nullable_integer_dtype</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                <span class="n">SENTINEL_VALUE</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">NA</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">attribute</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">name</span><span class="o">=</span><span class="n">attribute</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">attribute</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_attribute_by_name">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.attributes.get_attribute_by_name.html#omfpandas.blockmodels.attributes.get_attribute_by_name">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_attribute_by_name</span><span class="p">(</span><span class="n">blockmodel</span><span class="p">:</span> <span class="n">BM</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">CategoryAttribute</span><span class="p">,</span> <span class="n">NumericAttribute</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the variable/attribute by its name from a BlockModel.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        blockmodel (BlockModel): The BlockModel to get the data from.</span>
+<span class="sd">        attr_name (str): The name of the attribute to retrieve.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Union[CategoryAttribute, NumericAttribute]: The attribute with the given name.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If the variable is not found as cell data in the BlockModel or if multiple variables with the</span>
+<span class="sd">        same name are found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">attrs</span> <span class="o">=</span> <span class="p">[</span><span class="n">sd</span> <span class="k">for</span> <span class="n">sd</span> <span class="ow">in</span> <span class="n">blockmodel</span><span class="o">.</span><span class="n">attributes</span> <span class="k">if</span> <span class="n">sd</span><span class="o">.</span><span class="n">location</span> <span class="o">==</span> <span class="s1">&#39;cells&#39;</span> <span class="ow">and</span> <span class="n">sd</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">attr_name</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">attrs</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Variable &#39;</span><span class="si">{</span><span class="n">attr_name</span><span class="si">}</span><span class="s2">&#39; not found as cell data in the BlockModel: </span><span class="si">{</span><span class="n">blockmodel</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Multiple variables with the name &#39;</span><span class="si">{</span><span class="n">attr_name</span><span class="si">}</span><span class="s2">&#39; found in the BlockModel: </span><span class="si">{</span><span class="n">blockmodel</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">attrs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="evaluate_calculated_attribute">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.attributes.evaluate_calculated_attribute.html#omfpandas.blockmodels.attributes.evaluate_calculated_attribute">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">evaluate_calculated_attribute</span><span class="p">(</span><span class="n">blockmodel</span><span class="p">:</span> <span class="n">BM</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">calculated_expression</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                  <span class="n">attributes_available</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Evaluate a calculated attribute using the blockmodel and available attributes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        blockmodel (BlockModel): The BlockModel to read from.</span>
+<span class="sd">        attr_name (str): The name of the calculated attribute.</span>
+<span class="sd">        calculated_expression (str): The expression to evaluate.</span>
+<span class="sd">        attributes_available (list[str]): List of available attributes in the BlockModel.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pd.Series: The evaluated calculated attribute as a pandas Series.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">local_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="n">attribute_to_series</span><span class="p">(</span><span class="n">get_attribute_by_name</span><span class="p">(</span><span class="n">blockmodel</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attributes_available</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="n">calculated_expression</span><span class="p">,</span> <span class="p">{},</span> <span class="n">local_dict</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="n">attr_name</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="read_blockmodel_attributes">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.attributes.read_blockmodel_attributes.html#omfpandas.blockmodels.attributes.read_blockmodel_attributes">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_blockmodel_attributes</span><span class="p">(</span><span class="n">blockmodel</span><span class="p">:</span> <span class="n">BM</span><span class="p">,</span> <span class="n">attributes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                               <span class="n">query</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">index_filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the attributes/variables from the BlockModel, including calculated attributes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        blockmodel (BlockModel): The BlockModel to read from.</span>
+<span class="sd">        attributes (list[str]): The attributes to include in the DataFrame.</span>
+<span class="sd">        query (str): The query to filter the DataFrame.</span>
+<span class="sd">        index_filter (list[int]): List of integer indices to filter the DataFrame.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pd.DataFrame: The DataFrame representing the attributes in the BlockModel.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If the attribute is not found in the BlockModel or if both query and index_filter are provided.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">query</span> <span class="ow">and</span> <span class="n">index_filter</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot use both query and index_filter at the same time.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># identify &#39;cell&#39; variables in the file</span>
+    <span class="n">attributes_available</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">blockmodel</span><span class="o">.</span><span class="n">attributes</span> <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">location</span> <span class="o">==</span> <span class="s1">&#39;cells&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Retrieve calculated attributes from metadata</span>
+    <span class="n">calculated_attributes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">blockmodel</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;calculated_attributes&#39;</span><span class="p">,</span> <span class="p">{})</span>
+
+    <span class="n">attributes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">attributes</span> <span class="ow">or</span> <span class="p">(</span><span class="n">attributes_available</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">calculated_attributes</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+
+    <span class="c1"># check if the variables are available</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">attributes</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">attributes_available</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">calculated_attributes</span><span class="o">.</span><span class="n">keys</span><span class="p">())):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Variables </span><span class="si">{</span><span class="nb">set</span><span class="p">(</span><span class="n">attributes</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">attributes_available</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">list</span><span class="p">(</span><span class="n">calculated_attributes</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;not found in the BlockModel.&quot;</span><span class="p">)</span>
+
+    <span class="n">int_index</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">blockmodel</span><span class="o">.</span><span class="n">num_cells</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">query</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># parse out the attributes from the query using a package</span>
+        <span class="n">query_attrs</span> <span class="o">=</span> <span class="n">parse_vars_from_expr</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="c1"># check if the attributes in the query are available</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">query_attrs</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">attributes_available</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">calculated_attributes</span><span class="o">.</span><span class="n">keys</span><span class="p">())):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Variables </span><span class="si">{</span><span class="nb">set</span><span class="p">(</span><span class="n">query_attrs</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">attributes_available</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">list</span><span class="p">(</span><span class="n">calculated_attributes</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;not found in the BlockModel.&quot;</span><span class="p">)</span>
+        <span class="n">query_series</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="n">query_attrs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="n">calculated_attributes</span><span class="p">:</span>
+                <span class="n">query_series</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">evaluate_calculated_attribute</span><span class="p">(</span><span class="n">blockmodel</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">calculated_attributes</span><span class="p">[</span><span class="n">attr_name</span><span class="p">],</span>
+                                                  <span class="n">attributes_available</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">query_series</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attribute_to_series</span><span class="p">(</span><span class="n">get_attribute_by_name</span><span class="p">(</span><span class="n">blockmodel</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">)))</span>
+        <span class="n">df_to_query</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">query_series</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">int_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">df_to_query</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">index_filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">int_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">index_filter</span><span class="p">)</span>
+
+    <span class="c1"># Loop over the variables</span>
+    <span class="n">chunks</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">calculated_attributes</span><span class="p">:</span>
+            <span class="c1"># Evaluate the calculated attribute</span>
+            <span class="n">calculated_series</span> <span class="o">=</span> <span class="n">evaluate_calculated_attribute</span><span class="p">(</span><span class="n">blockmodel</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">calculated_attributes</span><span class="p">[</span><span class="n">attr</span><span class="p">],</span>
+                                                              <span class="n">attributes_available</span><span class="p">)</span>
+            <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">calculated_series</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">int_index</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">attr</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">CategoryAttribute</span><span class="p">,</span> <span class="n">NumericAttribute</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_attribute_by_name</span><span class="p">(</span><span class="n">blockmodel</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+            <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attribute_to_series</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">int_index</span><span class="p">])</span>
+
+    <span class="c1"># create the geometry index</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">blockmodel</span><span class="p">,</span> <span class="n">RegularBlockModel</span><span class="p">):</span>
+        <span class="n">geometry_index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span> <span class="o">=</span> <span class="n">RegularGeometry</span><span class="o">.</span><span class="n">from_element</span><span class="p">(</span><span class="n">blockmodel</span><span class="p">)</span><span class="o">.</span><span class="n">to_multi_index</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">blockmodel</span><span class="p">,</span> <span class="n">TensorGridBlockModel</span><span class="p">):</span>
+        <span class="n">geometry_index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span> <span class="o">=</span> <span class="n">TensorGeometry</span><span class="o">.</span><span class="n">from_element</span><span class="p">(</span><span class="n">blockmodel</span><span class="p">)</span><span class="o">.</span><span class="n">to_multi_index</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;BlockModel type </span><span class="si">{</span><span class="n">blockmodel</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> not (yet) supported.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">query</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">index_filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># filter the index to match the int_index positional index</span>
+        <span class="n">geometry_index</span> <span class="o">=</span> <span class="n">geometry_index</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">int_index</span><span class="p">)</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># res.index = geometry_index.to_frame().reset_index(drop=True).sort_values(by=[&#39;z&#39;, &#39;y&#39;, &#39;x&#39;]).set_index(geometry_index.names).index</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">geometry_index</span>
+    <span class="k">return</span> <span class="n">res</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="k">else</span> <span class="n">res</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Greg Elphick.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

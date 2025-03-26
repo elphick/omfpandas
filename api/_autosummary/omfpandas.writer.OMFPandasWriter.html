@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>omfpandas.writer.OMFPandasWriter &mdash; omfpandas  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=61a4c737" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=1a8b2067" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="omfpandas.blockmodel" href="omfpandas.blockmodel.html" />
+    <link rel="prev" title="omfpandas.writer.get_username" href="omfpandas.writer.get_username.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            omfpandas
+          </a>
+              <div class="version">
+                0.9.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../auto_examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../modules.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="omfpandas.reader.html">omfpandas.reader</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="omfpandas.writer.html">omfpandas.writer</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="omfpandas.writer.get_username.html">omfpandas.writer.get_username</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">omfpandas.writer.OMFPandasWriter</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#omfpandas.writer.OMFPandasWriter"><code class="docutils literal notranslate"><span class="pre">OMFPandasWriter</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="omfpandas.blockmodel.html">omfpandas.blockmodel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="omfpandas.blockmodels.html">omfpandas.blockmodels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="omfpandas.utils.html">omfpandas.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../license/license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">omfpandas</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../modules.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="omfpandas.writer.html">omfpandas.writer</a></li>
+      <li class="breadcrumb-item active">omfpandas.writer.OMFPandasWriter</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/api/_autosummary/omfpandas.writer.OMFPandasWriter.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="omfpandas-writer-omfpandaswriter">
+<h1>omfpandas.writer.OMFPandasWriter<a class="headerlink" href="#omfpandas-writer-omfpandaswriter" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="omfpandas.writer.OMFPandasWriter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">omfpandas.writer.</span></span><span class="sig-name descname"><span class="pre">OMFPandasWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/omfpandas/writer.html#OMFPandasWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#omfpandas.writer.OMFPandasWriter" title="Link to this definition"></a></dt>
+<dd><p>A class to write pandas dataframes to an OMF file.</p>
+<p>Methods are named to align with CRUD
+create -&gt; create a new element on the omf file
+read -&gt; read a dataframe from an element (using OMFPandasReader inheritance)
+update -&gt; update (part of) an existing element by providing a dataframe  # TODO
+delete -&gt; delete an element from the omf file.  # TODO</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="omfpandas.writer.OMFPandasWriter.filepath">
+<span class="sig-name descname"><span class="pre">filepath</span></span><a class="headerlink" href="#omfpandas.writer.OMFPandasWriter.filepath" title="Link to this definition"></a></dt>
+<dd><p>Path to the OMF file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="omfpandas.writer.OMFPandasWriter.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/omfpandas/writer.html#OMFPandasWriter.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#omfpandas.writer.OMFPandasWriter.__init__" title="Link to this definition"></a></dt>
+<dd><p>Instantiate the OMFPandasWriter object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>Path</em>) – Path to the OMF file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#omfpandas.writer.OMFPandasWriter.__init__" title="omfpandas.writer.OMFPandasWriter.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(filepath)</p></td>
+<td><p>Instantiate the OMFPandasWriter object.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#omfpandas.writer.OMFPandasWriter.blockmodel_to_orc" title="omfpandas.writer.OMFPandasWriter.blockmodel_to_orc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blockmodel_to_orc</span></code></a>(blockmodel_name[, ...])</p></td>
+<td><p>Convert blockmodel to an ORC file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#omfpandas.writer.OMFPandasWriter.blockmodel_to_parquet" title="omfpandas.writer.OMFPandasWriter.blockmodel_to_parquet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blockmodel_to_parquet</span></code></a>(blockmodel_name[, ...])</p></td>
+<td><p>Convert blockmodel to a Parquet file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#omfpandas.writer.OMFPandasWriter.create_blockmodel" title="omfpandas.writer.OMFPandasWriter.create_blockmodel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_blockmodel</span></code></a>(blocks, blockmodel_name[, ...])</p></td>
+<td><p>Create an omf BlockModel from a dataframe.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#omfpandas.writer.OMFPandasWriter.create_calculated_blockmodel_attributes" title="omfpandas.writer.OMFPandasWriter.create_calculated_blockmodel_attributes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_calculated_blockmodel_attributes</span></code></a>(...)</p></td>
+<td><p>Create a calculated attribute for a BlockModel.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#omfpandas.writer.OMFPandasWriter.delete_blockmodel_attribute" title="omfpandas.writer.OMFPandasWriter.delete_blockmodel_attribute"><code class="xref py py-obj docutils literal notranslate"><span class="pre">delete_blockmodel_attribute</span></code></a>(blockmodel_name, ...)</p></td>
+<td><p>Delete an attribute from a BlockModel.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_nearest_centroid</span></code>(x, y, z[, blockmodel_name])</p></td>
+<td><p>Find the nearest centroid for provided x, y, z points using a math rounding approach considering the reference centroid.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_bm_geometry</span></code>(blockmodel_name)</p></td>
+<td><p>Get the geometry of a BlockModel.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_element_attribute_names</span></code>(element_name)</p></td>
+<td><p>Get the attribute names of an element.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_element_by_name</span></code>(element_name)</p></td>
+<td><p>Get an element by its name.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#omfpandas.writer.OMFPandasWriter.persist_project" title="omfpandas.writer.OMFPandasWriter.persist_project"><code class="xref py py-obj docutils literal notranslate"><span class="pre">persist_project</span></code></a>()</p></td>
+<td><p>Persist the omf project to file and reload the project property</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_blockmodel</span></code>(blockmodel_name, scalar[, ...])</p></td>
+<td><p>Plot the BlockModel using PyVista.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#omfpandas.writer.OMFPandasWriter.profile_blockmodel" title="omfpandas.writer.OMFPandasWriter.profile_blockmodel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">profile_blockmodel</span></code></a>(blockmodel_name[, query])</p></td>
+<td><p>Profile a BlockModel.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_block_models</span></code>(blockmodel_attributes[, ...])</p></td>
+<td><p>Return a DataFrame from multiple BlockModels.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_blockmodel</span></code>(blockmodel_name[, ...])</p></td>
+<td><p>Return a DataFrame from a BlockModel.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">view_block_model_profile</span></code>(blockmodel_name[, ...])</p></td>
+<td><p>View the profile of a BlockModel in the default web browser.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#omfpandas.writer.OMFPandasWriter.write_block_model_schema" title="omfpandas.writer.OMFPandasWriter.write_block_model_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_block_model_schema</span></code></a>(blockmodel_name, ...)</p></td>
+<td><p>Write a Pandera schema to the OMF file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#omfpandas.writer.OMFPandasWriter.write_blockmodel_attribute" title="omfpandas.writer.OMFPandasWriter.write_blockmodel_attribute"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_blockmodel_attribute</span></code></a>(blockmodel_name, ...)</p></td>
+<td><p>Write data to a specific attribute of a BlockModel.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#omfpandas.writer.OMFPandasWriter.write_to_changelog" title="omfpandas.writer.OMFPandasWriter.write_to_changelog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_to_changelog</span></code></a>(element, action, description)</p></td>
+<td><p>Write a change message to the OMF file.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">blockmodel_attributes</span></code></p></td>
+<td><p>Attributes for blockmodel elements, keyed by element name, including composites.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">changelog</span></code></p></td>
+<td><p>Return the change log as a DataFrame.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">element_types</span></code></p></td>
+<td><p>Dictionary of elements keyed by name</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="omfpandas.writer.OMFPandasWriter.blockmodel_to_orc">
+<span class="sig-name descname"><span class="pre">blockmodel_to_orc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blockmodel_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/omfpandas/writer.html#OMFPandasWriter.blockmodel_to_orc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#omfpandas.writer.OMFPandasWriter.blockmodel_to_orc" title="Link to this definition"></a></dt>
+<dd><p>Convert blockmodel to an ORC file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>blockmodel_name</strong> (<em>str</em>) – The BlockModel element to convert.</p></li>
+<li><p><strong>out_path</strong> (<em>Optional</em><em>[</em><em>Path</em><em>]</em>) – The path to the ORC file to write. If None, a file with the blockmodel name is</p></li>
+<li><p><strong>created.</strong></p></li>
+<li><p><strong>variables</strong> (<em>Optional</em><em>[</em><em>list</em><em>[</em><em>str</em><em>]</em><em>]</em>) – The variables to include in the DataFrame. If None, all variables are included.</p></li>
+<li><p><strong>allow_overwrite</strong> (<em>bool</em>) – If True, overwrite the existing ORC file. Default is False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>FileExistsError</strong> – If the file already exists and allow_overwrite is False.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="omfpandas.writer.OMFPandasWriter.blockmodel_to_parquet">
+<span class="sig-name descname"><span class="pre">blockmodel_to_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blockmodel_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/omfpandas/writer.html#OMFPandasWriter.blockmodel_to_parquet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#omfpandas.writer.OMFPandasWriter.blockmodel_to_parquet" title="Link to this definition"></a></dt>
+<dd><p>Convert blockmodel to a Parquet file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>blockmodel_name</strong> (<em>str</em>) – The BlockModel element to convert.</p></li>
+<li><p><strong>out_path</strong> (<em>Optional</em><em>[</em><em>Path</em><em>]</em>) – The path to the Parquet file to write. If None, a file with the blockmodel name is</p></li>
+<li><p><strong>created.</strong></p></li>
+<li><p><strong>variables</strong> (<em>Optional</em><em>[</em><em>list</em><em>[</em><em>str</em><em>]</em><em>]</em>) – The variables to include in the DataFrame. If None, all variables are included.</p></li>
+<li><p><strong>allow_overwrite</strong> (<em>bool</em>) – If True, overwrite the existing Parquet file. Default is False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>FileExistsError</strong> – If the file already exists and allow_overwrite is False.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="omfpandas.writer.OMFPandasWriter.create_blockmodel">
+<span class="sig-name descname"><span class="pre">create_blockmodel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blocks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blockmodel_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pd_schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/omfpandas/writer.html#OMFPandasWriter.create_blockmodel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#omfpandas.writer.OMFPandasWriter.create_blockmodel" title="Link to this definition"></a></dt>
+<dd><p>Create an omf BlockModel from a dataframe.</p>
+<p>Only dataframes with centroid (x, y, z) and block dims (dx, dy, dz) indexes are supported.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>blocks</strong> (<em>pd.DataFrame</em>) – The dataframe to write to the BlockModel.</p></li>
+<li><p><strong>blockmodel_name</strong> (<em>str</em>) – The name of the BlockModel to write to. Use dot notation for composite (e.g., Composite.BlockModel).</p></li>
+<li><p><strong>pd_schema</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Path</em><em>, </em><em>dict</em><em>]</em><em>]</em>) – The path to the Pandera schema file or a dict of the schema.
+Default is None.  If provided, the schema will be used to validate the dataframe before writing.</p></li>
+<li><p><strong>allow_overwrite</strong> (<em>bool</em>) – If True, overwrite the existing BlockModel. Default is False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the element retrieved is not a BlockModel.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="omfpandas.writer.OMFPandasWriter.create_calculated_blockmodel_attributes">
+<span class="sig-name descname"><span class="pre">create_calculated_blockmodel_attributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blockmodel_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_definitions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/omfpandas/writer.html#OMFPandasWriter.create_calculated_blockmodel_attributes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#omfpandas.writer.OMFPandasWriter.create_calculated_blockmodel_attributes" title="Link to this definition"></a></dt>
+<dd><p>Create a calculated attribute for a BlockModel.</p>
+<p>Calculated attributes reduce storage space by storing the calculation expression instead of the data.
+When the attribute is accessed, the expression is evaluated and the result returned.
+The calculation expression must be a valid pandas expression, and is stored in the metadata of the
+blockmodel object.  Only OMF2 supports this feature.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>blockmodel_name</strong> (<em>str</em>) – The name of the BlockModel.</p></li>
+<li><p><strong>calc_definitions</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em>) – A dictionary of attribute names and calculation expressions.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="omfpandas.writer.OMFPandasWriter.delete_blockmodel_attribute">
+<span class="sig-name descname"><span class="pre">delete_blockmodel_attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blockmodel_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attribute_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/omfpandas/writer.html#OMFPandasWriter.delete_blockmodel_attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#omfpandas.writer.OMFPandasWriter.delete_blockmodel_attribute" title="Link to this definition"></a></dt>
+<dd><p>Delete an attribute from a BlockModel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>blockmodel_name</strong> (<em>str</em>) – The name of the BlockModel.</p></li>
+<li><p><strong>attribute_name</strong> (<em>str</em>) – The name of the attribute.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="omfpandas.writer.OMFPandasWriter.persist_project">
+<span class="sig-name descname"><span class="pre">persist_project</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/omfpandas/writer.html#OMFPandasWriter.persist_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#omfpandas.writer.OMFPandasWriter.persist_project" title="Link to this definition"></a></dt>
+<dd><p>Persist the omf project to file and reload the project property</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="omfpandas.writer.OMFPandasWriter.profile_blockmodel">
+<span class="sig-name descname"><span class="pre">profile_blockmodel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blockmodel_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/omfpandas/writer.html#OMFPandasWriter.profile_blockmodel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#omfpandas.writer.OMFPandasWriter.profile_blockmodel" title="Link to this definition"></a></dt>
+<dd><p>Profile a BlockModel.</p>
+<p>Profiling will be skipped if the data has not changed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>blockmodel_name</strong> (<em>str</em>) – The name of the BlockModel to profile.</p></li>
+<li><p><strong>query</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – A query to filter the data before profiling.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The profiled data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="omfpandas.writer.OMFPandasWriter.write_block_model_schema">
+<span class="sig-name descname"><span class="pre">write_block_model_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blockmodel_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pd_schema_filepath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/omfpandas/writer.html#OMFPandasWriter.write_block_model_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#omfpandas.writer.OMFPandasWriter.write_block_model_schema" title="Link to this definition"></a></dt>
+<dd><p>Write a Pandera schema to the OMF file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>blockmodel_name</strong> (<em>str</em>) – The name of the BlockModel.</p></li>
+<li><p><strong>pd_schema_filepath</strong> (<em>Path</em>) – The path to the Pandera schema yaml file.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="omfpandas.writer.OMFPandasWriter.write_blockmodel_attribute">
+<span class="sig-name descname"><span class="pre">write_blockmodel_attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blockmodel_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/omfpandas/writer.html#OMFPandasWriter.write_blockmodel_attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#omfpandas.writer.OMFPandasWriter.write_blockmodel_attribute" title="Link to this definition"></a></dt>
+<dd><p>Write data to a specific attribute of a BlockModel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>blockmodel_name</strong> (<em>str</em>) – The name of the BlockModel.</p></li>
+<li><p><strong>series</strong> (<em>pd.Series</em>) – The data to write to the attribute.</p></li>
+<li><p><strong>allow_overwrite</strong> (<em>bool</em>) – If True, overwrite the existing attribute. Default is False.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="omfpandas.writer.OMFPandasWriter.write_to_changelog">
+<span class="sig-name descname"><span class="pre">write_to_changelog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/omfpandas/writer.html#OMFPandasWriter.write_to_changelog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#omfpandas.writer.OMFPandasWriter.write_to_changelog" title="Link to this definition"></a></dt>
+<dd><p>Write a change message to the OMF file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>element</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The name of the element that was changed</p></li>
+<li><p><strong>action</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code>[<code class="docutils literal notranslate"><span class="pre">'create'</span></code>, <code class="docutils literal notranslate"><span class="pre">'update'</span></code>, <code class="docutils literal notranslate"><span class="pre">'delete'</span></code>]</span>) – The action taken on the object</p></li>
+<li><p><strong>description</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Description of the change</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="omfpandas.writer.get_username.html" class="btn btn-neutral float-left" title="omfpandas.writer.get_username" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="omfpandas.blockmodel.html" class="btn btn-neutral float-right" title="omfpandas.blockmodel" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Greg Elphick.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

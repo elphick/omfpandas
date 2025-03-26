@@ -1,0 +1,34 @@
+﻿omfpandas.blockmodels
+=====================
+
+.. automodule:: omfpandas.blockmodels
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   attributes
+   convert_blockmodel
+   coordinate_encoding
+   geometry
+

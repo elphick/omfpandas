@@ -1,0 +1,6 @@
+omfpandas.blockmodels.convert\_blockmodel.blockmodel\_to\_df
+============================================================
+
+.. currentmodule:: omfpandas.blockmodels.convert_blockmodel
+
+.. autofunction:: blockmodel_to_df

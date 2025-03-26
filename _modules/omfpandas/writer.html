@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>omfpandas.writer &mdash; omfpandas  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=61a4c737" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=1a8b2067" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            omfpandas
+          </a>
+              <div class="version">
+                0.9.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../auto_examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license/license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">omfpandas</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">omfpandas.writer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for omfpandas.writer</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">omf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ydata_profiling</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">OMFPandasReader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.audit</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChangeMessage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">OMFPandas</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.blockmodels.convert_blockmodel</span><span class="w"> </span><span class="kn">import</span> <span class="n">df_to_blockmodel</span><span class="p">,</span> <span class="n">blockmodel_to_df</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.extras</span><span class="w"> </span><span class="kn">import</span> <span class="n">_import_ydata_profiling</span><span class="p">,</span> <span class="n">_import_pandera</span><span class="p">,</span> <span class="n">_import_pandera_io</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.utils.pandas_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_vars_from_expr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.utils.pandera_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrameMetaProcessor</span><span class="p">,</span> <span class="n">load_schema_from_yaml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">log_timer</span>
+
+<div class="viewcode-block" id="get_username">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.writer.get_username.html#omfpandas.writer.get_username">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_username</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">getlogin</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;USER&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;USERNAME&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="s1">&#39;unknown_user&#39;</span></div>
+
+
+<span class="n">PathLike</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]</span>
+
+<div class="viewcode-block" id="OMFPandasWriter">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.writer.OMFPandasWriter.html#omfpandas.writer.OMFPandasWriter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">OMFPandasWriter</span><span class="p">(</span><span class="n">OMFPandasReader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to write pandas dataframes to an OMF file.</span>
+
+<span class="sd">    Methods are named to align with CRUD</span>
+<span class="sd">    create -&gt; create a new element on the omf file</span>
+<span class="sd">    read -&gt; read a dataframe from an element (using OMFPandasReader inheritance)</span>
+<span class="sd">    update -&gt; update (part of) an existing element by providing a dataframe  # TODO</span>
+<span class="sd">    delete -&gt; delete an element from the omf file.  # TODO</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        filepath (Path): Path to the OMF file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="OMFPandasWriter.__init__">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.writer.OMFPandasWriter.html#omfpandas.writer.OMFPandasWriter.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="n">PathLike</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate the OMFPandasWriter object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filepath (Path): Path to the OMF file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">OMFPandas</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_id</span> <span class="o">=</span> <span class="n">get_username</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
+            <span class="n">filepath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filepath</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="c1"># log a message and create a new project</span>
+            <span class="n">project</span> <span class="o">=</span> <span class="n">omf</span><span class="o">.</span><span class="n">Project</span><span class="p">()</span>
+            <span class="n">project</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">filepath</span><span class="o">.</span><span class="n">stem</span>
+            <span class="n">project</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;OMF file created by OMFPandasWriter: </span><span class="si">{</span><span class="n">filepath</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating new OMF file: </span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="n">project</span>  <span class="c1"># to enable the write_to_changelog method</span>
+            <span class="c1"># create the audit record</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_to_changelog</span><span class="p">(</span><span class="n">element</span><span class="o">=</span><span class="s1">&#39;None&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;create&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;File created: </span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="c1"># save the (now modified) project to the omf file</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">persist_project</span><span class="p">()</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OMFPandasWriter.create_blockmodel">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.writer.OMFPandasWriter.html#omfpandas.writer.OMFPandasWriter.create_blockmodel">[docs]</a>
+    <span class="nd">@log_timer</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_blockmodel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blocks</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">blockmodel_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                          <span class="n">pd_schema</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">allow_overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create an omf BlockModel from a dataframe.</span>
+
+<span class="sd">        Only dataframes with centroid (x, y, z) and block dims (dx, dy, dz) indexes are supported.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            blocks (pd.DataFrame): The dataframe to write to the BlockModel.</span>
+<span class="sd">            blockmodel_name (str): The name of the BlockModel to write to. Use dot notation for composite (e.g., Composite.BlockModel).</span>
+<span class="sd">            pd_schema (Optional[Union[Path, dict]]): The path to the Pandera schema file or a dict of the schema.</span>
+<span class="sd">             Default is None.  If provided, the schema will be used to validate the dataframe before writing.</span>
+<span class="sd">            allow_overwrite (bool): If True, overwrite the existing BlockModel. Default is False.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the element retrieved is not a BlockModel.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">composite_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">full_blockmodel_name</span> <span class="o">=</span> <span class="n">blockmodel_name</span>
+
+        <span class="k">if</span> <span class="s1">&#39;.&#39;</span> <span class="ow">in</span> <span class="n">blockmodel_name</span><span class="p">:</span>
+            <span class="n">composite_name</span><span class="p">,</span> <span class="n">blockmodel_name</span> <span class="o">=</span> <span class="n">blockmodel_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">calculation_map</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">pd_schema</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pa</span> <span class="o">=</span> <span class="n">_import_pandera</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pd_schema</span><span class="p">,</span> <span class="p">(</span><span class="n">Path</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;pd_schema must be a Path to a Pandera schema file or a dict of the schema.&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pd_schema</span><span class="p">,</span> <span class="n">Path</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pd_schema</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Schema file not found: </span><span class="si">{</span><span class="n">pd_schema</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pd_schema</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">paio</span> <span class="o">=</span> <span class="n">_import_pandera_io</span><span class="p">()</span>
+                <span class="n">pd_schema</span> <span class="o">=</span> <span class="n">paio</span><span class="o">.</span><span class="n">deserialize_schema</span><span class="p">(</span><span class="n">pd_schema</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pd_schema</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
+                <span class="n">pd_schema</span> <span class="o">=</span> <span class="n">load_schema_from_yaml</span><span class="p">(</span><span class="n">pd_schema</span><span class="p">)</span>
+                <span class="c1"># below line suffers from bug: https://github.com/unionai-oss/pandera/issues/1301</span>
+                <span class="c1"># pd_schema = pa.DataFrameSchema.from_yaml(pd_schema)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Validating dataframe with schema: </span><span class="si">{</span><span class="n">pd_schema</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># validate the dataframe, which may modify it via coercion</span>
+
+            <span class="c1"># add any calculated attributes in the schema</span>
+            <span class="n">dfmp</span><span class="p">:</span> <span class="n">DataFrameMetaProcessor</span> <span class="o">=</span> <span class="n">DataFrameMetaProcessor</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">pd_schema</span><span class="p">)</span>
+            <span class="n">calculation_map</span> <span class="o">=</span> <span class="n">dfmp</span><span class="o">.</span><span class="n">calculation_map</span>
+            <span class="n">blocks</span> <span class="o">=</span> <span class="n">dfmp</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">blocks</span><span class="p">)</span>
+            <span class="n">blocks</span> <span class="o">=</span> <span class="n">dfmp</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">blocks</span><span class="p">,</span> <span class="n">return_calculated_columns</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating BlockModel from dataframe: </span><span class="si">{</span><span class="n">blockmodel_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">bm</span> <span class="o">=</span> <span class="n">df_to_blockmodel</span><span class="p">(</span><span class="n">blocks</span><span class="p">,</span> <span class="n">blockmodel_name</span><span class="p">)</span>
+
+            <span class="c1"># persist the schema inside the omf file</span>
+            <span class="n">bm</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">pd_schema</span><span class="o">.</span><span class="n">description</span>
+            <span class="n">bm</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;pd_schema&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd_schema</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating BlockModel from dataframe: </span><span class="si">{</span><span class="n">blockmodel_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">bm</span> <span class="o">=</span> <span class="n">df_to_blockmodel</span><span class="p">(</span><span class="n">blocks</span><span class="p">,</span> <span class="n">blockmodel_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">bm</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="n">element</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">elements</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">allow_overwrite</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;BlockModel &#39;</span><span class="si">{</span><span class="n">blockmodel_name</span><span class="si">}</span><span class="s2">&#39; already exists in the OMF file: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="si">}</span><span class="s2">.  &quot;</span>
+                                 <span class="sa">f</span><span class="s2">&quot;If you want to overwrite, set allow_overwrite=True.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># remove the existing volume from the project</span>
+                <span class="n">volume_to_remove</span> <span class="o">=</span> <span class="p">[</span><span class="n">element</span> <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">elements</span> <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">bm</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">volume_to_remove</span><span class="p">)</span>
+
+        <span class="n">log_description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;BlockModel written with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">bm</span><span class="o">.</span><span class="n">attributes</span><span class="p">)</span><span class="si">}</span><span class="s2"> attributes&quot;</span>
+        <span class="k">if</span> <span class="n">composite_name</span><span class="p">:</span>
+            <span class="c1"># get the composite if it exists or create it if it does not</span>
+            <span class="k">if</span> <span class="n">composite_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">element</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">elements</span><span class="p">]:</span>
+                <span class="n">composite</span> <span class="o">=</span> <span class="n">omf</span><span class="o">.</span><span class="n">Composite</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">composite_name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">composite</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">composite</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_element_by_name</span><span class="p">(</span><span class="n">composite_name</span><span class="p">)</span>
+            <span class="n">composite</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bm</span><span class="p">)</span>
+            <span class="n">log_description</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; in composite </span><span class="si">{</span><span class="n">composite_name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bm</span><span class="p">)</span>
+
+        <span class="c1"># create the audit record</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_to_changelog</span><span class="p">(</span><span class="n">element</span><span class="o">=</span><span class="n">bm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;create&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">log_description</span><span class="p">)</span>
+        <span class="c1"># write the omf project to file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">persist_project</span><span class="p">()</span>
+
+        <span class="c1"># write the calculated variables to the omf block model metadata</span>
+        <span class="k">if</span> <span class="n">pd_schema</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_calculated_blockmodel_attributes</span><span class="p">(</span><span class="n">full_blockmodel_name</span><span class="p">,</span> <span class="n">calc_definitions</span><span class="o">=</span><span class="n">calculation_map</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OMFPandasWriter.create_calculated_blockmodel_attributes">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.writer.OMFPandasWriter.html#omfpandas.writer.OMFPandasWriter.create_calculated_blockmodel_attributes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_calculated_blockmodel_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blockmodel_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">calc_definitions</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a calculated attribute for a BlockModel.</span>
+
+<span class="sd">        Calculated attributes reduce storage space by storing the calculation expression instead of the data.</span>
+<span class="sd">        When the attribute is accessed, the expression is evaluated and the result returned.</span>
+<span class="sd">        The calculation expression must be a valid pandas expression, and is stored in the metadata of the</span>
+<span class="sd">        blockmodel object.  Only OMF2 supports this feature.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            blockmodel_name (str): The name of the BlockModel.</span>
+<span class="sd">            calc_definitions (dict[str, str]): A dictionary of attribute names and calculation expressions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_element_by_name</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="p">)</span>
+
+        <span class="c1"># confirm the element is a BlockModel</span>
+        <span class="k">if</span> <span class="n">bm</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;RegularBlockModel&#39;</span><span class="p">,</span> <span class="s1">&#39;TensorGridBlockModel&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Element &#39;</span><span class="si">{</span><span class="n">bm</span><span class="si">}</span><span class="s2">&#39; is not a supported BlockModel in the OMF file: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">expr</span> <span class="ow">in</span> <span class="n">calc_definitions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># check the attribute does not already exist</span>
+            <span class="k">if</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_element_attribute_names</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Attribute &#39;</span><span class="si">{</span><span class="n">attr_name</span><span class="si">}</span><span class="s2">&#39; already exists in BlockModel &#39;</span><span class="si">{</span><span class="n">blockmodel_name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+            <span class="n">attrs_in_scope</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">parse_vars_from_expr</span><span class="p">(</span><span class="n">expr</span><span class="p">)))</span>
+            <span class="c1"># validate that the attributes in the expression are in the schema</span>
+            <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attrs_in_scope</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">attr</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_element_attribute_names</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expression attribute &#39;</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">&#39; not found in BlockModel &#39;</span><span class="si">{</span><span class="n">blockmodel_name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Load the head dataset containing the attributes in the expression to validate the expression is valid,</span>
+            <span class="c1"># though if the attribute exists in the schema file then it will be validated on the entire dataset.</span>
+            <span class="n">index_filter</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">bm</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;pd_schema&#39;</span><span class="p">):</span>
+                <span class="n">pa</span> <span class="o">=</span> <span class="n">_import_pandera</span><span class="p">()</span>
+                <span class="n">col_schema</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">bm</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;pd_schema&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr_name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">col_schema</span><span class="p">:</span>
+                    <span class="n">index_filter</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># validate the expression</span>
+            <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_blockmodel</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="p">,</span> <span class="n">attributes</span><span class="o">=</span><span class="n">attrs_in_scope</span><span class="p">,</span>
+                                                    <span class="n">index_filter</span><span class="o">=</span><span class="n">index_filter</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">df</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expression &#39;</span><span class="si">{</span><span class="n">expr</span><span class="si">}</span><span class="s2">&#39; failed during evaluation: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># persist the configuration to the blockmodel metadata</span>
+            <span class="k">if</span> <span class="s1">&#39;calculated_attributes&#39;</span> <span class="ow">in</span> <span class="n">bm</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span>
+                <span class="n">bm</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;calculated_attributes&#39;</span><span class="p">][</span><span class="n">attr_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">expr</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bm</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;calculated_attributes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">attr_name</span><span class="p">:</span> <span class="n">expr</span><span class="p">}</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_to_changelog</span><span class="p">(</span><span class="n">element</span><span class="o">=</span><span class="n">blockmodel_name</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;create&#39;</span><span class="p">,</span>
+                                    <span class="n">description</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Calculated attribute [</span><span class="si">{</span><span class="n">attr_name</span><span class="si">}</span><span class="s2">] added with expression </span><span class="si">{</span><span class="n">expr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">persist_project</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="OMFPandasWriter.write_to_changelog">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.writer.OMFPandasWriter.html#omfpandas.writer.OMFPandasWriter.write_to_changelog">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write_to_changelog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;create&#39;</span><span class="p">,</span> <span class="s1">&#39;update&#39;</span><span class="p">,</span> <span class="s1">&#39;delete&#39;</span><span class="p">],</span> <span class="n">description</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write a change message to the OMF file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            element: The name of the element that was changed</span>
+<span class="sd">            action: The action taken on the object</span>
+<span class="sd">            description: Description of the change</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="s1">&#39;changelog&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;changelog&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">ChangeMessage</span><span class="p">(</span><span class="n">element</span><span class="o">=</span><span class="n">element</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">action</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;changelog&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="OMFPandasWriter.persist_project">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.writer.OMFPandasWriter.html#omfpandas.writer.OMFPandasWriter.persist_project">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">persist_project</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Persist the omf project to file and reload the project property&quot;&quot;&quot;</span>
+        <span class="n">omf</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="n">omf</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="OMFPandasWriter.write_blockmodel_attribute">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.writer.OMFPandasWriter.html#omfpandas.writer.OMFPandasWriter.write_blockmodel_attribute">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write_blockmodel_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blockmodel_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span>
+                                   <span class="n">allow_overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write data to a specific attribute of a BlockModel.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            blockmodel_name (str): The name of the BlockModel.</span>
+<span class="sd">            series (pd.Series): The data to write to the attribute.</span>
+<span class="sd">            allow_overwrite (bool): If True, overwrite the existing attribute. Default is False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.blockmodels.attributes</span><span class="w"> </span><span class="kn">import</span> <span class="n">series_to_attribute</span>
+
+        <span class="n">bm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_element_by_name</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">bm</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;pd_schema&#39;</span><span class="p">):</span>
+            <span class="n">pa</span> <span class="o">=</span> <span class="n">_import_pandera</span><span class="p">()</span>
+            <span class="c1"># validate the data</span>
+            <span class="n">schema</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">bm</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;pd_schema&#39;</span><span class="p">])</span>
+            <span class="n">series</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">to_frame</span><span class="p">())</span>
+            <span class="n">series</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># back to series</span>
+
+        <span class="n">attrs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_element_attribute_names</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">series</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">allow_overwrite</span><span class="p">:</span>
+                <span class="c1"># get the index in the list</span>
+                <span class="n">attr_pos</span> <span class="o">=</span> <span class="n">attrs</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+                <span class="n">bm</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">attr_pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">series_to_attribute</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Attribute &#39;</span><span class="si">{</span><span class="n">series</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; already exists in BlockModel &#39;</span><span class="si">{</span><span class="n">blockmodel_name</span><span class="si">}</span><span class="s2">&#39;.  &quot;</span>
+                                 <span class="sa">f</span><span class="s2">&quot;If you want to overwrite, set allow_overwrite=True.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">bm</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">series_to_attribute</span><span class="p">(</span><span class="n">series</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delete_profile_report</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="p">)</span>
+
+        <span class="c1"># todo: re-profile...</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_to_changelog</span><span class="p">(</span><span class="n">element</span><span class="o">=</span><span class="n">bm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;create&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Attribute [</span><span class="si">{</span><span class="n">series</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">] written&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OMFPandasWriter.delete_blockmodel_attribute">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.writer.OMFPandasWriter.html#omfpandas.writer.OMFPandasWriter.delete_blockmodel_attribute">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete_blockmodel_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blockmodel_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">attribute_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete an attribute from a BlockModel.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            blockmodel_name (str): The name of the BlockModel.</span>
+<span class="sd">            attribute_name (str): The name of the attribute.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_element_by_name</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="p">)</span>
+        <span class="n">attrs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_element_attribute_names</span><span class="p">(</span><span class="n">bm</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">attribute_name</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">bm</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">attribute_name</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Attribute &#39;</span><span class="si">{</span><span class="n">attribute_name</span><span class="si">}</span><span class="s2">&#39; not found in BlockModel &#39;</span><span class="si">{</span><span class="n">blockmodel_name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delete_profile_report</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="p">)</span>
+
+        <span class="c1"># create the audit record, which also saves the file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_to_changelog</span><span class="p">(</span><span class="n">element</span><span class="o">=</span><span class="n">bm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;delete&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attribute_name</span><span class="si">}</span><span class="s2"> deleted&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OMFPandasWriter.profile_blockmodel">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.writer.OMFPandasWriter.html#omfpandas.writer.OMFPandasWriter.profile_blockmodel">[docs]</a>
+    <span class="nd">@log_timer</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">profile_blockmodel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blockmodel_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Profile a BlockModel.</span>
+
+<span class="sd">        Profiling will be skipped if the data has not changed.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            blockmodel_name (str): The name of the BlockModel to profile.</span>
+<span class="sd">            query (Optional[str]): A query to filter the data before profiling.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pd.DataFrame: The profiled data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">_import_ydata_profiling</span><span class="p">()</span>
+
+        <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">OMFPandasReader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">)</span><span class="o">.</span><span class="n">read_blockmodel</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">el</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_element_by_name</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="p">)</span>
+        <span class="n">bm_type</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">el</span><span class="p">))</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;&#39;&gt;&quot;</span><span class="p">)</span>
+        <span class="n">dataset</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">el</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s2"> Filter: </span><span class="si">{</span><span class="n">query</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;no_filter&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;creator&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="o">.</span><span class="n">as_uri</span><span class="p">()}</span>
+        <span class="n">column_descriptions</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">el</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;pd_schema&#39;</span><span class="p">):</span>
+            <span class="n">column_defs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">el</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;pd_schema&#39;</span><span class="p">])[</span><span class="s1">&#39;columns&#39;</span><span class="p">]</span>
+            <span class="n">column_descriptions</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">v</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">column_defs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+        <span class="n">profile</span><span class="p">:</span> <span class="n">ydata_profiling</span><span class="o">.</span><span class="n">ProfileReport</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">profile_report</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">el</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">bm_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+                                                                   <span class="n">variables</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;descriptions&quot;</span><span class="p">:</span> <span class="n">column_descriptions</span><span class="p">})</span>
+
+        <span class="c1"># persist the profile report as html to the omf file, larger but cannot serialise the ProfileReport object,</span>
+        <span class="c1"># nor recreate the report from json.</span>
+        <span class="n">d_profile</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">query</span> <span class="k">if</span> <span class="n">query</span> <span class="k">else</span> <span class="s1">&#39;no_filter&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">to_html</span><span class="p">()}</span>
+
+        <span class="k">if</span> <span class="n">el</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;profile&#39;</span><span class="p">):</span>
+            <span class="n">el</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">el</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">],</span> <span class="o">**</span><span class="n">d_profile</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">el</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">d_profile</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_to_changelog</span><span class="p">(</span><span class="n">element</span><span class="o">=</span><span class="n">blockmodel_name</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;create&#39;</span><span class="p">,</span>
+                                <span class="n">description</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Profiled with query </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">profile</span></div>
+
+
+<div class="viewcode-block" id="OMFPandasWriter.write_block_model_schema">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.writer.OMFPandasWriter.html#omfpandas.writer.OMFPandasWriter.write_block_model_schema">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write_block_model_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blockmodel_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pd_schema_filepath</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write a Pandera schema to the OMF file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            blockmodel_name (str): The name of the BlockModel.</span>
+<span class="sd">            pd_schema_filepath (Path): The path to the Pandera schema yaml file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pa</span> <span class="o">=</span> <span class="n">_import_pandera</span><span class="p">()</span>
+        <span class="n">bm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_element_by_name</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="p">)</span>
+        <span class="n">pd_schema</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">DataFrameSchema</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="n">pd_schema_filepath</span><span class="p">)</span>
+        <span class="n">bm</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;pd_schema&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd_schema</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
+
+        <span class="n">el</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_element_by_name</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="p">)</span>
+        <span class="n">schema_title</span> <span class="o">=</span> <span class="n">pd_schema</span><span class="o">.</span><span class="n">title</span> <span class="k">if</span> <span class="n">pd_schema</span><span class="o">.</span><span class="n">title</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">schema_description</span> <span class="o">=</span> <span class="n">pd_schema</span><span class="o">.</span><span class="n">description</span> <span class="k">if</span> <span class="n">pd_schema</span><span class="o">.</span><span class="n">description</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">el</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">schema_title</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">schema_description</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_to_changelog</span><span class="p">(</span><span class="n">element</span><span class="o">=</span><span class="n">blockmodel_name</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;create&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Schema written&quot;</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_delete_profile_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blockmodel_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete the profile report from the OMF file when data has changed.&quot;&quot;&quot;</span>
+        <span class="n">bm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_element_by_name</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;profile&#39;</span> <span class="ow">in</span> <span class="n">bm</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">bm</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="OMFPandasWriter.blockmodel_to_parquet">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.writer.OMFPandasWriter.html#omfpandas.writer.OMFPandasWriter.blockmodel_to_parquet">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">blockmodel_to_parquet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blockmodel_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">out_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="n">variables</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="n">allow_overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert blockmodel to a Parquet file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            blockmodel_name (str): The BlockModel element to convert.</span>
+<span class="sd">            out_path (Optional[Path]): The path to the Parquet file to write. If None, a file with the blockmodel name is</span>
+<span class="sd">            created.</span>
+<span class="sd">            variables (Optional[list[str]]): The variables to include in the DataFrame. If None, all variables are included.</span>
+<span class="sd">            allow_overwrite (bool): If True, overwrite the existing Parquet file. Default is False.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            FileExistsError: If the file already exists and allow_overwrite is False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_element_by_name</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">out_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">blockmodel_name</span><span class="si">}</span><span class="s2">.parquet&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">out_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">allow_overwrite</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileExistsError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;File already exists: </span><span class="si">{</span><span class="n">out_path</span><span class="si">}</span><span class="s2">. If you want to overwrite, set allow_overwrite=True.&quot;</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">blockmodel_to_df</span><span class="p">(</span><span class="n">blockmodel</span><span class="o">=</span><span class="n">bm</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">out_path</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OMFPandasWriter.blockmodel_to_orc">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.writer.OMFPandasWriter.html#omfpandas.writer.OMFPandasWriter.blockmodel_to_orc">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">blockmodel_to_orc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blockmodel_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">out_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">variables</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">allow_overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert blockmodel to an ORC file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            blockmodel_name (str): The BlockModel element to convert.</span>
+<span class="sd">            out_path (Optional[Path]): The path to the ORC file to write. If None, a file with the blockmodel name is</span>
+<span class="sd">            created.</span>
+<span class="sd">            variables (Optional[list[str]]): The variables to include in the DataFrame. If None, all variables are included.</span>
+<span class="sd">            allow_overwrite (bool): If True, overwrite the existing ORC file. Default is False.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            FileExistsError: If the file already exists and allow_overwrite is False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_element_by_name</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">out_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">blockmodel_name</span><span class="si">}</span><span class="s2">.orc&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">out_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">allow_overwrite</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileExistsError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;File already exists: </span><span class="si">{</span><span class="n">out_path</span><span class="si">}</span><span class="s2">. If you want to overwrite, set allow_overwrite=True.&quot;</span><span class="p">)</span>
+        <span class="n">is_tensor</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">bm</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;TensorGridBlockModel&#39;</span> <span class="k">else</span> <span class="kc">False</span>
+        <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">blockmodel_to_df</span><span class="p">(</span><span class="n">blockmodel</span><span class="o">=</span><span class="n">bm</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">to_orc</span><span class="p">(</span><span class="n">out_path</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Greg Elphick.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>omfpandas.blockmodels.convert_blockmodel &mdash; omfpandas  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery.css?v=61a4c737" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=1a8b2067" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            omfpandas
+          </a>
+              <div class="version">
+                0.9.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../auto_examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license/license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">omfpandas</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">omfpandas.blockmodels.convert_blockmodel</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for omfpandas.blockmodels.convert_blockmodel</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">OMF uses C-order, sorting by x, y, z, while PyVista uses Fortran-order, sorting by z, y, x.</span>
+<span class="sd">Our Pandas MultiIndex is sorted by x, y, z to align with OMF.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omf</span><span class="w"> </span><span class="kn">import</span> <span class="n">TensorGridBlockModel</span><span class="p">,</span> <span class="n">RegularBlockModel</span><span class="p">,</span> <span class="n">NumericAttribute</span><span class="p">,</span> <span class="n">CategoryAttribute</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.blockmodels.attributes</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_blockmodel_attributes</span><span class="p">,</span> <span class="n">BM</span><span class="p">,</span> <span class="n">series_to_attribute</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.blockmodels.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegularGeometry</span><span class="p">,</span> <span class="n">TensorGeometry</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyvista</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+
+<div class="viewcode-block" id="df_to_blockmodel">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.convert_blockmodel.df_to_blockmodel.html#omfpandas.blockmodels.convert_blockmodel.df_to_blockmodel">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">df_to_blockmodel</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">blockmodel_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">RegularBlockModel</span><span class="p">,</span> <span class="n">TensorGridBlockModel</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the appropriate function to convert a DataFrame to a BlockModel.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df (pd.DataFrame): The DataFrame to convert to a RegularBlockModel.</span>
+<span class="sd">        blockmodel_name (str): The name of the RegularBlockModel.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The RegularBlockModel|TensorGridBlockModel representing the DataFrame.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="s1">&#39;x&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span> <span class="ow">and</span> <span class="s1">&#39;y&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span> <span class="ow">and</span> <span class="s1">&#39;z&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Dataframe must have centroid coordinates (x, y, z) in the index.&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="s1">&#39;dx&#39;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span> <span class="ow">and</span> <span class="s1">&#39;dy&#39;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span> <span class="ow">and</span> <span class="s1">&#39;dz&#39;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">df_to_tensor_bm</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">blockmodel_name</span><span class="o">=</span><span class="n">blockmodel_name</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">df_to_regular_bm</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">blockmodel_name</span><span class="o">=</span><span class="n">blockmodel_name</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="blockmodel_to_df">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.convert_blockmodel.blockmodel_to_df.html#omfpandas.blockmodels.convert_blockmodel.blockmodel_to_df">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">blockmodel_to_df</span><span class="p">(</span><span class="n">blockmodel</span><span class="p">:</span> <span class="n">BM</span><span class="p">,</span>
+                     <span class="n">variables</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="n">query</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="n">index_filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert regular block model to a DataFrame.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        blockmodel (BlockModel): The BlockModel to convert.</span>
+<span class="sd">        variables (Optional[list[str]]): The variables to include in the DataFrame. If None, all variables are included.</span>
+<span class="sd">        query (Optional[str]): The query to filter the DataFrame.</span>
+<span class="sd">        index_filter (Optional[list[int]]): List of integer indices to filter the DataFrame.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pd.DataFrame: The DataFrame representing the BlockModel.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># read the data</span>
+    <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">read_blockmodel_attributes</span><span class="p">(</span><span class="n">blockmodel</span><span class="p">,</span> <span class="n">attributes</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span>
+                                                  <span class="n">index_filter</span><span class="o">=</span><span class="n">index_filter</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+
+<div class="viewcode-block" id="df_to_regular_bm">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.convert_blockmodel.df_to_regular_bm.html#omfpandas.blockmodels.convert_blockmodel.df_to_regular_bm">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">df_to_regular_bm</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">blockmodel_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RegularBlockModel</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a DataFrame to a RegularBlockModel.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df (pd.DataFrame): The DataFrame to convert to a RegularBlockModel.</span>
+<span class="sd">        blockmodel_name (str): The name of the RegularBlockModel.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        RegularBlockModel: The RegularBlockModel representing the DataFrame.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Sort the dataframe to align with the omf spec - &#39;C&#39; order</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">])</span>
+
+    <span class="c1"># Create the block model and geometry</span>
+    <span class="n">blockmodel</span> <span class="o">=</span> <span class="n">RegularBlockModel</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">blockmodel_name</span><span class="p">)</span>
+    <span class="n">geometry</span><span class="p">:</span> <span class="n">RegularGeometry</span> <span class="o">=</span> <span class="n">RegularGeometry</span><span class="o">.</span><span class="n">from_multi_index</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">blockmodel</span><span class="o">.</span><span class="n">corner</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">corner</span>
+    <span class="n">blockmodel</span><span class="o">.</span><span class="n">axis_u</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">axis_u</span>
+    <span class="n">blockmodel</span><span class="o">.</span><span class="n">axis_v</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">axis_v</span>
+    <span class="n">blockmodel</span><span class="o">.</span><span class="n">axis_w</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">axis_w</span>
+    <span class="n">blockmodel</span><span class="o">.</span><span class="n">block_count</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">geometry</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">blockmodel</span><span class="o">.</span><span class="n">block_size</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">geometry</span><span class="o">.</span><span class="n">block_size</span><span class="p">)</span>
+    <span class="n">blockmodel</span><span class="o">.</span><span class="n">cbc</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">geometry</span><span class="o">.</span><span class="n">num_cells</span>
+
+    <span class="c1"># add the data</span>
+    <span class="n">attrs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">NumericAttribute</span><span class="p">,</span> <span class="n">CategoryAttribute</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">attribute</span> <span class="o">=</span> <span class="n">series_to_attribute</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">variable</span><span class="p">])</span>
+
+        <span class="n">attrs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
+    <span class="n">blockmodel</span><span class="o">.</span><span class="n">attributes</span> <span class="o">=</span> <span class="n">attrs</span>
+    <span class="n">blockmodel</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">blockmodel</span></div>
+
+
+
+<div class="viewcode-block" id="df_to_tensor_bm">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.convert_blockmodel.df_to_tensor_bm.html#omfpandas.blockmodels.convert_blockmodel.df_to_tensor_bm">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">df_to_tensor_bm</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">blockmodel_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BM</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Write a DataFrame to a BlockModel.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df (pd.DataFrame): The DataFrame to convert to a BlockModel.</span>
+<span class="sd">        blockmodel_name (str): The name of the BlockModel.</span>
+<span class="sd">        created.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        BlockModel: The BlockModel representing the DataFrame.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Sort the dataframe to align with the omf spec - &#39;C&#39; order</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Create the blockmodel and geometry</span>
+
+    <span class="c1"># if is_tensor:</span>
+    <span class="n">geometry</span><span class="p">:</span> <span class="n">TensorGeometry</span> <span class="o">=</span> <span class="n">TensorGeometry</span><span class="o">.</span><span class="n">from_multi_index</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+
+    <span class="n">blockmodel</span><span class="p">:</span> <span class="n">BM</span> <span class="o">=</span> <span class="n">TensorGridBlockModel</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">blockmodel_name</span><span class="p">)</span>
+    <span class="c1"># assign the geometry properties</span>
+    <span class="n">blockmodel</span><span class="o">.</span><span class="n">corner</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">corner</span>
+    <span class="n">blockmodel</span><span class="o">.</span><span class="n">axis_u</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">axis_u</span>
+    <span class="n">blockmodel</span><span class="o">.</span><span class="n">axis_v</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">axis_v</span>
+    <span class="n">blockmodel</span><span class="o">.</span><span class="n">axis_w</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">axis_w</span>
+    <span class="n">blockmodel</span><span class="o">.</span><span class="n">tensor_u</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">tensor_u</span>
+    <span class="n">blockmodel</span><span class="o">.</span><span class="n">tensor_v</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">tensor_v</span>
+    <span class="n">blockmodel</span><span class="o">.</span><span class="n">tensor_w</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">tensor_w</span>
+
+    <span class="c1"># add the data</span>
+    <span class="n">attrs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">NumericAttribute</span><span class="p">,</span> <span class="n">CategoryAttribute</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">attribute</span> <span class="o">=</span> <span class="n">series_to_attribute</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">variable</span><span class="p">])</span>
+
+        <span class="n">attrs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
+    <span class="n">blockmodel</span><span class="o">.</span><span class="n">attributes</span> <span class="o">=</span> <span class="n">attrs</span>
+    <span class="n">blockmodel</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">blockmodel</span></div>
+
+
+
+<div class="viewcode-block" id="df_to_pv_structured_grid">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.convert_blockmodel.df_to_pv_structured_grid.html#omfpandas.blockmodels.convert_blockmodel.df_to_pv_structured_grid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">df_to_pv_structured_grid</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;pv.StructuredGrid&#39;</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pyvista</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+
+    <span class="c1"># ensure the dataframe is sorted by z, y, x, since Pyvista uses &#39;F&#39; order.</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">])</span>
+
+    <span class="c1"># Get the unique x, y, z coordinates (centroids)</span>
+    <span class="n">x_centroids</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+    <span class="n">y_centroids</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+    <span class="n">z_centroids</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;z&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+
+    <span class="c1"># Calculate the cell size (assuming all cells are of equal size)</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">x_centroids</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">y_centroids</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">z_centroids</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Calculate the grid points</span>
+    <span class="n">x_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">x_centroids</span> <span class="o">-</span> <span class="n">dx</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">x_centroids</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">dx</span> <span class="o">/</span> <span class="mi">2</span><span class="p">])</span>
+    <span class="n">y_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">y_centroids</span> <span class="o">-</span> <span class="n">dy</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y_centroids</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">/</span> <span class="mi">2</span><span class="p">])</span>
+    <span class="n">z_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">z_centroids</span> <span class="o">-</span> <span class="n">dz</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">z_centroids</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">dz</span> <span class="o">/</span> <span class="mi">2</span><span class="p">])</span>
+
+    <span class="c1"># Create the 3D grid of points</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x_points</span><span class="p">,</span> <span class="n">y_points</span><span class="p">,</span> <span class="n">z_points</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Create a StructuredGrid object</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">StructuredGrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+
+    <span class="c1"># Add the data from the DataFrame to the grid</span>
+    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">cell_data</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">return</span> <span class="n">grid</span></div>
+
+
+
+<div class="viewcode-block" id="df_to_pv_unstructured_grid">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.convert_blockmodel.df_to_pv_unstructured_grid.html#omfpandas.blockmodels.convert_blockmodel.df_to_pv_unstructured_grid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">df_to_pv_unstructured_grid</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;pv.UnstructuredGrid&#39;</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Requires the index to be a pd.MultiIndex with names [&#39;x&#39;, &#39;y&#39;, &#39;z&#39;, &#39;dx&#39;, &#39;dy&#39;, &#39;dz&#39;].</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># ensure the dataframe is sorted by z, y, x, since Pyvista uses &#39;F&#39; order.</span>
+    <span class="n">blocks</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">])</span>
+
+    <span class="c1"># Get the x, y, z coordinates and cell dimensions</span>
+    <span class="c1"># if no dims are passed, estimate them</span>
+    <span class="k">if</span> <span class="s1">&#39;dx&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">blocks</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">common_block_size</span><span class="p">()</span>
+        <span class="n">blocks</span><span class="p">[</span><span class="s1">&#39;dx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dx</span>
+        <span class="n">blocks</span><span class="p">[</span><span class="s1">&#39;dy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dy</span>
+        <span class="n">blocks</span><span class="p">[</span><span class="s1">&#39;dz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dz</span>
+
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span> <span class="o">=</span> <span class="p">(</span><span class="n">blocks</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">blocks</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="s1">&#39;dx&#39;</span><span class="p">,</span> <span class="s1">&#39;dy&#39;</span><span class="p">,</span> <span class="s1">&#39;dz&#39;</span><span class="p">])</span>
+    <span class="n">blocks</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="s1">&#39;dx&#39;</span><span class="p">,</span> <span class="s1">&#39;dy&#39;</span><span class="p">,</span> <span class="s1">&#39;dz&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># Create the cell points/vertices</span>
+    <span class="c1"># REF: https://github.com/OpenGeoVis/PVGeo/blob/main/PVGeo/filters/voxelize.py</span>
+
+    <span class="n">n_cells</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># Generate cell nodes for all points in data set</span>
+    <span class="c1"># - Bottom</span>
+    <span class="n">c_n1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(((</span><span class="n">x</span> <span class="o">-</span> <span class="n">dx</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">dy</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">z</span> <span class="o">-</span> <span class="n">dz</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">c_n2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(((</span><span class="n">x</span> <span class="o">+</span> <span class="n">dx</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">dy</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">z</span> <span class="o">-</span> <span class="n">dz</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">c_n3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(((</span><span class="n">x</span> <span class="o">-</span> <span class="n">dx</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">z</span> <span class="o">-</span> <span class="n">dz</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">c_n4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(((</span><span class="n">x</span> <span class="o">+</span> <span class="n">dx</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">z</span> <span class="o">-</span> <span class="n">dz</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># - Top</span>
+    <span class="n">c_n5</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(((</span><span class="n">x</span> <span class="o">-</span> <span class="n">dx</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">dy</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">z</span> <span class="o">+</span> <span class="n">dz</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">c_n6</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(((</span><span class="n">x</span> <span class="o">+</span> <span class="n">dx</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">dy</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">z</span> <span class="o">+</span> <span class="n">dz</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">c_n7</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(((</span><span class="n">x</span> <span class="o">-</span> <span class="n">dx</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">z</span> <span class="o">+</span> <span class="n">dz</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">c_n8</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(((</span><span class="n">x</span> <span class="o">+</span> <span class="n">dx</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">z</span> <span class="o">+</span> <span class="n">dz</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># - Concatenate</span>
+    <span class="c1"># nodes = np.concatenate((c_n1, c_n2, c_n3, c_n4, c_n5, c_n6, c_n7, c_n8), axis=0)</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">c_n1</span><span class="p">,</span> <span class="n">c_n2</span><span class="p">,</span> <span class="n">c_n3</span><span class="p">,</span> <span class="n">c_n4</span><span class="p">,</span> <span class="n">c_n5</span><span class="p">,</span> <span class="n">c_n6</span><span class="p">,</span> <span class="n">c_n7</span><span class="p">,</span> <span class="n">c_n8</span><span class="p">))</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_cells</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="c1"># create the cells</span>
+    <span class="c1"># REF: https://docs/pyvista.org/examples/00-load/create-unstructured-surface.html</span>
+    <span class="n">cells_hex</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_cells</span> <span class="o">*</span> <span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_cells</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">UnstructuredGrid</span><span class="p">({</span><span class="n">pv</span><span class="o">.</span><span class="n">CellType</span><span class="o">.</span><span class="n">VOXEL</span><span class="p">:</span> <span class="n">cells_hex</span><span class="p">},</span> <span class="n">nodes</span><span class="p">)</span>
+
+    <span class="c1"># add the attributes (column) data</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">blocks</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">cell_data</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">blocks</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">return</span> <span class="n">grid</span></div>
+
+
+
+<div class="viewcode-block" id="convert_tensor_to_regular">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.convert_blockmodel.convert_tensor_to_regular.html#omfpandas.blockmodels.convert_blockmodel.convert_tensor_to_regular">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_tensor_to_regular</span><span class="p">(</span><span class="n">tensor_model</span><span class="p">:</span> <span class="n">TensorGridBlockModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RegularBlockModel</span><span class="p">:</span>
+    <span class="c1"># Check if the TensorGridBlockModel is regularly spaced</span>
+    <span class="n">tensor_geometry</span> <span class="o">=</span> <span class="n">TensorGeometry</span><span class="o">.</span><span class="n">from_element</span><span class="p">(</span><span class="n">tensor_model</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">tensor_geometry</span><span class="o">.</span><span class="n">is_regular</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;The TensorGridBlockModel is not regularly spaced and cannot be converted to a RegularBlockModel.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Create a RegularGeometry from the TensorGeometry</span>
+    <span class="n">regular_geometry</span> <span class="o">=</span> <span class="n">RegularGeometry</span><span class="p">(</span>
+        <span class="n">corner</span><span class="o">=</span><span class="n">tensor_geometry</span><span class="o">.</span><span class="n">corner</span><span class="p">,</span>
+        <span class="n">axis_u</span><span class="o">=</span><span class="n">tensor_geometry</span><span class="o">.</span><span class="n">axis_u</span><span class="p">,</span>
+        <span class="n">axis_v</span><span class="o">=</span><span class="n">tensor_geometry</span><span class="o">.</span><span class="n">axis_v</span><span class="p">,</span>
+        <span class="n">axis_w</span><span class="o">=</span><span class="n">tensor_geometry</span><span class="o">.</span><span class="n">axis_w</span><span class="p">,</span>
+        <span class="n">block_size</span><span class="o">=</span><span class="p">(</span><span class="n">tensor_geometry</span><span class="o">.</span><span class="n">tensor_u</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tensor_geometry</span><span class="o">.</span><span class="n">tensor_v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tensor_geometry</span><span class="o">.</span><span class="n">tensor_w</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+        <span class="n">shape</span><span class="o">=</span><span class="n">tensor_geometry</span><span class="o">.</span><span class="n">shape</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Create a RegularBlockModel using the RegularGeometry</span>
+    <span class="n">regular_model</span> <span class="o">=</span> <span class="n">RegularBlockModel</span><span class="p">(</span>
+        <span class="n">origin</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">regular_geometry</span><span class="o">.</span><span class="n">corner</span><span class="p">),</span>
+        <span class="n">axis_u</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">regular_geometry</span><span class="o">.</span><span class="n">axis_u</span><span class="p">),</span>
+        <span class="n">axis_v</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">regular_geometry</span><span class="o">.</span><span class="n">axis_v</span><span class="p">),</span>
+        <span class="n">axis_w</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">regular_geometry</span><span class="o">.</span><span class="n">axis_w</span><span class="p">),</span>
+        <span class="n">block_size</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">regular_geometry</span><span class="o">.</span><span class="n">block_size</span><span class="p">),</span>
+        <span class="n">block_count</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">regular_geometry</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+        <span class="n">cbc</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">regular_geometry</span><span class="o">.</span><span class="n">num_cells</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Copy attributes from the TensorGridBlockModel to the RegularBlockModel</span>
+    <span class="n">regular_model</span><span class="o">.</span><span class="n">attributes</span> <span class="o">=</span> <span class="n">tensor_model</span><span class="o">.</span><span class="n">attributes</span>
+
+    <span class="k">return</span> <span class="n">regular_model</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Greg Elphick.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

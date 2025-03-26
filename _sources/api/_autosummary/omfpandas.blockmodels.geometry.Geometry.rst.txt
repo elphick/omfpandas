@@ -1,0 +1,48 @@
+omfpandas.blockmodels.geometry.Geometry
+=======================================
+
+.. currentmodule:: omfpandas.blockmodels.geometry
+
+.. autoclass:: Geometry
+   :members:
+   :special-members: __add__, __mul__
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Geometry.__init__
+      ~Geometry.from_element
+      ~Geometry.from_multi_index
+      ~Geometry.nearest_centroid_lookup
+      ~Geometry.to_json_file
+      ~Geometry.to_multi_index
+      ~Geometry.to_summary_json
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Geometry.bounding_box
+      ~Geometry.centroid_u
+      ~Geometry.centroid_v
+      ~Geometry.centroid_w
+      ~Geometry.extents
+      ~Geometry.is_regular
+      ~Geometry.num_cells
+      ~Geometry.shape
+      ~Geometry.summary
+      ~Geometry.corner
+      ~Geometry.axis_u
+      ~Geometry.axis_v
+      ~Geometry.axis_w
+   
+   

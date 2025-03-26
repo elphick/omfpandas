@@ -1,0 +1,6 @@
+omfpandas.blockmodels.attributes.get\_attribute\_by\_name
+=========================================================
+
+.. currentmodule:: omfpandas.blockmodels.attributes
+
+.. autofunction:: get_attribute_by_name

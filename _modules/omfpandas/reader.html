@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>omfpandas.reader &mdash; omfpandas  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=61a4c737" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=1a8b2067" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            omfpandas
+          </a>
+              <div class="version">
+                0.9.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../auto_examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license/license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">omfpandas</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">omfpandas.reader</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for omfpandas.reader</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">OMFPandas</span><span class="p">,</span> <span class="n">SUPPORTED_BM_TYPES</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.blockmodel</span><span class="w"> </span><span class="kn">import</span> <span class="n">OMFBlockModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.blockmodels</span><span class="w"> </span><span class="kn">import</span> <span class="n">multiindex_to_encoded_index</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.blockmodels.convert_blockmodel</span><span class="w"> </span><span class="kn">import</span> <span class="n">blockmodel_to_df</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.blockmodels.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Geometry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.utils.pandas_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_vars_from_expr</span>
+
+<span class="n">PathLike</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="OMFPandasReader">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.reader.OMFPandasReader.html#omfpandas.reader.OMFPandasReader">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">OMFPandasReader</span><span class="p">(</span><span class="n">OMFPandas</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to read an OMF file to a pandas DataFrame.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        filepath (Path): Path to the OMF file.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="OMFPandasReader.__init__">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.reader.OMFPandasReader.html#omfpandas.reader.OMFPandasReader.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="n">PathLike</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate the OMFPandasReader object</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filepath: Path to the OMF file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
+            <span class="n">filepath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filepath</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File does not exist: </span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OMFPandasReader.read_blockmodel">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.reader.OMFPandasReader.html#omfpandas.reader.OMFPandasReader.read_blockmodel">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_blockmodel</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">blockmodel_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">attributes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">query</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">index_filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">encode_index</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a DataFrame from a BlockModel.</span>
+
+<span class="sd">        Only variables assigned to the `cell` (as distinct from the grid `points`) are loaded.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            blockmodel_name (str): The name of the BlockModel to read. Use dot notation for composite (e.g., Composite.BlockModel).</span>
+<span class="sd">            attributes (Optional[list[str]]): The attributes/variables to include in the DataFrame. If None, all</span>
+<span class="sd">                variables are included.</span>
+<span class="sd">            query (Optional[str]): A query string to filter the DataFrame. Default is None.</span>
+<span class="sd">            index_filter (Optional[list[int]]): A list of indexes to filter the DataFrame. Default is None.</span>
+<span class="sd">            encode_index (bool): If True, encode the index to a single integer.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pd.DataFrame: The DataFrame representing the BlockModel.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_element_by_name</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="p">)</span>
+        <span class="c1"># check the element retrieved is the expected type</span>
+        <span class="k">if</span> <span class="n">bm</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;RegularBlockModel&quot;</span><span class="p">,</span> <span class="s2">&quot;TensorGridBlockModel&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Element &#39;</span><span class="si">{</span><span class="n">bm</span><span class="si">}</span><span class="s2">&#39; is not a supported BlockModel in the OMF file: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">res</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">blockmodel_to_df</span><span class="p">(</span>
+            <span class="n">bm</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="n">attributes</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span> <span class="n">index_filter</span><span class="o">=</span><span class="n">index_filter</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">encode_index</span><span class="p">:</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">multiindex_to_encoded_index</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">res</span></div>
+
+
+<div class="viewcode-block" id="OMFPandasReader.read_block_models">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.reader.OMFPandasReader.html#omfpandas.reader.OMFPandasReader.read_block_models">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_block_models</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">blockmodel_attributes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
+            <span class="n">query</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">encode_index</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a DataFrame from multiple BlockModels.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            blockmodel_attributes (dict[str, list[str]]): A dictionary of BlockModel names and the variables to include.</span>
+<span class="sd">                If the dict value is None, all attributes in the blockmodel (key) are included.</span>
+<span class="sd">            query (Optional[str]): A query string to filter the DataFrame. Default is None.</span>
+<span class="sd">            encode_index: If True, encode the index to a single integer.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pd.DataFrame: The DataFrame representing the merged BlockModels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">block_models</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">geometry_indexes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">index_filter</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">query</span><span class="p">:</span>
+            <span class="c1"># we use the query to generate an index_filter to filter the block models since they may not have</span>
+            <span class="c1"># the query attributes available in the given model.</span>
+            <span class="n">query_attrs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">parse_vars_from_expr</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+            <span class="c1"># extract the attributes for the query_attributes, noting that they may be in different block models</span>
+            <span class="n">chunks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">bm_name</span> <span class="ow">in</span> <span class="n">blockmodel_attributes</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">query_attrs</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">blockmodel_attributes</span><span class="p">[</span><span class="n">bm_name</span><span class="p">]:</span>
+                        <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">read_blockmodel</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="o">=</span><span class="n">bm_name</span><span class="p">,</span>
+                                                 <span class="n">attributes</span><span class="o">=</span><span class="p">[</span><span class="n">attr</span><span class="p">],</span> <span class="n">encode_index</span><span class="o">=</span><span class="n">encode_index</span><span class="p">)[</span><span class="n">attr</span><span class="p">])</span>
+            <span class="n">tmp_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+            <span class="c1"># get the index locations of the filtered index relative to the full index</span>
+            <span class="n">filtered_index</span> <span class="o">=</span> <span class="n">tmp_df</span><span class="o">.</span><span class="n">index</span>
+            <span class="c1"># full_index = geometry_to_index(self.get_element_by_name(self._elements[0].name).geometry)</span>
+            <span class="n">full_index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bm_geometry</span><span class="p">(</span>
+                <span class="n">blockmodel_name</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">blockmodel_attributes</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">to_multi_index</span><span class="p">()</span>
+            <span class="c1"># Find the intersection of the two MultiIndex objects</span>
+            <span class="n">intersection</span> <span class="o">=</span> <span class="n">full_index</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">filtered_index</span><span class="p">)</span>
+            <span class="n">index_filter</span> <span class="o">=</span> <span class="n">full_index</span><span class="o">.</span><span class="n">get_indexer</span><span class="p">(</span><span class="n">intersection</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">bm_name</span><span class="p">,</span> <span class="n">requested_attrs</span> <span class="ow">in</span> <span class="n">blockmodel_attributes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># check that the requested attrs exist in the specified bm</span>
+            <span class="n">available_attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">blockmodel_attributes</span><span class="p">[</span><span class="n">bm_name</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">requested_attrs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">requested_attrs</span> <span class="o">=</span> <span class="n">available_attrs</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">missing_attrs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">requested_attrs</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">available_attrs</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">missing_attrs</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Attributes </span><span class="si">{</span><span class="n">missing_attrs</span><span class="si">}</span><span class="s2"> not found in BlockModel &#39;</span><span class="si">{</span><span class="n">bm_name</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;Available attributes are: </span><span class="si">{</span><span class="n">available_attrs</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+
+            <span class="n">block_models</span><span class="p">[</span><span class="n">bm_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_blockmodel</span><span class="p">(</span>
+                <span class="n">blockmodel_name</span><span class="o">=</span><span class="n">bm_name</span><span class="p">,</span>
+                <span class="n">attributes</span><span class="o">=</span><span class="n">requested_attrs</span><span class="p">,</span>
+                <span class="n">index_filter</span><span class="o">=</span><span class="n">index_filter</span> <span class="k">if</span> <span class="n">query</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># geometry_indexes[bm_name] = geometry_to_index(self.get_bm_geometry(bm_name))</span>
+            <span class="n">geometry_indexes</span><span class="p">[</span><span class="n">bm_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bm_geometry</span><span class="p">(</span>
+                <span class="n">blockmodel_name</span><span class="o">=</span><span class="n">bm_name</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">to_multi_index</span><span class="p">()</span>
+
+        <span class="c1"># validate the indexes are equivalent</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">ensure_identical_indexes</span><span class="p">(</span><span class="n">index_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">index_dict</span><span class="p">:</span>
+                <span class="k">return</span>
+
+            <span class="n">first_index</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">index_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">index_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">first_index</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Index for &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; is different from the first index.&quot;</span>
+                    <span class="p">)</span>
+
+        <span class="n">ensure_identical_indexes</span><span class="p">(</span><span class="n">geometry_indexes</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">block_models</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OMFPandasReader.plot_blockmodel">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.reader.OMFPandasReader.html#omfpandas.reader.OMFPandasReader.plot_blockmodel">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_blockmodel</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">blockmodel_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">scalar</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">threshold</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="n">show_edges</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="n">show_axes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pv.Plotter&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot the BlockModel using PyVista.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            blockmodel_name (str): The name of the BlockModel to plot.</span>
+<span class="sd">            scalar (str): The scalar to plot.</span>
+<span class="sd">            threshold (bool): If True, plot the thresholded mesh. Default is True.</span>
+<span class="sd">            show_edges (bool): If True, show the edges. Default is True.</span>
+<span class="sd">            show_axes (bool): If True, show the axes. Default is True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pv.Plotter: The PyVista plotter object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">block_model</span> <span class="o">=</span> <span class="n">OMFBlockModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_element_by_name</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">block_model</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">scalar</span><span class="o">=</span><span class="n">scalar</span><span class="p">,</span>
+            <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span>
+            <span class="n">show_edges</span><span class="o">=</span><span class="n">show_edges</span><span class="p">,</span>
+            <span class="n">show_axes</span><span class="o">=</span><span class="n">show_axes</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OMFPandasReader.find_nearest_centroid">
+<a class="viewcode-back" href="../../api/_autosummary/omfpandas.reader.OMFPandasReader.html#omfpandas.reader.OMFPandasReader.find_nearest_centroid">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_nearest_centroid</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">blockmodel_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find the nearest centroid for provided x, y, z points using a math rounding approach considering the reference centroid.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (float): X coordinate.</span>
+<span class="sd">            y (float): Y coordinate.</span>
+<span class="sd">            z (float): Z coordinate.</span>
+<span class="sd">            blockmodel_name: The optional block model name.  If not provided, the geometry for the first Tensor</span>
+<span class="sd">             block model is used.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[float, float, float]: The coordinates of the nearest centroid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># get the geometry for the first block model if not provided</span>
+        <span class="k">if</span> <span class="n">blockmodel_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">blockmodel_names</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">element_name</span>
+                <span class="k">for</span> <span class="n">element_name</span><span class="p">,</span> <span class="n">element_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">element_types</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">element_type</span> <span class="ow">in</span> <span class="n">SUPPORTED_BM_TYPES</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">blockmodel_names</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No BlockModel found in the OMF file.&quot;</span><span class="p">)</span>
+            <span class="n">blockmodel_name</span> <span class="o">=</span> <span class="n">blockmodel_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># get the geometry for the block model</span>
+        <span class="n">geometry</span><span class="p">:</span> <span class="n">Geometry</span> <span class="o">=</span> <span class="n">OMFBlockModel</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_element_by_name</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="p">)</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">geometry</span>
+        <span class="c1"># perform the lookup</span>
+        <span class="n">nearest_x</span><span class="p">,</span> <span class="n">nearest_y</span><span class="p">,</span> <span class="n">nearest_z</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">nearest_centroid_lookup</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">nearest_x</span><span class="p">,</span> <span class="n">nearest_y</span><span class="p">,</span> <span class="n">nearest_z</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Greg Elphick.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+omfpandas.utils.pandas\_utils.create\_test\_blockmodel
+======================================================
+
+.. currentmodule:: omfpandas.utils.pandas_utils
+
+.. autofunction:: create_test_blockmodel

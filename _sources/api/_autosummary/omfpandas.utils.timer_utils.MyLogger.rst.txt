@@ -1,0 +1,25 @@
+omfpandas.utils.timer\_utils.MyLogger
+=====================================
+
+.. currentmodule:: omfpandas.utils.timer_utils
+
+.. autoclass:: MyLogger
+   :members:
+   :special-members: __add__, __mul__
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MyLogger.__init__
+      ~MyLogger.get_logger
+   
+   
+
+   
+   
+   

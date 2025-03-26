@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reading Multiple Block Models &mdash; omfpandas  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=1a8b2067" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Visualise a BlockModel" href="07_visualise_blockmodel.html" />
+    <link rel="prev" title="Validate BlockModel" href="05_validate_blockmodel.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            omfpandas
+          </a>
+              <div class="version">
+                0.9.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="01_omf_blockmodel_to_pandas.html">OMF Block Model to DataFrame</a></li>
+<li class="toctree-l2"><a class="reference internal" href="02_pandas_to_omf_blockmodel.html">Pandas Block Model to OMF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="03_omf_blockmodel_to_parquet.html">OMF Block Model to Parquet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="04_omf_profile_blockmodel.html">OMF Profile Block Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05_validate_blockmodel.html">Validate BlockModel</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Reading Multiple Block Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#instantiate">Instantiate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#read-from-block-models">Read from block models</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="07_visualise_blockmodel.html">Visualise a BlockModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="08_validate_blockmodel_sort_order.html">Validate BlockModel Sort Order</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api/modules.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license/license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">omfpandas</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">Reading Multiple Block Models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/auto_examples/06_reading_multiple_blockmodels.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="#sphx-glr-download-auto-examples-06-reading-multiple-blockmodels-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code.</p>
+</div>
+<section class="sphx-glr-example-title" id="reading-multiple-block-models">
+<span id="sphx-glr-auto-examples-06-reading-multiple-blockmodels-py"></span><h1>Reading Multiple Block Models<a class="headerlink" href="#reading-multiple-block-models" title="Link to this heading"></a></h1>
+<p>OMF allows storage of multiple block models in a single file.  This example demonstrates how to read multiple
+block models to return a single pandas dataframe</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">omf</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">OMFPandasReader</span>
+</pre></div>
+</div>
+<section id="instantiate">
+<h2>Instantiate<a class="headerlink" href="#instantiate" title="Link to this heading"></a></h2>
+<p>Create a function to generate a temporary omf file containing two block models.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">create_demo_tensor_model</span><span class="p">(</span><span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+                             <span class="n">cell_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+                             <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                             <span class="n">attr_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">omf</span><span class="o">.</span><span class="n">TensorGridBlockModel</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a tensor grid block model with random attributes&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">omf</span><span class="o">.</span><span class="n">TensorGridBlockModel</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">tensor_u</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cell_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">),</span>
+        <span class="n">tensor_v</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">cell_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">),</span>
+        <span class="n">tensor_w</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">cell_size</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">),</span>
+        <span class="n">attributes</span><span class="o">=</span><span class="p">[</span><span class="n">omf</span><span class="o">.</span><span class="n">NumericAttribute</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">attr_name</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="s2">&quot;cells&quot;</span><span class="p">,</span>
+                                         <span class="n">array</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span> <span class="k">for</span>
+                    <span class="n">attr_name</span> <span class="ow">in</span> <span class="n">attr_names</span><span class="p">])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">create_temp_omf_file</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates an omf file directly using omf and numpy&quot;&quot;&quot;</span>
+
+    <span class="n">project</span> <span class="o">=</span> <span class="n">omf</span><span class="o">.</span><span class="n">Project</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Test Project&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Create block models</span>
+    <span class="n">block_model_1</span> <span class="o">=</span> <span class="n">create_demo_tensor_model</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s1">&#39;BlockModel1&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;attr1&#39;</span><span class="p">,</span> <span class="s1">&#39;attr2&#39;</span><span class="p">])</span>
+
+    <span class="n">block_model_2</span> <span class="o">=</span> <span class="n">create_demo_tensor_model</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s1">&#39;BlockModel2&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;attr3&#39;</span><span class="p">,</span> <span class="s1">&#39;attr4&#39;</span><span class="p">])</span>
+
+    <span class="n">project</span><span class="o">.</span><span class="n">elements</span> <span class="o">=</span> <span class="p">[</span><span class="n">block_model_1</span><span class="p">,</span> <span class="n">block_model_2</span><span class="p">]</span>
+
+    <span class="c1"># Save to a temporary file</span>
+    <span class="n">temp_file</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.omf&#39;</span><span class="p">)</span>
+    <span class="n">omf</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">temp_file</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">temp_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+
+<span class="n">temp_omf_path</span> <span class="o">=</span> <span class="n">create_temp_omf_file</span><span class="p">()</span>
+<span class="n">reader</span> <span class="o">=</span> <span class="n">OMFPandasReader</span><span class="p">(</span><span class="n">temp_omf_path</span><span class="p">)</span>
+<span class="n">reader</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>OMF file(/tmp/tmp2q8nao1s.omf)
+Elements: {&#39;BlockModel1&#39;: &#39;TensorGridBlockModel&#39;, &#39;BlockModel2&#39;: &#39;TensorGridBlockModel&#39;}
+</pre></div>
+</div>
+</section>
+<section id="read-from-block-models">
+<h2>Read from block models<a class="headerlink" href="#read-from-block-models" title="Link to this heading"></a></h2>
+<p>We’ll demonstrate how to selectively merge attributes from each of the two block models to create a single dataframe.
+The <cite>read_block_models</cite> method accepts a dictionary where the keys are the block model names and the values are lists
+of attribute names to include in the dataframe.  If None is provided for the attribute list, all attributes</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">blockmodel_attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;BlockModel1&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;BlockModel2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;attr4&#39;</span><span class="p">]}</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">read_block_models</span><span class="p">(</span><span class="n">blockmodel_attributes</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="output_subarea output_html rendered_html output_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th>attr1</th>
+      <th>attr2</th>
+      <th>attr4</th>
+    </tr>
+    <tr>
+      <th>x</th>
+      <th>y</th>
+      <th>z</th>
+      <th>dx</th>
+      <th>dy</th>
+      <th>dz</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="20" valign="top">5.0</th>
+      <th rowspan="10" valign="top">5.0</th>
+      <th>5.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.672703</td>
+      <td>0.571996</td>
+      <td>0.648257</td>
+    </tr>
+    <tr>
+      <th>15.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.796681</td>
+      <td>0.805432</td>
+      <td>0.172386</td>
+    </tr>
+    <tr>
+      <th>25.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.250468</td>
+      <td>0.760161</td>
+      <td>0.872395</td>
+    </tr>
+    <tr>
+      <th>35.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.624874</td>
+      <td>0.153900</td>
+      <td>0.613116</td>
+    </tr>
+    <tr>
+      <th>45.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.571746</td>
+      <td>0.149249</td>
+      <td>0.157204</td>
+    </tr>
+    <tr>
+      <th>55.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.832830</td>
+      <td>0.268174</td>
+      <td>0.962338</td>
+    </tr>
+    <tr>
+      <th>65.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.906087</td>
+      <td>0.361075</td>
+      <td>0.518365</td>
+    </tr>
+    <tr>
+      <th>75.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.012157</td>
+      <td>0.408456</td>
+      <td>0.072898</td>
+    </tr>
+    <tr>
+      <th>85.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.674020</td>
+      <td>0.679697</td>
+      <td>0.626833</td>
+    </tr>
+    <tr>
+      <th>95.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.051836</td>
+      <td>0.056680</td>
+      <td>0.253199</td>
+    </tr>
+    <tr>
+      <th rowspan="10" valign="top">15.0</th>
+      <th>5.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.548859</td>
+      <td>0.034673</td>
+      <td>0.803693</td>
+    </tr>
+    <tr>
+      <th>15.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.287633</td>
+      <td>0.391911</td>
+      <td>0.817822</td>
+    </tr>
+    <tr>
+      <th>25.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.306777</td>
+      <td>0.697164</td>
+      <td>0.978947</td>
+    </tr>
+    <tr>
+      <th>35.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.352959</td>
+      <td>0.193435</td>
+      <td>0.501870</td>
+    </tr>
+    <tr>
+      <th>45.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.621292</td>
+      <td>0.641504</td>
+      <td>0.454957</td>
+    </tr>
+    <tr>
+      <th>55.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.334050</td>
+      <td>0.259828</td>
+      <td>0.753476</td>
+    </tr>
+    <tr>
+      <th>65.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.732699</td>
+      <td>0.886086</td>
+      <td>0.132471</td>
+    </tr>
+    <tr>
+      <th>75.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.404527</td>
+      <td>0.895690</td>
+      <td>0.546916</td>
+    </tr>
+    <tr>
+      <th>85.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.068353</td>
+      <td>0.297287</td>
+      <td>0.546248</td>
+    </tr>
+    <tr>
+      <th>95.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <th>10.0</th>
+      <td>0.783760</td>
+      <td>0.229994</td>
+      <td>0.089473</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+<br />
+<br /><p>Check if the DataFrame contains the expected columns</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">expected_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;attr1&#39;</span><span class="p">,</span> <span class="s1">&#39;attr2&#39;</span><span class="p">,</span> <span class="s1">&#39;attr4&#39;</span><span class="p">]</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">expected_columns</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Clean up temporary file</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">temp_omf_path</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.050 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-06-reading-multiple-blockmodels-py">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/dff72e823950d9a30d8e20172feb4510/06_reading_multiple_blockmodels.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">06_reading_multiple_blockmodels.ipynb</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/9b6e3264cf2c504317283f1a4cb7adce/06_reading_multiple_blockmodels.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">06_reading_multiple_blockmodels.py</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="05_validate_blockmodel.html" class="btn btn-neutral float-left" title="Validate BlockModel" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="07_visualise_blockmodel.html" class="btn btn-neutral float-right" title="Visualise a BlockModel" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Greg Elphick.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

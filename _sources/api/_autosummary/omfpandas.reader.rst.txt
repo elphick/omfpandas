@@ -1,0 +1,30 @@
+﻿omfpandas.reader
+================
+
+.. automodule:: omfpandas.reader
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+   
+      OMFPandasReader
+   
+   
+
+   
+   
+   
+
+
+

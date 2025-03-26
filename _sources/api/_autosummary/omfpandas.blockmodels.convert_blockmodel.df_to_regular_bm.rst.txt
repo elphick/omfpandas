@@ -1,0 +1,6 @@
+omfpandas.blockmodels.convert\_blockmodel.df\_to\_regular\_bm
+=============================================================
+
+.. currentmodule:: omfpandas.blockmodels.convert_blockmodel
+
+.. autofunction:: df_to_regular_bm

@@ -1,0 +1,6 @@
+omfpandas.blockmodels.coordinate\_encoding.multiindex\_to\_encoded\_index
+=========================================================================
+
+.. currentmodule:: omfpandas.blockmodels.coordinate_encoding
+
+.. autofunction:: multiindex_to_encoded_index

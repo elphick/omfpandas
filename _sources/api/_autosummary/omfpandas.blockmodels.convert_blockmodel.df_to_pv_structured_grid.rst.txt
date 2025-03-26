@@ -1,0 +1,6 @@
+omfpandas.blockmodels.convert\_blockmodel.df\_to\_pv\_structured\_grid
+======================================================================
+
+.. currentmodule:: omfpandas.blockmodels.convert_blockmodel
+
+.. autofunction:: df_to_pv_structured_grid

@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Validate BlockModel Sort Order &mdash; omfpandas  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=1a8b2067" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Reference" href="../api/modules.html" />
+    <link rel="prev" title="Visualise a BlockModel" href="07_visualise_blockmodel.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            omfpandas
+          </a>
+              <div class="version">
+                0.9.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="01_omf_blockmodel_to_pandas.html">OMF Block Model to DataFrame</a></li>
+<li class="toctree-l2"><a class="reference internal" href="02_pandas_to_omf_blockmodel.html">Pandas Block Model to OMF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="03_omf_blockmodel_to_parquet.html">OMF Block Model to Parquet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="04_omf_profile_blockmodel.html">OMF Profile Block Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05_validate_blockmodel.html">Validate BlockModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="06_reading_multiple_blockmodels.html">Reading Multiple Block Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="07_visualise_blockmodel.html">Visualise a BlockModel</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Validate BlockModel Sort Order</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#create-block-model-dataframe">Create Block Model Dataframe</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sort-order-check">Sort Order Check</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-omf">Create OMF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#export-to-pandas">Export to Pandas</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visualise">Visualise</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api/modules.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license/license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">omfpandas</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">Validate BlockModel Sort Order</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/auto_examples/08_validate_blockmodel_sort_order.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="#sphx-glr-download-auto-examples-08-validate-blockmodel-sort-order-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code.</p>
+</div>
+<section class="sphx-glr-example-title" id="validate-blockmodel-sort-order">
+<span id="sphx-glr-auto-examples-08-validate-blockmodel-sort-order-py"></span><h1>Validate BlockModel Sort Order<a class="headerlink" href="#validate-blockmodel-sort-order" title="Link to this heading"></a></h1>
+<p>A block model is a 3D array of cells, each with a set of attributes.  However, it is convenient to represent the
+attributes as a vector.  The order of the data in the vector is determined by the order used in this (ravel) conversion.</p>
+<p>The ravel order for OMF is C-style (row-major order).
+The ravel order for Pandas is C-style (row-major order).
+The ravel order for PyVista is F-style (column-major order).</p>
+<ul class="simple">
+<li><p>C-style - row-major order:  The last index (z) changes the fastest.  The first index (x) changes the slowest. <code class="code docutils literal notranslate"><span class="pre">df.sort_index(['x',</span> <span class="pre">'y',</span> <span class="pre">'z'])</span></code></p></li>
+<li><p>F-style - column-major order:  The first index (x) changes the fastest.  The last index (z) changes the slowest. <code class="code docutils literal notranslate"><span class="pre">df.sort_index(['z',</span> <span class="pre">'y',</span> <span class="pre">'x'])</span></code></p></li>
+</ul>
+<p>This script completes some validations on the sort order of the block model data:</p>
+<ul class="simple">
+<li><p>parquet file -&gt; dataframe</p></li>
+<li><p>dataframe -&gt; omf file / regular block model</p></li>
+<li><p>omf file / regular block model -&gt; dataframe</p></li>
+<li><p>pyvista visualisation</p></li>
+</ul>
+<p>To conduct this test we use a small block model of shape (5, 4, 3) with a depth attribute.</p>
+<p>So we will round-trip the data from the dataframe to the omf file, and back to a dataframe.
+We will also check the visualisation performs as expected.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyvista</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">OMFPandasWriter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_test_blockmodel</span>
+</pre></div>
+</div>
+<section id="create-block-model-dataframe">
+<h2>Create Block Model Dataframe<a class="headerlink" href="#create-block-model-dataframe" title="Link to this heading"></a></h2>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">block_size</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="n">corner</span> <span class="o">=</span> <span class="p">(</span><span class="mf">100.0</span><span class="p">,</span> <span class="mf">200.0</span><span class="p">,</span> <span class="mf">300.0</span><span class="p">)</span>
+
+<span class="n">blocks</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">create_test_blockmodel</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">block_size</span><span class="p">,</span> <span class="n">corner</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The dataframe is C-style (x, y, z).  The last index (z) changes the fastest.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">blocks</span>
+</pre></div>
+</div>
+<div class="output_subarea output_html rendered_html output_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th></th>
+      <th>c_style_xyz</th>
+      <th>f_style_zyx</th>
+      <th>depth</th>
+    </tr>
+    <tr>
+      <th>x</th>
+      <th>y</th>
+      <th>z</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="12" valign="top">100.5</th>
+      <th rowspan="3" valign="top">200.5</th>
+      <th>300.25</th>
+      <td>0</td>
+      <td>0</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>1</td>
+      <td>20</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>2</td>
+      <td>40</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th rowspan="3" valign="top">201.5</th>
+      <th>300.25</th>
+      <td>3</td>
+      <td>5</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>4</td>
+      <td>25</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>5</td>
+      <td>45</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th rowspan="3" valign="top">202.5</th>
+      <th>300.25</th>
+      <td>6</td>
+      <td>10</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>7</td>
+      <td>30</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>8</td>
+      <td>50</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th rowspan="3" valign="top">203.5</th>
+      <th>300.25</th>
+      <td>9</td>
+      <td>15</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>10</td>
+      <td>35</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>11</td>
+      <td>55</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th rowspan="12" valign="top">101.5</th>
+      <th rowspan="3" valign="top">200.5</th>
+      <th>300.25</th>
+      <td>12</td>
+      <td>1</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>13</td>
+      <td>21</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>14</td>
+      <td>41</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th rowspan="3" valign="top">201.5</th>
+      <th>300.25</th>
+      <td>15</td>
+      <td>6</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>16</td>
+      <td>26</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>17</td>
+      <td>46</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th rowspan="3" valign="top">202.5</th>
+      <th>300.25</th>
+      <td>18</td>
+      <td>11</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>19</td>
+      <td>31</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>20</td>
+      <td>51</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th rowspan="3" valign="top">203.5</th>
+      <th>300.25</th>
+      <td>21</td>
+      <td>16</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>22</td>
+      <td>36</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>23</td>
+      <td>56</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th rowspan="12" valign="top">102.5</th>
+      <th rowspan="3" valign="top">200.5</th>
+      <th>300.25</th>
+      <td>24</td>
+      <td>2</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>25</td>
+      <td>22</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>26</td>
+      <td>42</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th rowspan="3" valign="top">201.5</th>
+      <th>300.25</th>
+      <td>27</td>
+      <td>7</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>28</td>
+      <td>27</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>29</td>
+      <td>47</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th rowspan="3" valign="top">202.5</th>
+      <th>300.25</th>
+      <td>30</td>
+      <td>12</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>31</td>
+      <td>32</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>32</td>
+      <td>52</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th rowspan="3" valign="top">203.5</th>
+      <th>300.25</th>
+      <td>33</td>
+      <td>17</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>34</td>
+      <td>37</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>35</td>
+      <td>57</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th rowspan="12" valign="top">103.5</th>
+      <th rowspan="3" valign="top">200.5</th>
+      <th>300.25</th>
+      <td>36</td>
+      <td>3</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>37</td>
+      <td>23</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>38</td>
+      <td>43</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th rowspan="3" valign="top">201.5</th>
+      <th>300.25</th>
+      <td>39</td>
+      <td>8</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>40</td>
+      <td>28</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>41</td>
+      <td>48</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th rowspan="3" valign="top">202.5</th>
+      <th>300.25</th>
+      <td>42</td>
+      <td>13</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>43</td>
+      <td>33</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>44</td>
+      <td>53</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th rowspan="3" valign="top">203.5</th>
+      <th>300.25</th>
+      <td>45</td>
+      <td>18</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>46</td>
+      <td>38</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>47</td>
+      <td>58</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th rowspan="12" valign="top">104.5</th>
+      <th rowspan="3" valign="top">200.5</th>
+      <th>300.25</th>
+      <td>48</td>
+      <td>4</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>49</td>
+      <td>24</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>50</td>
+      <td>44</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th rowspan="3" valign="top">201.5</th>
+      <th>300.25</th>
+      <td>51</td>
+      <td>9</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>52</td>
+      <td>29</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>53</td>
+      <td>49</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th rowspan="3" valign="top">202.5</th>
+      <th>300.25</th>
+      <td>54</td>
+      <td>14</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>55</td>
+      <td>34</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>56</td>
+      <td>54</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th rowspan="3" valign="top">203.5</th>
+      <th>300.25</th>
+      <td>57</td>
+      <td>19</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>300.75</th>
+      <td>58</td>
+      <td>39</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>301.25</th>
+      <td>59</td>
+      <td>59</td>
+      <td>0.25</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+<br />
+<br /><p>Sort to F-style (z, y, x).  The first index (x) changes the fastest.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">blocks</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="output_subarea output_html rendered_html output_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th></th>
+      <th>c_style_xyz</th>
+      <th>f_style_zyx</th>
+      <th>depth</th>
+    </tr>
+    <tr>
+      <th>x</th>
+      <th>y</th>
+      <th>z</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>100.5</th>
+      <th>200.5</th>
+      <th>300.25</th>
+      <td>0</td>
+      <td>0</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>101.5</th>
+      <th>200.5</th>
+      <th>300.25</th>
+      <td>12</td>
+      <td>1</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>102.5</th>
+      <th>200.5</th>
+      <th>300.25</th>
+      <td>24</td>
+      <td>2</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>103.5</th>
+      <th>200.5</th>
+      <th>300.25</th>
+      <td>36</td>
+      <td>3</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>104.5</th>
+      <th>200.5</th>
+      <th>300.25</th>
+      <td>48</td>
+      <td>4</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>100.5</th>
+      <th>201.5</th>
+      <th>300.25</th>
+      <td>3</td>
+      <td>5</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>101.5</th>
+      <th>201.5</th>
+      <th>300.25</th>
+      <td>15</td>
+      <td>6</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>102.5</th>
+      <th>201.5</th>
+      <th>300.25</th>
+      <td>27</td>
+      <td>7</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>103.5</th>
+      <th>201.5</th>
+      <th>300.25</th>
+      <td>39</td>
+      <td>8</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>104.5</th>
+      <th>201.5</th>
+      <th>300.25</th>
+      <td>51</td>
+      <td>9</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>100.5</th>
+      <th>202.5</th>
+      <th>300.25</th>
+      <td>6</td>
+      <td>10</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>101.5</th>
+      <th>202.5</th>
+      <th>300.25</th>
+      <td>18</td>
+      <td>11</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>102.5</th>
+      <th>202.5</th>
+      <th>300.25</th>
+      <td>30</td>
+      <td>12</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>103.5</th>
+      <th>202.5</th>
+      <th>300.25</th>
+      <td>42</td>
+      <td>13</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>104.5</th>
+      <th>202.5</th>
+      <th>300.25</th>
+      <td>54</td>
+      <td>14</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>100.5</th>
+      <th>203.5</th>
+      <th>300.25</th>
+      <td>9</td>
+      <td>15</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>101.5</th>
+      <th>203.5</th>
+      <th>300.25</th>
+      <td>21</td>
+      <td>16</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>102.5</th>
+      <th>203.5</th>
+      <th>300.25</th>
+      <td>33</td>
+      <td>17</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>103.5</th>
+      <th>203.5</th>
+      <th>300.25</th>
+      <td>45</td>
+      <td>18</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>104.5</th>
+      <th>203.5</th>
+      <th>300.25</th>
+      <td>57</td>
+      <td>19</td>
+      <td>1.25</td>
+    </tr>
+    <tr>
+      <th>100.5</th>
+      <th>200.5</th>
+      <th>300.75</th>
+      <td>1</td>
+      <td>20</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>101.5</th>
+      <th>200.5</th>
+      <th>300.75</th>
+      <td>13</td>
+      <td>21</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>102.5</th>
+      <th>200.5</th>
+      <th>300.75</th>
+      <td>25</td>
+      <td>22</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>103.5</th>
+      <th>200.5</th>
+      <th>300.75</th>
+      <td>37</td>
+      <td>23</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>104.5</th>
+      <th>200.5</th>
+      <th>300.75</th>
+      <td>49</td>
+      <td>24</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>100.5</th>
+      <th>201.5</th>
+      <th>300.75</th>
+      <td>4</td>
+      <td>25</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>101.5</th>
+      <th>201.5</th>
+      <th>300.75</th>
+      <td>16</td>
+      <td>26</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>102.5</th>
+      <th>201.5</th>
+      <th>300.75</th>
+      <td>28</td>
+      <td>27</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>103.5</th>
+      <th>201.5</th>
+      <th>300.75</th>
+      <td>40</td>
+      <td>28</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>104.5</th>
+      <th>201.5</th>
+      <th>300.75</th>
+      <td>52</td>
+      <td>29</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>100.5</th>
+      <th>202.5</th>
+      <th>300.75</th>
+      <td>7</td>
+      <td>30</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>101.5</th>
+      <th>202.5</th>
+      <th>300.75</th>
+      <td>19</td>
+      <td>31</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>102.5</th>
+      <th>202.5</th>
+      <th>300.75</th>
+      <td>31</td>
+      <td>32</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>103.5</th>
+      <th>202.5</th>
+      <th>300.75</th>
+      <td>43</td>
+      <td>33</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>104.5</th>
+      <th>202.5</th>
+      <th>300.75</th>
+      <td>55</td>
+      <td>34</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>100.5</th>
+      <th>203.5</th>
+      <th>300.75</th>
+      <td>10</td>
+      <td>35</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>101.5</th>
+      <th>203.5</th>
+      <th>300.75</th>
+      <td>22</td>
+      <td>36</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>102.5</th>
+      <th>203.5</th>
+      <th>300.75</th>
+      <td>34</td>
+      <td>37</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>103.5</th>
+      <th>203.5</th>
+      <th>300.75</th>
+      <td>46</td>
+      <td>38</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>104.5</th>
+      <th>203.5</th>
+      <th>300.75</th>
+      <td>58</td>
+      <td>39</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>100.5</th>
+      <th>200.5</th>
+      <th>301.25</th>
+      <td>2</td>
+      <td>40</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>101.5</th>
+      <th>200.5</th>
+      <th>301.25</th>
+      <td>14</td>
+      <td>41</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>102.5</th>
+      <th>200.5</th>
+      <th>301.25</th>
+      <td>26</td>
+      <td>42</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>103.5</th>
+      <th>200.5</th>
+      <th>301.25</th>
+      <td>38</td>
+      <td>43</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>104.5</th>
+      <th>200.5</th>
+      <th>301.25</th>
+      <td>50</td>
+      <td>44</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>100.5</th>
+      <th>201.5</th>
+      <th>301.25</th>
+      <td>5</td>
+      <td>45</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>101.5</th>
+      <th>201.5</th>
+      <th>301.25</th>
+      <td>17</td>
+      <td>46</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>102.5</th>
+      <th>201.5</th>
+      <th>301.25</th>
+      <td>29</td>
+      <td>47</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>103.5</th>
+      <th>201.5</th>
+      <th>301.25</th>
+      <td>41</td>
+      <td>48</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>104.5</th>
+      <th>201.5</th>
+      <th>301.25</th>
+      <td>53</td>
+      <td>49</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>100.5</th>
+      <th>202.5</th>
+      <th>301.25</th>
+      <td>8</td>
+      <td>50</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>101.5</th>
+      <th>202.5</th>
+      <th>301.25</th>
+      <td>20</td>
+      <td>51</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>102.5</th>
+      <th>202.5</th>
+      <th>301.25</th>
+      <td>32</td>
+      <td>52</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>103.5</th>
+      <th>202.5</th>
+      <th>301.25</th>
+      <td>44</td>
+      <td>53</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>104.5</th>
+      <th>202.5</th>
+      <th>301.25</th>
+      <td>56</td>
+      <td>54</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>100.5</th>
+      <th>203.5</th>
+      <th>301.25</th>
+      <td>11</td>
+      <td>55</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>101.5</th>
+      <th>203.5</th>
+      <th>301.25</th>
+      <td>23</td>
+      <td>56</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>102.5</th>
+      <th>203.5</th>
+      <th>301.25</th>
+      <td>35</td>
+      <td>57</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>103.5</th>
+      <th>203.5</th>
+      <th>301.25</th>
+      <td>47</td>
+      <td>58</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>104.5</th>
+      <th>203.5</th>
+      <th>301.25</th>
+      <td>59</td>
+      <td>59</td>
+      <td>0.25</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+<br />
+<br /></section>
+<section id="sort-order-check">
+<h2>Sort Order Check<a class="headerlink" href="#sort-order-check" title="Link to this heading"></a></h2>
+<p>Check the ordering by first sorting by x,y,z and confirming the c-raveled attribute is monotonic.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">])[</span><span class="s1">&#39;c_style_xyz&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">blocks</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>Similarly, sort by z,y,x and confirm the f-raveled attribute is monotonic.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">])[</span><span class="s1">&#39;f_style_zyx&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">blocks</span><span class="p">)))</span>
+</pre></div>
+</div>
+</section>
+<section id="create-omf">
+<h2>Create OMF<a class="headerlink" href="#create-omf" title="Link to this heading"></a></h2>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">omfp</span><span class="p">:</span> <span class="n">OMFPandasWriter</span> <span class="o">=</span> <span class="n">OMFPandasWriter</span><span class="p">(</span><span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;test_blockmodel.omf&#39;</span><span class="p">)</span>
+<span class="n">omfp</span><span class="o">.</span><span class="n">create_blockmodel</span><span class="p">(</span><span class="n">blocks</span><span class="o">=</span><span class="n">blocks</span><span class="p">,</span> <span class="n">blockmodel_name</span><span class="o">=</span><span class="s1">&#39;sort_check&#39;</span><span class="p">,</span> <span class="n">allow_overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="export-to-pandas">
+<h2>Export to Pandas<a class="headerlink" href="#export-to-pandas" title="Link to this heading"></a></h2>
+<p>Check the round trip: pandas &gt; omf &gt; pandas</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">blocks_omf</span> <span class="o">=</span> <span class="n">omfp</span><span class="o">.</span><span class="n">read_blockmodel</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="o">=</span><span class="s1">&#39;sort_check&#39;</span><span class="p">)</span>
+
+<span class="n">pd</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_frame_equal</span><span class="p">(</span><span class="n">blocks</span><span class="p">,</span> <span class="n">blocks_omf</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="visualise">
+<h2>Visualise<a class="headerlink" href="#visualise" title="Link to this heading"></a></h2>
+<p>Plot the depth attribute to confirm the sort order is as expected.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">omfp</span><span class="o">.</span><span class="n">plot_blockmodel</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="o">=</span><span class="s1">&#39;sort_check&#39;</span><span class="p">,</span> <span class="n">scalar</span><span class="o">=</span><span class="s1">&#39;depth&#39;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_08_validate_blockmodel_sort_order_001.png" srcset="../_images/sphx_glr_08_validate_blockmodel_sort_order_001.png" alt="08 validate blockmodel sort order" class = "sphx-glr-single-img"/><p>Plot the c-raveled attribute.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">p</span><span class="p">:</span> <span class="n">pv</span><span class="o">.</span><span class="n">Plotter</span> <span class="o">=</span> <span class="n">omfp</span><span class="o">.</span><span class="n">plot_blockmodel</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="o">=</span><span class="s1">&#39;sort_check&#39;</span><span class="p">,</span> <span class="n">scalar</span><span class="o">=</span><span class="s1">&#39;c_style_xyz&#39;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_08_validate_blockmodel_sort_order_002.png" srcset="../_images/sphx_glr_08_validate_blockmodel_sort_order_002.png" alt="08 validate blockmodel sort order" class = "sphx-glr-single-img"/><p>Plot the f-raveled attribute.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">omfp</span><span class="o">.</span><span class="n">plot_blockmodel</span><span class="p">(</span><span class="n">blockmodel_name</span><span class="o">=</span><span class="s1">&#39;sort_check&#39;</span><span class="p">,</span> <span class="n">scalar</span><span class="o">=</span><span class="s1">&#39;f_style_zyx&#39;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_08_validate_blockmodel_sort_order_003.png" srcset="../_images/sphx_glr_08_validate_blockmodel_sort_order_003.png" alt="08 validate blockmodel sort order" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 2.102 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-08-validate-blockmodel-sort-order-py">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/2bf4cdb1af6b8579e639008f96047b8e/08_validate_blockmodel_sort_order.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">08_validate_blockmodel_sort_order.ipynb</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/e4825f943e2af6fecbbb9625544f4529/08_validate_blockmodel_sort_order.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">08_validate_blockmodel_sort_order.py</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="07_visualise_blockmodel.html" class="btn btn-neutral float-left" title="Visualise a BlockModel" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../api/modules.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Greg Elphick.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

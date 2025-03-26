@@ -1,0 +1,40 @@
+omfpandas.reader.OMFPandasReader
+================================
+
+.. currentmodule:: omfpandas.reader
+
+.. autoclass:: OMFPandasReader
+   :members:
+   :special-members: __add__, __mul__
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~OMFPandasReader.__init__
+      ~OMFPandasReader.find_nearest_centroid
+      ~OMFPandasReader.get_bm_geometry
+      ~OMFPandasReader.get_element_attribute_names
+      ~OMFPandasReader.get_element_by_name
+      ~OMFPandasReader.plot_blockmodel
+      ~OMFPandasReader.read_block_models
+      ~OMFPandasReader.read_blockmodel
+      ~OMFPandasReader.view_block_model_profile
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~OMFPandasReader.blockmodel_attributes
+      ~OMFPandasReader.changelog
+      ~OMFPandasReader.element_types
+   
+   

@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>omfpandas.blockmodels.geometry &mdash; omfpandas  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery.css?v=61a4c737" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=1a8b2067" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            omfpandas
+          </a>
+              <div class="version">
+                0.9.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../auto_examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license/license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">omfpandas</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">omfpandas.blockmodels.geometry</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for omfpandas.blockmodels.geometry</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">omfpandas.blockmodels</span><span class="w"> </span><span class="kn">import</span> <span class="n">multiindex_to_encoded_index</span>
+
+<span class="n">FloatArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+<span class="n">Vector</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span>
+<span class="n">Point</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span>
+<span class="n">Triple</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span>
+<span class="n">MinMax</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span>
+
+
+<span class="c1"># class CustomEncoder(json.JSONEncoder):</span>
+<span class="c1">#     def default(self, obj):</span>
+<span class="c1">#         if isinstance(obj, Vector3):</span>
+<span class="c1">#             return obj.to_dict()</span>
+<span class="c1">#         return super().default(obj)</span>
+
+
+<div class="viewcode-block" id="Geometry">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.geometry.Geometry.html#omfpandas.blockmodels.geometry.Geometry">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Geometry</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for geometry objects.</span>
+
+<span class="sd">    The geometry associated with omf block models are not defined by block centroids, and vary by block model type.</span>
+<span class="sd">    In the pandas representation, the geometry is defined by the block centroids, so this class is used to</span>
+<span class="sd">    define the geometry in terms of block centroids.</span>
+<span class="sd">    Additionally, other properties of the geometry are defined here, such as the shape of the geometry.</span>
+
+<span class="sd">    Attributes (in omf and pyvista) are stored in Fortran &#39;F&#39; order, meaning that the last index changes the fastest.</span>
+<span class="sd">    Hence the MultiIndex levels need to be sorted by &#39;z&#39;, &#39;y&#39;, &#39;x&#39;, to align with the Fortran order.</span>
+<span class="sd">    This has x changing fastest, z changing slowest.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">corner</span><span class="p">:</span> <span class="n">Point</span>
+    <span class="n">axis_u</span><span class="p">:</span> <span class="n">Vector</span>
+    <span class="n">axis_v</span><span class="p">:</span> <span class="n">Vector</span>
+    <span class="n">axis_w</span><span class="p">:</span> <span class="n">Vector</span>
+    <span class="n">_centroid_u</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">FloatArray</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">_centroid_v</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">FloatArray</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">_centroid_w</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">FloatArray</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">_shape</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">_is_regular</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Geometry.to_summary_json">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.geometry.Geometry.html#omfpandas.blockmodels.geometry.Geometry.to_summary_json">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_summary_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the geometry to a JSON string.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The JSON string representing the geometry.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Geometry.to_json_file">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.geometry.Geometry.html#omfpandas.blockmodels.geometry.Geometry.to_json_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_json_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_filepath</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the Geometry to a JSON file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            json_filepath (Path): The path to write the JSON file.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Path to the json file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">json_filepath</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">json_filepath</span></div>
+
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_regular</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">centroid_u</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">centroid_v</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">centroid_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">num_cells</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Triple</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_u</span><span class="p">),</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_v</span><span class="p">),</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_w</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extents</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">MinMax</span><span class="p">,</span> <span class="n">MinMax</span><span class="p">,</span> <span class="n">MinMax</span><span class="p">]:</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">bounding_box</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">MinMax</span><span class="p">,</span> <span class="n">MinMax</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">extents</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">extents</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_element</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Geometry&quot;</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_multi_index</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_multi_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">nearest_centroid_lookup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Point</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="RegularGeometry">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.geometry.RegularGeometry.html#omfpandas.blockmodels.geometry.RegularGeometry">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RegularGeometry</span><span class="p">(</span><span class="n">Geometry</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Regular geometry data class.</span>
+
+<span class="sd">    Regular Geometry applies to an omf.v1 VolumeElement or an omf.v2 RegularBlockModel.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">block_size</span><span class="p">:</span> <span class="n">Triple</span>
+    <span class="n">_shape</span><span class="p">:</span> <span class="n">Triple</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RegularGeometry.__init__">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.geometry.RegularGeometry.html#omfpandas.blockmodels.geometry.RegularGeometry.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">corner</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">axis_u</span><span class="p">:</span> <span class="n">Vector</span><span class="p">,</span>
+        <span class="n">axis_v</span><span class="p">:</span> <span class="n">Vector</span><span class="p">,</span>
+        <span class="n">axis_w</span><span class="p">:</span> <span class="n">Vector</span><span class="p">,</span>
+        <span class="n">block_size</span><span class="p">:</span> <span class="n">Triple</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="n">Triple</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">corner</span> <span class="o">=</span> <span class="n">corner</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axis_u</span> <span class="o">=</span> <span class="n">axis_u</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axis_v</span> <span class="o">=</span> <span class="n">axis_v</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axis_w</span> <span class="o">=</span> <span class="n">axis_w</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span> <span class="o">=</span> <span class="n">block_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="n">shape</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;RegularGeometry: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;RegularGeometry: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_regular</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">centroid_u</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centroid_u</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_centroid_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">corner</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">corner</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centroid_u</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">centroid_v</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centroid_v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_centroid_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">corner</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">corner</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centroid_v</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">centroid_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centroid_w</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_centroid_w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">corner</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">corner</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centroid_w</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Triple</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span>
+
+    <span class="nd">@shape</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Triple</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extents</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">MinMax</span><span class="p">,</span> <span class="n">MinMax</span><span class="p">,</span> <span class="n">MinMax</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="p">(</span>
+                <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+                <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_u</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="p">(</span>
+                <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+                <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_v</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="p">(</span>
+                <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_w</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+                <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_w</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;corner&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">corner</span><span class="p">),</span>
+            <span class="s2">&quot;axis_u&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis_u</span><span class="p">),</span>
+            <span class="s2">&quot;axis_v&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis_v</span><span class="p">),</span>
+            <span class="s2">&quot;axis_w&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis_w</span><span class="p">),</span>
+            <span class="s2">&quot;block_size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">,</span>
+            <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+            <span class="s2">&quot;is_regular&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_regular</span><span class="p">,</span>
+            <span class="s2">&quot;extents&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">extents</span><span class="p">,</span>
+            <span class="s2">&quot;bounding_box&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounding_box</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_element</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;RegularGeometry&quot;</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">omf</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegularBlockModel</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">RegularBlockModel</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Element must be an instance of omf.RegularBlockModel&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">corner</span><span class="p">,</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">axis_u</span><span class="p">,</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">axis_v</span><span class="p">,</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">axis_w</span><span class="p">,</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">block_size</span><span class="p">,</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">element</span><span class="o">.</span><span class="n">block_count</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_multi_index</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">,</span>
+        <span class="n">axis_u</span><span class="p">:</span> <span class="n">Vector</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="n">axis_v</span><span class="p">:</span> <span class="n">Vector</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="n">axis_w</span><span class="p">:</span> <span class="n">Vector</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;RegularGeometry&quot;</span><span class="p">:</span>
+
+        <span class="c1"># check that the index contains the expected levels</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">}</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">names</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Index must contain the levels &#39;x&#39;, &#39;y&#39;, &#39;z&#39;.&quot;</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+
+        <span class="c1"># check the block sizes are unique</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+        <span class="n">dz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+
+        <span class="c1"># Use the minimum difference as the block size</span>
+        <span class="n">block_size</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dx</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span> <span class="nb">float</span><span class="p">(</span><span class="n">dy</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span> <span class="nb">float</span><span class="p">(</span><span class="n">dz</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+
+        <span class="c1"># Calculate the shape based on the full range of coordinates</span>
+        <span class="n">full_shape</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="n">block_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">block_size</span><span class="p">[</span><span class="mi">0</span><span class="p">])),</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="n">block_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">block_size</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">z</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="n">block_size</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">block_size</span><span class="p">[</span><span class="mi">2</span><span class="p">])),</span>
+        <span class="p">)</span>
+
+        <span class="n">corner_x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">-</span> <span class="n">block_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">corner_y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">-</span> <span class="n">block_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">corner_z</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">-</span> <span class="n">block_size</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
+
+        <span class="c1"># Create the volume</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">corner</span><span class="o">=</span><span class="p">(</span><span class="n">corner_x</span><span class="p">,</span> <span class="n">corner_y</span><span class="p">,</span> <span class="n">corner_z</span><span class="p">),</span>
+            <span class="n">axis_u</span><span class="o">=</span><span class="n">axis_u</span><span class="p">,</span>
+            <span class="n">axis_v</span><span class="o">=</span><span class="n">axis_v</span><span class="p">,</span>
+            <span class="n">axis_w</span><span class="o">=</span><span class="n">axis_w</span><span class="p">,</span>
+            <span class="n">block_size</span><span class="o">=</span><span class="n">block_size</span><span class="p">,</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">full_shape</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="RegularGeometry.from_extents">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.geometry.RegularGeometry.html#omfpandas.blockmodels.geometry.RegularGeometry.from_extents">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_extents</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">extents</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">MinMax</span><span class="p">,</span> <span class="n">MinMax</span><span class="p">,</span> <span class="n">MinMax</span><span class="p">],</span>
+        <span class="n">block_size</span><span class="p">:</span> <span class="n">Triple</span><span class="p">,</span>
+        <span class="n">axis_u</span><span class="p">:</span> <span class="n">Vector</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="n">axis_v</span><span class="p">:</span> <span class="n">Vector</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="n">axis_w</span><span class="p">:</span> <span class="n">Vector</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;RegularGeometry&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a RegularGeometry from extents.&quot;&quot;&quot;</span>
+        <span class="n">min_x</span><span class="p">,</span> <span class="n">max_x</span> <span class="o">=</span> <span class="n">extents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">min_y</span><span class="p">,</span> <span class="n">max_y</span> <span class="o">=</span> <span class="n">extents</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">min_z</span><span class="p">,</span> <span class="n">max_z</span> <span class="o">=</span> <span class="n">extents</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="n">corner</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">min_x</span> <span class="o">-</span> <span class="n">block_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="n">min_y</span> <span class="o">-</span> <span class="n">block_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="n">min_z</span> <span class="o">-</span> <span class="n">block_size</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">int</span><span class="p">((</span><span class="n">max_x</span> <span class="o">-</span> <span class="n">min_x</span><span class="p">)</span> <span class="o">/</span> <span class="n">block_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="nb">int</span><span class="p">((</span><span class="n">max_y</span> <span class="o">-</span> <span class="n">min_y</span><span class="p">)</span> <span class="o">/</span> <span class="n">block_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="nb">int</span><span class="p">((</span><span class="n">max_z</span> <span class="o">-</span> <span class="n">min_z</span><span class="p">)</span> <span class="o">/</span> <span class="n">block_size</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">corner</span><span class="p">,</span> <span class="n">axis_u</span><span class="p">,</span> <span class="n">axis_v</span><span class="p">,</span> <span class="n">axis_w</span><span class="p">,</span> <span class="n">block_size</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RegularGeometry.to_json">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.geometry.RegularGeometry.html#omfpandas.blockmodels.geometry.RegularGeometry.to_json">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the full geometry to a JSON string.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;corner&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">corner</span><span class="p">),</span>
+            <span class="s2">&quot;axis_u&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis_u</span><span class="p">),</span>
+            <span class="s2">&quot;axis_v&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis_v</span><span class="p">),</span>
+            <span class="s2">&quot;axis_w&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis_w</span><span class="p">),</span>
+            <span class="s2">&quot;block_size&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">),</span>
+            <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RegularGeometry.from_json">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.geometry.RegularGeometry.html#omfpandas.blockmodels.geometry.RegularGeometry.from_json">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">json_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;RegularGeometry&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deserialize a JSON string to a full geometry object.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">corner</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;corner&quot;</span><span class="p">]),</span>
+            <span class="n">axis_u</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;axis_u&quot;</span><span class="p">]),</span>
+            <span class="n">axis_v</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;axis_v&quot;</span><span class="p">]),</span>
+            <span class="n">axis_w</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;axis_w&quot;</span><span class="p">]),</span>
+            <span class="n">block_size</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;block_size&quot;</span><span class="p">]),</span>
+            <span class="n">shape</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">]),</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RegularGeometry.to_multi_index">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.geometry.RegularGeometry.html#omfpandas.blockmodels.geometry.RegularGeometry.to_multi_index">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_multi_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a RegularGeometry to a MultiIndex.</span>
+
+<span class="sd">        The MultiIndex will have the following levels:</span>
+<span class="sd">        - x: The x coordinates of the cell centres</span>
+<span class="sd">        - y: The y coordinates of the cell centres</span>
+<span class="sd">        - z: The z coordinates of the cell centres</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a pd.MultiIndex for the regular blockmodel element, accounting for rotation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            blockmodel (BaseBlockModel): The regular BlockModel to get the index from.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pd.MultiIndex: The MultiIndex representing the blockmodel element geometry.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ox</span><span class="p">,</span> <span class="n">oy</span><span class="p">,</span> <span class="n">oz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">corner</span>
+        <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span>
+        <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="c1"># Calculate the coordinates of the block centers</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">ox</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">oy</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">ny</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">dy</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">oz</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nz</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">dz</span>
+
+        <span class="c1"># Create a grid of coordinates</span>
+        <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">zz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Flatten the grid</span>
+        <span class="n">centroids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">xx</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">yy</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">zz</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span>
+
+        <span class="c1"># Rotation axes</span>
+        <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_u</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_w</span>
+
+        <span class="c1"># Create rotation matrix</span>
+        <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="c1"># Apply rotation</span>
+        <span class="n">rotated_centroids</span> <span class="o">=</span> <span class="n">rotation_matrix</span> <span class="o">@</span> <span class="n">centroids</span>
+
+        <span class="c1"># Create a MultiIndex</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">rotated_centroids</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rotated_centroids</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">rotated_centroids</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+            <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Sort the MultiIndex by x, y, z levels</span>
+        <span class="k">return</span> <span class="n">index</span><span class="o">.</span><span class="n">sortlevel</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="RegularGeometry.to_encoded_index">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.geometry.RegularGeometry.html#omfpandas.blockmodels.geometry.RegularGeometry.to_encoded_index">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_encoded_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a RegularGeometry to an encoded integer index</span>
+
+<span class="sd">        The integer index is encoded to preserve the spatial position.</span>
+
+<span class="sd">        Use the coordinate_hashing.hashed_index_to_multiindex function to convert it back to x, y, z pd.MultiIndex</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">multiindex_to_encoded_index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_multi_index</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="RegularGeometry.nearest_centroid_lookup">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.geometry.RegularGeometry.html#omfpandas.blockmodels.geometry.RegularGeometry.nearest_centroid_lookup">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">nearest_centroid_lookup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Point</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find the nearest centroid for provided x, y, z points.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (float): X coordinate.</span>
+<span class="sd">            y (float): Y coordinate.</span>
+<span class="sd">            z (float): Z coordinate.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Point3: The coordinates of the nearest centroid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">reference_centroid</span><span class="p">:</span> <span class="n">Point</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">centroid_u</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">centroid_v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">centroid_w</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span>
+        <span class="n">ref_x</span><span class="p">,</span> <span class="n">ref_y</span><span class="p">,</span> <span class="n">ref_z</span> <span class="o">=</span> <span class="n">reference_centroid</span>
+
+        <span class="n">nearest_x</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">ref_x</span><span class="p">)</span> <span class="o">/</span> <span class="n">dx</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">+</span> <span class="n">ref_x</span>
+        <span class="n">nearest_y</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">y</span> <span class="o">-</span> <span class="n">ref_y</span><span class="p">)</span> <span class="o">/</span> <span class="n">dy</span><span class="p">)</span> <span class="o">*</span> <span class="n">dy</span> <span class="o">+</span> <span class="n">ref_y</span>
+        <span class="n">nearest_z</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">z</span> <span class="o">-</span> <span class="n">ref_z</span><span class="p">)</span> <span class="o">/</span> <span class="n">dz</span><span class="p">)</span> <span class="o">*</span> <span class="n">dz</span> <span class="o">+</span> <span class="n">ref_z</span>
+
+        <span class="k">return</span> <span class="n">nearest_x</span><span class="p">,</span> <span class="n">nearest_y</span><span class="p">,</span> <span class="n">nearest_z</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TensorGeometry">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.geometry.TensorGeometry.html#omfpandas.blockmodels.geometry.TensorGeometry">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TensorGeometry</span><span class="p">(</span><span class="n">Geometry</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tensor geometry data class.</span>
+
+<span class="sd">    Applicable for on omf.v2 TensorGridBlockModel.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">tensor_u</span><span class="p">:</span> <span class="n">FloatArray</span>
+    <span class="n">tensor_v</span><span class="p">:</span> <span class="n">FloatArray</span>
+    <span class="n">tensor_w</span><span class="p">:</span> <span class="n">FloatArray</span>
+    <span class="n">_block_sizes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;TensorGeometry: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;TensorGeometry: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_regular</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_u</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_u</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_w</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">centroid_u</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centroid_u</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_centroid_u</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">corner</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_u</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_u</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centroid_u</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">centroid_v</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centroid_v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_centroid_v</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">corner</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_v</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_v</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centroid_v</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">centroid_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centroid_w</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_centroid_w</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">corner</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_w</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_w</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centroid_w</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">block_sizes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Triple</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block_sizes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Create a grid of all possible combinations</span>
+            <span class="n">grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_u</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_w</span><span class="p">)</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="c1"># Find unique combinations</span>
+            <span class="n">unique_block_sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_block_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span> <span class="k">for</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">unique_block_sizes</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block_sizes</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extents</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">MinMax</span><span class="p">,</span> <span class="n">MinMax</span><span class="p">,</span> <span class="n">MinMax</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="p">(</span>
+                <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+                <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_u</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="p">(</span>
+                <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+                <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_v</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="p">(</span>
+                <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_w</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_w</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+                <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_w</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_w</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;corner&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">corner</span><span class="p">),</span>
+            <span class="s2">&quot;axis_u&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis_u</span><span class="p">),</span>
+            <span class="s2">&quot;axis_v&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis_v</span><span class="p">),</span>
+            <span class="s2">&quot;axis_w&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis_w</span><span class="p">),</span>
+            <span class="s2">&quot;block_sizes&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_sizes</span><span class="p">,</span>
+            <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+            <span class="s2">&quot;is_regular&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_regular</span><span class="p">,</span>
+            <span class="s2">&quot;extents&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">extents</span><span class="p">,</span>
+            <span class="s2">&quot;bounding_box&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounding_box</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_element</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;TensorGeometry&quot;</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">omf</span><span class="w"> </span><span class="kn">import</span> <span class="n">TensorGridBlockModel</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">TensorGridBlockModel</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Element must be an instance of omf.TensorGridBlockModel&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">corner</span><span class="p">,</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">axis_u</span><span class="p">,</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">axis_v</span><span class="p">,</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">axis_w</span><span class="p">,</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">tensor_u</span><span class="p">,</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">tensor_v</span><span class="p">,</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">tensor_w</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_multi_index</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;TensorGeometry&quot;</span><span class="p">:</span>
+        <span class="c1"># check that the index contains the expected levels</span>
+        <span class="n">level_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;dx&quot;</span><span class="p">,</span> <span class="s2">&quot;dy&quot;</span><span class="p">,</span> <span class="s2">&quot;dz&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">level_names</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">names</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Index must contain the levels </span><span class="si">{</span><span class="n">level_names</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+
+        <span class="c1"># Get the shape of the original 3D arrays</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+
+        <span class="c1"># Reshape the ravelled index back into the original shapes</span>
+        <span class="n">tensor_u</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;dx&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)[</span>
+            <span class="p">:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="p">]</span>
+        <span class="n">tensor_v</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;dy&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)[</span>
+            <span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span>
+        <span class="p">]</span>
+        <span class="n">tensor_w</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;dz&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)[</span>
+            <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:</span>
+        <span class="p">]</span>
+
+        <span class="n">origin_x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">-</span> <span class="n">tensor_u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">origin_y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">-</span> <span class="n">tensor_v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">origin_z</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">-</span> <span class="n">tensor_w</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
+
+        <span class="c1"># Create the volume</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">corner</span><span class="o">=</span><span class="p">(</span><span class="n">origin_x</span><span class="p">,</span> <span class="n">origin_y</span><span class="p">,</span> <span class="n">origin_z</span><span class="p">),</span>
+            <span class="n">axis_u</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="n">axis_v</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="n">axis_w</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">tensor_u</span><span class="o">=</span><span class="n">tensor_u</span><span class="p">,</span>
+            <span class="n">tensor_v</span><span class="o">=</span><span class="n">tensor_v</span><span class="p">,</span>
+            <span class="n">tensor_w</span><span class="o">=</span><span class="n">tensor_w</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="TensorGeometry.to_json">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.geometry.TensorGeometry.html#omfpandas.blockmodels.geometry.TensorGeometry.to_json">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the full geometry to a JSON string.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;corner&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">corner</span><span class="p">),</span>
+            <span class="s2">&quot;axis_u&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis_u</span><span class="p">),</span>
+            <span class="s2">&quot;axis_v&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis_v</span><span class="p">),</span>
+            <span class="s2">&quot;axis_w&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis_w</span><span class="p">),</span>
+            <span class="s2">&quot;tensor_u&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_u</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="s2">&quot;tensor_v&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_v</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="s2">&quot;tensor_w&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_w</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TensorGeometry.from_json">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.geometry.TensorGeometry.html#omfpandas.blockmodels.geometry.TensorGeometry.from_json">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">json_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;TensorGeometry&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deserialize a JSON string to a full geometry object.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">corner</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;corner&quot;</span><span class="p">]),</span>
+            <span class="n">axis_u</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;axis_u&quot;</span><span class="p">]),</span>
+            <span class="n">axis_v</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;axis_v&quot;</span><span class="p">]),</span>
+            <span class="n">axis_w</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;axis_w&quot;</span><span class="p">]),</span>
+            <span class="n">tensor_u</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;tensor_u&quot;</span><span class="p">]),</span>
+            <span class="n">tensor_v</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;tensor_v&quot;</span><span class="p">]),</span>
+            <span class="n">tensor_w</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;tensor_w&quot;</span><span class="p">]),</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TensorGeometry.to_multi_index">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.geometry.TensorGeometry.html#omfpandas.blockmodels.geometry.TensorGeometry.to_multi_index">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_multi_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a TensorGeometry to a MultiIndex.</span>
+
+<span class="sd">        The MultiIndex will have the following levels:</span>
+<span class="sd">        - x: The x coordinates of the cell centres</span>
+<span class="sd">        - y: The y coordinates of the cell centres</span>
+<span class="sd">        - z: The z coordinates of the cell centres</span>
+<span class="sd">        - dx: The x cell sizes</span>
+<span class="sd">        - dy: The y cell sizes</span>
+<span class="sd">        - dz: The z cell sizes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a pd.MultiIndex for the tensor blockmodel element.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            blockmodel (BlockModel): The tensor BlockModel to get the index from.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pd.MultiIndex: The MultiIndex representing the blockmodel element geometry.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ox</span><span class="p">,</span> <span class="n">oy</span><span class="p">,</span> <span class="n">oz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">corner</span>
+
+        <span class="c1"># Make coordinates (points) along each axis, i, j, k</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">ox</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_u</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ox</span><span class="p">)</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="n">oy</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_v</span><span class="p">)</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">oy</span><span class="p">)</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">oz</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_w</span><span class="p">)</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">oz</span><span class="p">)</span>
+
+        <span class="c1"># convert to centroids</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">i</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">j</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">j</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">k</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">zz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Calculate dx, dy, dz</span>
+        <span class="n">dxx</span><span class="p">,</span> <span class="n">dyy</span><span class="p">,</span> <span class="n">dzz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tensor_u</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_w</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span>
+        <span class="p">)</span>
+
+        <span class="c1"># TODO: consider rotation</span>
+
+        <span class="n">index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">xx</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">yy</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">zz</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">dxx</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">dyy</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">dzz</span><span class="o">.</span><span class="n">ravel</span><span class="p">()],</span>
+            <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;dx&quot;</span><span class="p">,</span> <span class="s2">&quot;dy&quot;</span><span class="p">,</span> <span class="s2">&quot;dz&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Sort the MultiIndex by x, y, z levels</span>
+        <span class="k">return</span> <span class="n">index</span><span class="o">.</span><span class="n">sortlevel</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="TensorGeometry.nearest_centroid_lookup">
+<a class="viewcode-back" href="../../../api/_autosummary/omfpandas.blockmodels.geometry.TensorGeometry.html#omfpandas.blockmodels.geometry.TensorGeometry.nearest_centroid_lookup">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">nearest_centroid_lookup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Point</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find the nearest centroid for provided x, y, z points.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (float): X coordinate.</span>
+<span class="sd">            y (float): Y coordinate.</span>
+<span class="sd">            z (float): Z coordinate.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Point3: The coordinates of the nearest centroid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># This only works for regular geometries in a tensor format - needs to be extended.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_regular</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;TensorGeometry is not regular. Cannot perform nearest centroid lookup.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">reference_centroid</span><span class="p">:</span> <span class="n">Point</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">centroid_u</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">centroid_v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">centroid_w</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ref_x</span><span class="p">,</span> <span class="n">ref_y</span><span class="p">,</span> <span class="n">ref_z</span> <span class="o">=</span> <span class="n">reference_centroid</span>
+
+        <span class="n">nearest_x</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">ref_x</span><span class="p">)</span> <span class="o">/</span> <span class="n">dx</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">+</span> <span class="n">ref_x</span>
+        <span class="n">nearest_y</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">y</span> <span class="o">-</span> <span class="n">ref_y</span><span class="p">)</span> <span class="o">/</span> <span class="n">dy</span><span class="p">)</span> <span class="o">*</span> <span class="n">dy</span> <span class="o">+</span> <span class="n">ref_y</span>
+        <span class="n">nearest_z</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">z</span> <span class="o">-</span> <span class="n">ref_z</span><span class="p">)</span> <span class="o">/</span> <span class="n">dz</span><span class="p">)</span> <span class="o">*</span> <span class="n">dz</span> <span class="o">+</span> <span class="n">ref_z</span>
+
+        <span class="k">return</span> <span class="n">nearest_x</span><span class="p">,</span> <span class="n">nearest_y</span><span class="p">,</span> <span class="n">nearest_z</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Greg Elphick.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

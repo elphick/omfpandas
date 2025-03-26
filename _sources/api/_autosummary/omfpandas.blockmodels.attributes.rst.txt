@@ -1,0 +1,35 @@
+omfpandas.blockmodels.attributes
+================================
+
+.. automodule:: omfpandas.blockmodels.attributes
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      attribute_to_series
+      evaluate_calculated_attribute
+      get_attribute_by_name
+      read_blockmodel_attributes
+      series_to_attribute
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

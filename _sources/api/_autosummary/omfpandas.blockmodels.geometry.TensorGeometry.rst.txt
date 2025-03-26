@@ -1,0 +1,54 @@
+omfpandas.blockmodels.geometry.TensorGeometry
+=============================================
+
+.. currentmodule:: omfpandas.blockmodels.geometry
+
+.. autoclass:: TensorGeometry
+   :members:
+   :special-members: __add__, __mul__
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~TensorGeometry.__init__
+      ~TensorGeometry.from_element
+      ~TensorGeometry.from_json
+      ~TensorGeometry.from_multi_index
+      ~TensorGeometry.nearest_centroid_lookup
+      ~TensorGeometry.to_json
+      ~TensorGeometry.to_json_file
+      ~TensorGeometry.to_multi_index
+      ~TensorGeometry.to_summary_json
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~TensorGeometry.block_sizes
+      ~TensorGeometry.bounding_box
+      ~TensorGeometry.centroid_u
+      ~TensorGeometry.centroid_v
+      ~TensorGeometry.centroid_w
+      ~TensorGeometry.extents
+      ~TensorGeometry.is_regular
+      ~TensorGeometry.num_cells
+      ~TensorGeometry.shape
+      ~TensorGeometry.summary
+      ~TensorGeometry.tensor_u
+      ~TensorGeometry.tensor_v
+      ~TensorGeometry.tensor_w
+      ~TensorGeometry.corner
+      ~TensorGeometry.axis_u
+      ~TensorGeometry.axis_v
+      ~TensorGeometry.axis_w
+   
+   
