@@ -19,6 +19,7 @@ SUPPORTED_BM_TYPES = ['RegularBlockModel', 'TensorGridBlockModel']
 
 PathLike = Union[str, Path, os.PathLike]
 
+
 class OMFPandas(ABC):
 
     def __init__(self, filepath: PathLike):
@@ -41,7 +42,7 @@ class OMFPandas(ABC):
         self.filepath: Path = filepath
         self.project: Optional[Project] = None
         if filepath.exists():
-           self.project = omf.load(str(filepath))
+            self.project = omf.load(str(filepath))
 
     def __repr__(self):
         res: str = f"OMF file({self.filepath})"
@@ -74,12 +75,21 @@ class OMFPandas(ABC):
             return {}
 
     @property
-    def blockmodel_attributes(self) -> Optional[dict[str, list[str]]]:
-        """Attributes for blockmodel elements, keyed by element name"""
-        elements = [el for el in self.project.elements if el.__class__.__name__ in ['TensorGridBlockModel',
-                                                                                    'RegularBlockModel']]
-        if elements:
-            return {e.name: [a.name for a in e.attributes] for e in elements}
+    def blockmodel_attributes(self) -> Optional[dict[str, Any]]:
+        """Attributes for blockmodel elements, keyed by element name, including composites."""
+        elements = {}
+        for el in self.project.elements:
+            if el.__class__.__name__ in ['TensorGridBlockModel', 'RegularBlockModel']:
+                elements[el.name] = [a.name for a in el.attributes]
+            elif hasattr(el, 'elements') and el.elements:
+                composite_elements = {}
+                for child in el.elements:
+                    if child.__class__.__name__ in ['TensorGridBlockModel', 'RegularBlockModel']:
+                        composite_elements[child.name] = [a.name for a in child.attributes]
+                if composite_elements:
+                    elements[el.name] = composite_elements
+
+        return elements if elements else {}
 
     @property
     def changelog(self) -> Optional[pd.DataFrame]:

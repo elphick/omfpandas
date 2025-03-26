@@ -83,6 +83,8 @@ class OMFPandasWriter(OMFPandasReader):
             ValueError: If the element retrieved is not a BlockModel.
         """
         composite_name = None
+        full_blockmodel_name = blockmodel_name
+
         if '.' in blockmodel_name:
             composite_name, blockmodel_name = blockmodel_name.split('.', 1)
 
@@ -149,7 +151,7 @@ class OMFPandasWriter(OMFPandasReader):
 
         # write the calculated variables to the omf block model metadata
         if pd_schema is not None:
-            self.create_calculated_blockmodel_attributes(blockmodel_name, calc_definitions=calculation_map)
+            self.create_calculated_blockmodel_attributes(full_blockmodel_name, calc_definitions=calculation_map)
 
     def create_calculated_blockmodel_attributes(self, blockmodel_name: str, calc_definitions: dict[str, str]):
         """Create a calculated attribute for a BlockModel.

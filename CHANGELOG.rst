@@ -1,3 +1,13 @@
+Omfpandas 0.9.1 (2025-03-26)
+============================
+
+Bugfix
+------
+
+- Fixed composite bug for calculated attributes. Added composite support via nexted dictionaries for the element_types and blockmodel_attributes properties of the OMFPandas object. (#54)
+- Fixed composite bug for calculated attributes. Added composite support via nexted dictionaries for the  and  properties of the  object. (#54)
+
+
 Omfpandas 0.9.0 (2025-03-23)
 ============================
 
