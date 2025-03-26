@@ -55,10 +55,21 @@ class OMFPandas(ABC):
 
     @property
     def element_types(self) -> Optional[dict[str, Any]]:
-        """Dictionary of elements keyed by name"""
+        """Dictionary of elements keyed by name
+
+        In the special case of a composite element, the key will be the composite name and
+        the value will be a dictionary of child elements keyed by name.
+
+        """
         _elements = self.project.elements if self.project else []
         if _elements:
-            return {e.name: e.__class__.__name__ for e in _elements}
+            element_dict = {}
+            for e in _elements:
+                if hasattr(e, 'elements') and e.elements:
+                    element_dict[e.name] = {child.name: child.__class__.__name__ for child in e.elements}
+                else:
+                    element_dict[e.name] = e.__class__.__name__
+            return element_dict
         else:
             return {}
 
@@ -108,7 +119,7 @@ class OMFPandas(ABC):
     def get_element_attribute_names(self, element_name: str) -> list[str]:
         """Get the attribute names of an element.
 
-        :param element_name: The name of the element to retrieve.
+        :param element_name: The name of the element to retrieve.  Use dot notation for elements in a composite.
         :return:
         """
         element = self.get_element_by_name(element_name)
