@@ -204,3 +204,42 @@ def test_aggregate_with_groupby_proportions_as_columns():
     # Ensure the columns are in the same order
     pd.testing.assert_frame_equal(result_df[result_df['group_A'] == 1.0].reset_index(drop=True), expected_df_group_A)
     pd.testing.assert_frame_equal(result_df[result_df['group_B'] == 1.0].reset_index(drop=True), expected_df_group_B)
+
+
+def test_aggregate_grade_by_mass_and_density_by_volume():
+    # Create a sample DataFrame
+    data = {
+        'mass': [1, 2, 3, 4],
+        'volume': [0.5, 1.25, 1.6, 1.8],
+        'grade_1': [0.1, 0.2, 0.3, 0.4],
+        'grade_2': [0.2, 0.4, 0.6, 0.8],
+        'density': list(np.array([1, 2, 3, 4]) / np.array([0.5, 1.25, 1.6, 1.8])),
+        'other': [5, 6, 7, 8]
+    }
+    df = pd.DataFrame(data)
+
+    # Define the aggregation dictionary
+    agg_dict = {
+        'grade_1': 'mass', 'grade_2': 'mass',
+        'density': 'volume'
+    }
+
+    # Expected result
+    expected_data = {
+        'mass': 10,
+        'volume': 5.15,
+        'grade_1': np.average([0.1, 0.2, 0.3, 0.4], weights=[1, 2, 3, 4]),
+        'grade_2': np.average([0.2, 0.4, 0.6, 0.8], weights=[1, 2, 3, 4]),
+        'density': np.average(data['density'], weights=[0.5, 1.25, 1.6, 1.8]),
+        'other': 26
+    }
+    expected_df = pd.DataFrame([expected_data])
+
+    # Run the aggregate function
+    result_df = aggregate(df, agg_dict)
+
+    # Ensure the columns are in the same order
+    pd.testing.assert_frame_equal(result_df, expected_df)
+
+    # assert the average density is correct
+    assert result_df['density'].values[0] == expected_data['mass'] / expected_data['volume']
