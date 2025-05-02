@@ -6,6 +6,7 @@ from typing import Optional, Literal, Union
 import omf
 import pandas as pd
 import ydata_profiling
+from elphick.pandera_utils import DataFrameMetaProcessor
 
 from omfpandas import OMFPandasReader
 from omfpandas.audit import ChangeMessage
@@ -14,7 +15,7 @@ from omfpandas.blockmodels.convert_blockmodel import df_to_blockmodel, blockmode
 
 from omfpandas.extras import _import_ydata_profiling, _import_pandera, _import_pandera_io
 from omfpandas.utils.pandas_utils import parse_vars_from_expr
-from omfpandas.utils.pandera_utils import DataFrameMetaProcessor, load_schema_from_yaml
+from omfpandas.utils.pandera_utils import load_schema_from_yaml
 from omfpandas.utils import log_timer
 
 def get_username():
@@ -108,7 +109,6 @@ class OMFPandasWriter(OMFPandasReader):
 
             # add any calculated attributes in the schema
             dfmp: DataFrameMetaProcessor = DataFrameMetaProcessor(schema=pd_schema)
-            calculation_map = dfmp.calculation_map
             blocks = dfmp.preprocess(blocks)
             blocks = dfmp.validate(blocks, return_calculated_columns=False)
 
