@@ -7,56 +7,6 @@ import pandas as pd
 from pandera.io import _deserialize_check_stats
 
 
-class DataFrameMetaProcessor:
-    def __init__(self, schema: DataFrameSchema):
-        self.schema: DataFrameSchema = schema
-        self.supported_column_meta_keys = ['alias', 'calculation', 'decimals']
-
-    @property
-    def alias_map(self):
-        return {col.metadata['alias']: col_name for col_name, col in self.schema.columns.items() if
-                col.metadata and 'alias' in col.metadata}
-
-    @property
-    def calculation_map(self):
-        return {col_name: col.metadata['calculation'] for col_name, col in self.schema.columns.items() if
-                col.metadata and 'calculation' in col.metadata}
-
-    @property
-    def decimals_map(self):
-        return {col_name: col.metadata['decimals'] for col_name, col in self.schema.columns.items() if
-                col.metadata and 'decimals' in col.metadata}
-
-    def rename_from_meta_alias(self, df: pd.DataFrame) -> pd.DataFrame:
-        return df.rename(columns=self.alias_map)
-
-    def calculate_from_meta_calculation(self, df: pd.DataFrame) -> pd.DataFrame:
-        for col_name, calculation in self.calculation_map.items():
-            df[col_name] = eval(calculation, {}, df.to_dict('series'))
-        return df
-
-    def round_to_decimals(self, df: pd.DataFrame, columns: list = None) -> pd.DataFrame:
-        if columns is None:
-            columns = self.decimals_map.keys()
-        for col_name in columns:
-            if col_name in self.decimals_map:
-                df[col_name] = df[col_name].round(self.decimals_map[col_name])
-        return df
-
-    def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = self.rename_from_meta_alias(df)
-        df = self.round_to_decimals(df)
-        df = self.calculate_from_meta_calculation(df)
-        df = self.round_to_decimals(df, columns=list(self.calculation_map.keys()))
-        return df
-
-    def validate(self, df: pd.DataFrame, return_calculated_columns: bool = True) -> pd.DataFrame:
-        df = self.schema.validate(df)
-        if not return_calculated_columns:
-            return df.drop(columns=list(self.calculation_map.keys()))
-        return df
-
-
 def load_schema_from_yaml(yaml_path: Path) -> DataFrameSchema:
     """Load a DataFrameSchema from a YAML file."""
     with open(yaml_path, "r", encoding="utf-8") as f:
