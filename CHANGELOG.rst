@@ -1,3 +1,12 @@
+Omfpandas 0.9.3 (2026-02-04)
+============================
+
+Other Tasks
+-----------
+
+- Opened up dependency versions for broader compatibility (#61)
+
+
 Omfpandas 0.9.2 (2025-05-03)
 ============================
 
