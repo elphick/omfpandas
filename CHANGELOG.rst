@@ -1,3 +1,12 @@
+Omfpandas 0.9.4 (2026-09-03)
+============================
+
+Other Tasks
+-----------
+
+- modern pandera import pattern added (#63)
+
+
 Omfpandas 0.9.3 (2026-02-04)
 ============================
 

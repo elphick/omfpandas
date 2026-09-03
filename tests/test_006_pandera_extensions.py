@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pandera as pa
 from pandera.api.pandas.components import Column
-from omfpandas.utils.pandera_utils import DataFrameMetaProcessor
+from omfpandas.utils.pandera_utils import DataFrameMetaProcessor, load_schema_from_yaml
 
 
 def test_rename_from_meta_alias():
@@ -69,3 +69,18 @@ def test_round_to_decimals():
     df = pd.DataFrame({"rounded_column": [1.234, 2.345, 3.456]})
     df = processor.round_to_decimals(df)
     assert df["rounded_column"].tolist() == [1.23, 2.35, 3.46]
+
+
+def test_load_schema_from_yaml(tmp_path):
+    schema = pa.DataFrameSchema({
+        "value": Column(
+            dtype=int,
+            checks=pa.Check.greater_than(0),
+        )
+    })
+    schema_path = tmp_path / "schema.yaml"
+    schema.to_yaml(stream=schema_path)
+
+    loaded_schema = load_schema_from_yaml(schema_path)
+    df = pd.DataFrame({"value": [1, 2, 3]})
+    assert loaded_schema.validate(df).equals(df)

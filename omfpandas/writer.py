@@ -90,13 +90,12 @@ class OMFPandasWriter(OMFPandasReader):
 
         calculation_map: dict = {}
         if pd_schema is not None:
-            pa = _import_pandera()
+            paio = _import_pandera_io()
             if not isinstance(pd_schema, (Path, dict)):
                 raise ValueError("pd_schema must be a Path to a Pandera schema file or a dict of the schema.")
             elif isinstance(pd_schema, Path) and not pd_schema.exists():
                 raise FileNotFoundError(f"Schema file not found: {pd_schema}")
             elif isinstance(pd_schema, dict):
-                paio = _import_pandera_io()
                 pd_schema = paio.deserialize_schema(pd_schema)
             elif isinstance(pd_schema, Path):
                 pd_schema = load_schema_from_yaml(pd_schema)
@@ -184,8 +183,8 @@ class OMFPandasWriter(OMFPandasReader):
             # though if the attribute exists in the schema file then it will be validated on the entire dataset.
             index_filter = list(range(0, 6))
             if bm.metadata.get('pd_schema'):
-                pa = _import_pandera()
-                col_schema = pa.io.from_json(bm.metadata['pd_schema']).columns.get(attr_name)
+                paio = _import_pandera_io()
+                col_schema = paio.from_json(bm.metadata['pd_schema']).columns.get(attr_name)
                 if col_schema:
                     index_filter = None
 
@@ -243,9 +242,9 @@ class OMFPandasWriter(OMFPandasReader):
 
         bm = self.get_element_by_name(blockmodel_name)
         if bm.metadata.get('pd_schema'):
-            pa = _import_pandera()
+            paio = _import_pandera_io()
             # validate the data
-            schema = pa.io.from_json(bm.metadata['pd_schema'])
+            schema = paio.from_json(bm.metadata['pd_schema'])
             series = schema.validate(series.to_frame())
             series = series.iloc[:, 0]  # back to series
 

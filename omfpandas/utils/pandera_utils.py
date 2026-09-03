@@ -4,7 +4,10 @@ import yaml
 from pandera import DataFrameSchema, Column, Check
 from pandera.engines import pandas_engine
 import pandas as pd
-from pandera.io import _deserialize_check_stats
+try:
+    from pandera.io.pandas_io import _deserialize_check_stats
+except ImportError:
+    from pandera.io import _deserialize_check_stats
 
 
 class DataFrameMetaProcessor:
@@ -95,12 +98,25 @@ def _deserialize_component_stats(serialized_component_stats):
 
     checks = serialized_component_stats.get("checks")
     if checks is not None:
-        checks = [
-            _deserialize_check_stats(
-                getattr(Check, check_name), check_stats, dtype
-            )
-            for check_name, check_stats in checks.items()
-        ]
+        deserialized_checks = []
+        if isinstance(checks, list):
+            for check_stats in checks:
+                check_name = check_stats.get("options", {}).get("check_name")
+                if check_name is None:
+                    raise ValueError("Serialized check stats are missing check_name in options.")
+                deserialized_checks.append(
+                    _deserialize_check_stats(
+                        getattr(Check, check_name), check_stats, dtype
+                    )
+                )
+        else:
+            for check_name, check_stats in checks.items():
+                deserialized_checks.append(
+                    _deserialize_check_stats(
+                        getattr(Check, check_name), check_stats, dtype
+                    )
+                )
+        checks = deserialized_checks
 
     return {
         "title": title,
