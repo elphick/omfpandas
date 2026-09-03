@@ -22,12 +22,16 @@ def _import_pandera_io():
     global _paio
     if _paio is None:
         try:
-            import pandera.io as paio
+            import pandera.io.pandas_io as paio
             _paio = paio
         except ImportError:
-            raise ImportError("pandera is required to run this method. "
-                              "Please install it by running 'poetry install omfpandas --extras validate' "
-                              "or 'pip install pandera[io]'")
+            try:
+                import pandera.io as paio
+                _paio = paio
+            except ImportError:
+                raise ImportError("pandera is required to run this method. "
+                                  "Please install it by running 'poetry install omfpandas --extras validate' "
+                                  "or 'pip install pandera[io]'")
     return _paio
 
 
